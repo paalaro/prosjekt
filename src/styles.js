@@ -1,33 +1,26 @@
-class Nbul {
-  constructor(listStyleType, margin, padding, overflow, backgroundColor) {
-    this.listStyleType = 'none';
-    this.margin = 0;
-    this.padding = 0;
-    this.overflow = 'hidden';
-    this.backgroundColor = '#333';
+class Styles {
+  constructor(nbul, nbil, nbilLink) {
+    this.nbul = {
+      listStyleType: 'none',
+      margin: 0,
+      padding: 0,
+      overflow: 'hidden',
+      backgroundColor: '#333'
+    }
+
+    this.nbil = {
+      float: 'left'
+    }
+
+    this.nbLink = {
+      display: 'block',
+      color: 'white',
+      textAlign: 'center',
+      padding: '14px 16px',
+      textAlign: 'none'
+    }
   }
 }
 
-class Nbil {
-  constructor(float) {
-    this.float = 'left';
-  }
-}
-
-class NbilLink {
-  constructor(display, color, textAlign, padding, textDecoration) {
-    this.display = 'block';
-    this.color = 'white';
-    this.textAlign = 'center';
-    this.padding = '14px 16px';
-    this.textAlign = 'none';
-  }
-}
-
-let nbul = new Nbul();
-let nbil = new Nbil();
-let nbilLink = new NbilLink();
-
-export { nbul };
-export { nbil };
-export { nbilLink };
+let styles = new Styles();
+export { styles };

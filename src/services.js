@@ -63,7 +63,7 @@ class UserService {
 
       console.log(result[0]);
 
-      callback(result);
+      callback(result[0]);
     });
   }
 
