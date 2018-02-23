@@ -28,31 +28,62 @@ function connect() {
 connect();
 
 // Class that performs database queries related to customers
-class CustomerService {
-  getCustomers(callback) {
-    connection.query('SELECT * FROM Customers', (error, result) => {
+class UserService {
+  getUsers(callback) {
+    connection.query('SELECT * FROM Users', (error, result) => {
       if (error) throw error;
 
       callback(result);
     });
   }
 
-  getCustomer(id, callback) {
-    connection.query('SELECT * FROM Customers WHERE id=?', [id], (error, result) => {
+  getUser(id, callback) {
+    connection.query('SELECT * FROM Users WHERE id=?', [id], (error, result) => {
       if (error) throw error;
 
       callback(result[0]);
     });
   }
 
-  addCustomer(firstName, city, callback) {
-    connection.query('INSERT INTO Customers (firstName, city) values (?, ?)', [firstName, city], (error, result) => {
+  addUser(fname, lname, city, adress, postalnumber, phonenumber, email, username, password, callback) {
+    connection.query('INSERT INTO Users (firstName, lastName, city, adress, postalnumber, phonenumber, email, username, password) values (?, ?, ?, ?, ?, ?, ?, ?, ?)', [fname, lname, city, adress, postalnumber, phonenumber, email, username, password], (error, result) => {
       if (error) throw error;
+
+      else {
+        console.log(fname + " " + lname + " is registered.");
+      }
 
       callback();
     });
   }
-}
-let customerService = new CustomerService();
 
-export { customerService };
+  login(username, password, callback) {
+    connection.query('SELECT * FROM Users WHERE (username=? AND password=?)', [username, password], (error, result) => {
+      if (error) throw error;
+
+      console.log(result[0]);
+
+      callback(result);
+    });
+  }
+
+  resetPassword(username, email, callback) {
+    var newPassword = Math.random().toString(36).slice(-8);
+
+    connection.query('UPDATE Users SET password=? WHERE (username=? AND email=?)', [newPassword, username, email], (error, result) => {
+      if (error) throw error;
+
+      let subject = "Password reset for " + username;
+      let text = "Your new password is: " + newPassword;
+
+      // sendMail(email, subject, text);
+
+
+      callback(result, subject, text, email);
+    });
+  }
+}
+
+let userService = new UserService();
+
+export { userService };

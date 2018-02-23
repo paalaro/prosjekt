@@ -1,106 +1,107 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Link, HashRouter, Switch, Route } from 'react-router-dom';
-import { customerService } from './services';
+import { userService } from './services';
+import { mailService } from './mail.js';
 
 class Menu extends React.Component {
   render() {
     return (
       <div>
-        Menu: <Link to='/'>Customers</Link>
+        <Link to='/login'>Login</Link> <br/>
+        <Link to='/registration'>Registration</Link>
       </div>
     );
   }
 }
 
-// Component that shows a list of all the customers
-class CustomerList extends React.Component {
-  constructor() {
-    super(); // Call React.Component constructor
-
-    this.customers = [];
-  }
-
+class Login extends React.Component {
   render() {
-    let listItems = [];
-    for(let customer of this.customers) {
-      listItems.push(
-        <li key={customer.id}>
-          <Link to={'/customer/' + customer.id}>{customer.firstName}</Link>
-          <button onClick={() => {
-            console.log('button for customer ' + customer.id + ' clicked');
-          }}>x</button>
-        </li>
-      );
-    }
-
     return (
       <div>
-        Customers:
-        <ul>{listItems}</ul>
-        New customer:
-        <div>
-          Name: <input type='text' ref='newName' />
-          City: <input type='text' ref='newCity' />
-          <button ref='newCustomerButton'>Add</button>
-        </div>
+        <input ref="username" placeholder="Type your username"></input><br/>
+        <input ref="password" placeholder="Type your password"></input><br/>
+        <button ref="login">Login</button> <br/>
+        <Link to='/forgotpassword'>Forgot password</Link> <br/>
+        <Link to='/registration'>Registration</Link> <br/>
       </div>
     );
   }
 
-  // Called after render() is called for the first time
-  componentDidMount() {
-    customerService.getCustomers((result) => {
-      this.customers = result;
-      this.forceUpdate(); // Rerender component with updated data
-    });
+  componentDidMount () {
+    this.refs.login.onclick = () => {
+      userService.login(this.refs.username.value, this.refs.password.value, (result) => {
 
-    this.refs.newCustomerButton.onclick = () => {
-      customerService.addCustomer(this.refs.newName.value, this.refs.newCity.value, (result) => {
-        this.refs.newName.value = "";
-        this.refs.newCity.value = "";
-
-        customerService.getCustomers((result) => {
-          this.customers = result;
-          this.forceUpdate(); // Rerender component with updated data
-        });
       });
-    };
+    }
   }
 }
 
-// Detailed view of one customer
-class CustomerDetails extends React.Component {
-  constructor(props) {
-    super(props); // Call React.Component constructor
+class Registration extends React.Component {
+render() {
+   return (
+     <div>
+       <Link to='/login'>Back to login</Link> <br/>
+       <input ref="fname" placeholder="Type your firstname"></input><br/>
+       <input ref="lname" placeholder="Type your lastname"></input><br/>
+       <input ref="city" placeholder="Type your city"></input><br/>
+       <input ref="adress" placeholder="Type your adress"></input><br/>
+       <input ref="post" placeholder="Type your postalnumber"></input><br/>
+       <input ref="tlf" placeholder="Type your phonenumber"></input><br/>
+       <input ref="email" placeholder="Type your email"></input><br/>
+       <input ref="username" placeholder="Type your username"></input><br/>
+       <input ref="passworde" placeholder="Type your password"></input><br/>
+       <button ref="newUserButton">Register</button>
+     </div>
+   );
+ }
 
-    this.customer = {};
+ componentDidMount () {
+   this.refs.newUserButton.onclick = () => {
+     userService.addUser(this.refs.fname.value, this.refs.lname.value, this.refs.city.value,
+       this.refs.adress.value, Number(this.refs.post.value), Number(this.refs.tlf.value), this.refs.email.value, this.refs.username.value,
+       this.refs.passworde.value, (result) => {
+         // this.refs.fname.value = "";
+         // this.refs.lname.value = "";
+         // this.refs.city.value = "";
+         // this.refs.adress.value = "";
+         // this.refs.post.value = "";
+         // this.refs.tlf.value = "";
+         // this.refs.email.value = "";
+         // this.refs.username.value = "";
+         // this.refs.passworde.value = "";
+       });
+   }
+ }
 
-    // The customer id from path is stored in props.match.params.customerId
-    this.id = props.match.params.customerId;
-  }
+    // componentDidMount () {
+    //   this.refs.newUserButton.onclick = () => {
+    //     userService.addUser1(this.refs.fname, this.refs)
+    //   }
+    // }
+}
 
+class ForgotPassword extends React.Component {
   render() {
     return (
       <div>
-        Customer:
-        <ul>
-          <li>Name: {this.customer.firstName}</li>
-          <li>City: {this.customer.city}</li>
-        </ul>
+        <Link to='/login'>Back to login</Link> <br/>
+        <input ref="fpusername" placeholder="Type your username"></input><br/>
+        <input ref="fpemail" placeholder="Type your email"></input><br/>
+        <button ref="fpsubmit">Request</button>
       </div>
     );
   }
 
-  // Called after render() is called for the first time
   componentDidMount() {
-    // The customer id from path is stored in props.match.params.customerId
-    customerService.getCustomer(this.id, (result) => {
-      this.customer = result;
-      this.forceUpdate(); // Rerender component with updated data
-    });
+    this.refs.fpsubmit.onclick = () => {
+      userService.resetPassword(this.refs.fpusername.value, this.refs.fpemail.value, (result, subject, text, email) => {
+        mailService.sendMail(email, subject, text);
+      });
+    }
   }
 }
+
 
 // The Route-elements define the different pages of the application
 // through a path and which component should be used for the path.
@@ -113,8 +114,9 @@ ReactDOM.render((
     <div>
       <Menu />
       <Switch>
-        <Route exact path='/' component={CustomerList} />
-        <Route exact path='/customer/:customerId' component={CustomerDetails} />
+        <Route exact path='/registration' component={Registration} />
+        <Route exact path='/login' component={Login} />
+        <Route exact path='/forgotpassword' component={ForgotPassword} />
       </Switch>
     </div>
   </HashRouter>
