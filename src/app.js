@@ -4,10 +4,9 @@ import { Link, HashRouter, Switch, Route } from 'react-router-dom';
 import { userService } from './services';
 import { mailService } from './mail';
 import { styles } from './styles';
+import { Redirect } from 'react-router';
 
-let visning = 'login';
-
-console.log(styles);
+let view = 'login';
 
 class Menu extends React.Component {
   render() {
@@ -28,6 +27,7 @@ class Login extends React.Component {
         <input ref="password" placeholder="Type your password" type="password"></input><br/>
         <button ref="login">Login</button> <br/>
         <Link to='/forgotpassword'>Forgot password</Link> <br/>
+        // <Link to={'/loggedin/' + 27}>Logged In</Link>
       </div>
     );
   }
@@ -36,6 +36,11 @@ class Login extends React.Component {
     this.refs.login.onclick = () => {
       userService.login(this.refs.username.value, this.refs.password.value, (result) => {
         console.log('Logged in as ' + result.firstName + ' ' + result.lastName);
+
+        // this.props.history.push('/loggedin/' + result.id);
+        // <Redirect from='/login' to='/loggedin' />
+        <Redirect push to={'/loggedin/' + result.id} />
+
       });
     }
   }
@@ -68,15 +73,7 @@ render() {
      userService.addUser(this.refs.fname.value, this.refs.lname.value, this.refs.city.value,
        this.refs.adress.value, Number(this.refs.post.value), Number(this.refs.tlf.value), this.refs.email.value, this.refs.username.value,
        this.refs.password1.value, (result) => {
-         // this.refs.fname.value = "";
-         // this.refs.lname.value = "";
-         // this.refs.city.value = "";
-         // this.refs.adress.value = "";
-         // this.refs.post.value = "";
-         // this.refs.tlf.value = "";
-         // this.refs.email.value = "";
-         // this.refs.username.value = "";
-         // this.refs.passworde.value = "";
+
        });
    }
  }
@@ -104,12 +101,27 @@ class ForgotPassword extends React.Component {
 }
 
 class LoggedIn extends React.Component {
-  render(user) {
+  constructor(props) {
+    super(props);
+
+    this.user = {};
+
+    this.id = props.match.params.userId;
+  }
+
+  render() {
     return(
       <div>
-        <h5>Du er logget inn som {}</h5>
+        <h5>Du er logget inn som { this.user.firstName + this.user.lastName }</h5>
       </div>
     );
+  }
+
+  componentDidMount() {
+    userService.getUser(this.id, (result) => {
+      this.user = result;
+      this.forceUpdate();
+    });
   }
 }
 
@@ -119,20 +131,34 @@ class LoggedIn extends React.Component {
 // path='/customer/:customerId' component={CustomerDetails}
 // means that the path /customer/5 will show the CustomerDetails
 // with props.match.params.customerId set to 5.
-ReactDOM.render((
-  <HashRouter>
-    <div>
-    if (visning == 'login') {
-      <Menu />
-      <Switch>
-        <Route exact path='/registration' component={Registration} />
-        <Route exact path='/login' component={Login} />
-        <Route exact path='/forgotpassword' component={ForgotPassword} />
-      </Switch>
-    }
-    else if (visning == 'loggedin') {
-      <LoggedIn />
-    }
-    </div>
-  </HashRouter>
-), document.getElementById('root'));
+
+
+  ReactDOM.render((
+    <HashRouter>
+      <div>
+        <Menu />
+        <Switch>
+          <Route exact path='/registration' component={Registration} />
+          <Route exact path='/login' component={Login} />
+          <Route exact path='/forgotpassword' component={ForgotPassword} />
+          <Route exact path='/loggedin/:userId' component={LoggedIn} />
+
+        </Switch>
+      </div>
+    </HashRouter>
+  ), document.getElementById('root'));
+
+
+// else if(view === 'loggedin') {
+//   ReactDOM.render((
+//     <HashRouter>
+//       <div>
+//         <LoggedIn />
+//         <Switch>
+//           <Route exact path='/loggedin/:userId' component={LoggedIn} />
+//         </Switch>
+//       </div>
+//     </HashRouter>
+//   ))
+//
+// }
