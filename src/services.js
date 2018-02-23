@@ -76,9 +76,6 @@ class UserService {
       let subject = "Password reset for " + username;
       let text = "Your new password is: " + newPassword;
 
-      // sendMail(email, subject, text);
-
-
       callback(result, subject, text, email);
     });
   }

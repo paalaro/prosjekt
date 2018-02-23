@@ -2,15 +2,18 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Link, HashRouter, Switch, Route } from 'react-router-dom';
 import { userService } from './services';
-import { mailService } from './mail.js';
+import { mailService } from './mail';
+import { nbul } from './styles';
+import { nbil } from './styles';
+import { nbilLink } from './styles';
 
 class Menu extends React.Component {
   render() {
     return (
-      <div>
-        <Link to='/login'>Login</Link> <br/>
-        <Link to='/registration'>Registration</Link>
-      </div>
+      <ul style={nbul}>
+        <li style={nbil}><Link to='/login' style={nbilLink}>Login</Link></li>
+        <li style={nbil}><Link to='/registration' style={nbilLink}>Registration</Link></li>
+      </ul>
     );
   }
 }
@@ -20,10 +23,9 @@ class Login extends React.Component {
     return (
       <div>
         <input ref="username" placeholder="Type your username"></input><br/>
-        <input ref="password" placeholder="Type your password"></input><br/>
+        <input ref="password" placeholder="Type your password" type="password"></input><br/>
         <button ref="login">Login</button> <br/>
         <Link to='/forgotpassword'>Forgot password</Link> <br/>
-        <Link to='/registration'>Registration</Link> <br/>
       </div>
     );
   }
@@ -41,7 +43,6 @@ class Registration extends React.Component {
 render() {
    return (
      <div>
-       <Link to='/login'>Back to login</Link> <br/>
        <input ref="fname" placeholder="Type your firstname"></input><br/>
        <input ref="lname" placeholder="Type your lastname"></input><br/>
        <input ref="city" placeholder="Type your city"></input><br/>
@@ -73,12 +74,6 @@ render() {
        });
    }
  }
-
-    // componentDidMount () {
-    //   this.refs.newUserButton.onclick = () => {
-    //     userService.addUser1(this.refs.fname, this.refs)
-    //   }
-    // }
 }
 
 class ForgotPassword extends React.Component {
@@ -101,7 +96,6 @@ class ForgotPassword extends React.Component {
     }
   }
 }
-
 
 // The Route-elements define the different pages of the application
 // through a path and which component should be used for the path.
