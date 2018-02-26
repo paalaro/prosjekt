@@ -49,16 +49,29 @@ class Login extends React.Component {
   componentDidMount () {
     this.refs.login.onclick = () => {
       userService.login(this.refs.username.value, this.refs.password.value, (result) => {
-        console.log('Logged in as ' + result.firstName + ' ' + result.lastName);
-        
-
+        if (result == undefined) {
+          alert("Feil!")
+        } else {
+          ReactDOM.render(
+            <HashRouter>
+              <div>
+                <Menu />
+                <Switch>
+                  <Route exact path='/home/:userId' component={Home} />
+                  <'/home/result.id' />
+                </Switch>
+              </div>
+            </HashRouter>
+            , document.getElementById('root'));
+          console.log('Logged in as ' + result.firstName + ' ' + result.lastName);
+        }
       });
     }
   }
 }
 
 class Registration extends React.Component {
-render() {
+  render() {
    return (
      <div>
        <input ref="fname" placeholder="Type your firstname"></input><br/>
