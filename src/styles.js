@@ -19,6 +19,10 @@ class Styles {
       padding: '14px 16px',
       textAlign: 'none'
     }
+    // 
+    // this.nbLinkActive = {
+    //
+    // }
   }
 }
 

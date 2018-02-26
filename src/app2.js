@@ -20,34 +20,26 @@ class Menu extends React.Component {
   }
 }
 
-class Login extends React.Component {
-  constructor() {
-    super();
-    // super(props);
-    // this.handleLogin = this.handleLogin.bind(this);
+export default class Login extends React.Component {
+  constructor(props) {
+    super(props);
+    this.handleLogin = this.handleLogin.bind(this);
   }
 
-  // handleLogin(event) {
-  //   event.preventDefault();
-  //   this.props.history.push('/loggedin');
-  // }
+  handleLogin() {
+
+  }
 
   render() {
     return (
-        <div>
-          <input ref='username' type='text' placeholder='Username' /> <br />
-          <input ref='password' type='password' placeholder='Password' /> <br />
-          <button ref='login'>Login</button>
-        </div>
+      <div>
+        <form onSubmit={this.handleLogin}>
+          <input ref="username" placeholder="Type your username"></input><br/>
+          <input ref="password" placeholder="Type your password" type="password"></input><br/>
+          <button ref="login">Login</button> <br/>
+        </form>
+      </div>
     );
-
-    // return(
-    //   <div>
-    //     <form onSubmit={this.handleLogin}>
-    //       <input type='submit' value='Login' />
-    //     </form>
-    //   </div>
-    // );
   }
 
   componentDidMount () {
@@ -55,12 +47,12 @@ class Login extends React.Component {
       userService.login(this.refs.username.value, this.refs.password.value, (result) => {
         console.log('Logged in as ' + result.firstName + ' ' + result.lastName);
 
-  //       // this.props.history.push('/loggedin/' + result.id);
-  //       // <Redirect from='/login' to='/loggedin' />
-  //       // <Redirect push to={'/loggedin/' + result.id} />
-  //       // browserHistory.push('/loggedin/' + result.id);
-  //       this.props.history.push('/loggedin' + result.id);
-  //
+        // this.props.history.push('/loggedin/' + result.id);
+        // <Redirect from='/login' to='/loggedin' />
+        // <Redirect push to={'/loggedin/' + result.id} />
+        // browserHistory.push('/loggedin/' + result.id);
+        this.props.history.push('/loggedin' + result.id);
+
       });
     }
   }

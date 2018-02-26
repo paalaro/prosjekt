@@ -57,6 +57,14 @@ class UserService {
     });
   }
 
+  getUserbyMail(mail, callback) {
+    connection.query('SELECT * FROM Users WHERE email=?', [mail], (error, result) => {
+      if (error) throw error;
+
+      callback(result[0]);
+    })
+  }
+
   login(username, password, callback) {
     connection.query('SELECT * FROM Users WHERE (username=? AND password=?)', [username, password], (error, result) => {
       if (error) throw error;
@@ -67,10 +75,10 @@ class UserService {
     });
   }
 
-  resetPassword(username, email, callback) {
+  resetPassword(email, username, callback) {
     var newPassword = Math.random().toString(36).slice(-8);
 
-    connection.query('UPDATE Users SET password=? WHERE (username=? AND email=?)', [newPassword, username, email], (error, result) => {
+    connection.query('UPDATE Users SET password=? WHERE email=?', [newPassword, email], (error, result) => {
       if (error) throw error;
 
       let subject = "Password reset for " + username;
@@ -78,6 +86,14 @@ class UserService {
 
       callback(result, subject, text, email);
     });
+  }
+
+  changePassword(id, newpw, callback) {
+    connection.query('UPDATE Users SET password=? WHERE id=?', [newpw, id], (error,result) => {
+      if (error) throw error;
+
+      callback(result);
+    })
   }
 }
 
