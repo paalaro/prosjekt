@@ -3,14 +3,14 @@ import ReactDOM from 'react-dom';
 import { Link, HashRouter, Switch, Route } from 'react-router-dom';
 import { userService } from './services';
 import { mailService } from './mail';
-import './style.css';
+import { styles } from './styles';
 
 class Menu extends React.Component {
   render() {
     return (
-      <ul className="navbar-ul">
-        <li className="navbar-il"><Link to='/login' className="navbar-link">Login</Link></li>
-        <li className="navbar-il"><Link to='/registration' className="navbar-link">Registration</Link></li>
+      <ul style={styles.nbul}>
+        <li style={styles.nbil}><Link to='/login' style={styles.nbLink}>Login</Link></li>
+        <li style={styles.nbil}><Link to='/registration' style={styles.nbLink}>Registration</Link></li>
       </ul>
     );
   }
@@ -19,8 +19,8 @@ class Menu extends React.Component {
 class Loggedin extends React.Component {
   render() {
     return (
-      <ul className="navbar-ul">
-        <li className="navbar-il"><Link to='/login' className="navbar-link">Login</Link></li>
+      <ul style={styles.nbul}>
+        <li style={styles.nbil}><Link to='/login' style={styles.nbLink}>Login</Link></li>
       </ul>
     );
   }
