@@ -4,10 +4,6 @@ import { Link, HashRouter, Switch, Route } from 'react-router-dom';
 import { userService } from './services';
 import { mailService } from './mail';
 import { styles } from './styles';
-import {BrowserRouter as Router} from 'react-router-dom';
-import {PropTypes} from 'react';
-
-let view = 'login';
 
 class Menu extends React.Component {
   render() {
