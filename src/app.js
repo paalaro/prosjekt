@@ -199,7 +199,7 @@ class LoggedIn extends React.Component {
   ), document.getElementById('root'));
 
 
-// else if(view === 'loggedin') {
+
 //   ReactDOM.render((
 //     <HashRouter>
 //       <div>
@@ -210,5 +210,3 @@ class LoggedIn extends React.Component {
 //       </div>
 //     </HashRouter>
 //   ))
-//
-// }
