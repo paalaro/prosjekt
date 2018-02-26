@@ -17,9 +17,8 @@ class Menu extends React.Component {
 }
 
 class Login extends React.Component {
-  constructor() {
-    super();
-    // super(props);
+  constructor(props) {
+    super(props);
     // this.handleLogin = this.handleLogin.bind(this);
   }
 
@@ -121,7 +120,7 @@ class ForgotPassword extends React.Component {
 }
 
 class LoggedIn extends React.Component {
-  constructor(props) {
+  constructor() {
     super(props);
 
     this.user = {};
