@@ -24,7 +24,7 @@ class Login extends React.Component {
 
   // handleLogin(event) {
   //   event.preventDefault();
-  //   this.props.history.push('/loggedin');
+  //   this.props.history.push('/home');
   // }
 
   render() {
@@ -32,7 +32,8 @@ class Login extends React.Component {
         <div>
           <input ref='username' type='text' placeholder='Username' /> <br />
           <input ref='password' type='password' placeholder='Password' /> <br />
-          <button ref='login'>Login</button>
+          <button ref='login'>Login</button> <br />
+          <Link to='/forgotpassword'>Forgot password</Link>
         </div>
     );
 
@@ -49,13 +50,8 @@ class Login extends React.Component {
     this.refs.login.onclick = () => {
       userService.login(this.refs.username.value, this.refs.password.value, (result) => {
         console.log('Logged in as ' + result.firstName + ' ' + result.lastName);
+        
 
-  //       // this.props.history.push('/loggedin/' + result.id);
-  //       // <Redirect from='/login' to='/loggedin' />
-  //       // <Redirect push to={'/loggedin/' + result.id} />
-  //       // browserHistory.push('/loggedin/' + result.id);
-  //       this.props.history.push('/loggedin' + result.id);
-  //
       });
     }
   }
@@ -119,7 +115,7 @@ class ForgotPassword extends React.Component {
   }
 }
 
-class LoggedIn extends React.Component {
+class Home extends React.Component {
   constructor() {
     super(props);
 
@@ -186,7 +182,7 @@ class LoggedIn extends React.Component {
           <Route exact path='/registration' component={Registration} />
           <Route exact path='/login' component={Login} />
           <Route exact path='/forgotpassword' component={ForgotPassword} />
-          <Route exact path='/loggedin/:userId' component={LoggedIn} />
+          <Route exact path='/home/:userId' component={Home} />
           <Login />
         </Switch>
       </div>
@@ -198,9 +194,9 @@ class LoggedIn extends React.Component {
 //   ReactDOM.render((
 //     <HashRouter>
 //       <div>
-//         <LoggedIn />
+//         <Home />
 //         <Switch>
-//           <Route exact path='/loggedin/:userId' component={LoggedIn} />
+//           <Route exact path='/home/:userId' component={Home} />
 //         </Switch>
 //       </div>
 //     </HashRouter>
