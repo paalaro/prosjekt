@@ -20,7 +20,9 @@ class Loggedin extends React.Component {
   render() {
     return (
       <ul style={styles.nbul}>
-        <li style={styles.nbil}><Link to='/login' style={styles.nbLink}>Login</Link></li>
+        <li style={styles.nbil}><Link to='/events' style={styles.nbLink}>Arrangementer</Link></li>
+        <li style={styles.nbil}><Link to='/skills' style={styles.nbLink}>Kompetanse</Link></li>
+        <li style={styles.nbil}><Link to='/profile' style={styles.nbLink}>Min profil</Link></li>
       </ul>
     );
   }
@@ -29,13 +31,7 @@ class Loggedin extends React.Component {
 class Login extends React.Component {
   constructor(props) {
     super(props);
-    // this.handleLogin = this.handleLogin.bind(this);
   }
-
-  // handleLogin(event) {
-  //   event.preventDefault();
-  //   this.props.history.push('/home');
-  // }
 
   render() {
     return (
@@ -46,14 +42,6 @@ class Login extends React.Component {
           <Link to='/forgotpassword'>Forgot password</Link>
         </div>
     );
-
-    // return(
-    //   <div>
-    //     <form onSubmit={this.handleLogin}>
-    //       <input type='submit' value='Login' />
-    //     </form>
-    //   </div>
-    // );
   }
 
   componentDidMount () {
@@ -66,17 +54,7 @@ class Login extends React.Component {
             userId: result.id,
             name: result.firstName,
           }
-          ReactDOM.render(
-            <HashRouter>
-              <div>
-                <Loggedin />
-                <Switch>
-                  <Route exact path='/home/:userId' component={Home} />
-                  <Home userId={home.userId} />
-                </Switch>
-              </div>
-            </HashRouter>
-            , document.getElementById('root'));
+          renderLogin(home);
           console.log('Logged in as ' + result.firstName + ' ' + result.lastName);
         }
       });
@@ -201,31 +179,33 @@ class Home extends React.Component {
 // means that the path /customer/5 will show the CustomerDetails
 // with props.match.params.customerId set to 5.
 
+ReactDOM.render((
+  <HashRouter>
+    <div>
+      <Menu />
+      <Switch>
+        <Route exact path='/registration' component={Registration} />
+        <Route exact path='/login' component={Login} />
+        <Route exact path='/forgotpassword' component={ForgotPassword} />
+        <Login />
+      </Switch>
+    </div>
+  </HashRouter>
+), document.getElementById('root'));
 
+function renderLogin(home) {
   ReactDOM.render((
     <HashRouter>
       <div>
-        <Menu />
+        <Loggedin />
         <Switch>
-          <Route exact path='/registration' component={Registration} />
-          <Route exact path='/login' component={Login} />
-          <Route exact path='/forgotpassword' component={ForgotPassword} />
-          <Route exact path='/home/:userId' component={Home} />
-          <Login />
+          <Home userId={home.userId} />
         </Switch>
       </div>
     </HashRouter>
   ), document.getElementById('root'));
+}
 
-
-
-//   ReactDOM.render((
-//     <HashRouter>
-//       <div>
-//         <Home />
-//         <Switch>
-//           <Route exact path='/home/:userId' component={Home} />
-//         </Switch>
-//       </div>
-//     </HashRouter>
-//   ))
+// <Route exact path='/profile' component={Profile} />
+// <Route exact path='/skills' component={Skills} />
+// <Route exact path='/events' component={Events} />
