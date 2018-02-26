@@ -3,14 +3,24 @@ import ReactDOM from 'react-dom';
 import { Link, HashRouter, Switch, Route } from 'react-router-dom';
 import { userService } from './services';
 import { mailService } from './mail';
-import { styles } from './styles';
+import './style.css';
 
 class Menu extends React.Component {
   render() {
     return (
-      <ul style={styles.nbul}>
-        <li style={styles.nbil}><Link to='/login' style={styles.nbLink}>Login</Link></li>
-        <li style={styles.nbil}><Link to='/registration' style={styles.nbLink}>Registration</Link></li>
+      <ul className="navbar-ul">
+        <li className="navbar-il"><Link to='/login' className="navbar-link">Login</Link></li>
+        <li className="navbar-il"><Link to='/registration' className="navbar-link">Registration</Link></li>
+      </ul>
+    );
+  }
+}
+
+class Loggedin extends React.Component {
+  render() {
+    return (
+      <ul className="navbar-ul">
+        <li className="navbar-il"><Link to='/login' className="navbar-link">Login</Link></li>
       </ul>
     );
   }
@@ -52,13 +62,17 @@ class Login extends React.Component {
         if (result == undefined) {
           alert("Feil!")
         } else {
+          let home = {
+            userId: result.id,
+            name: result.firstName,
+          }
           ReactDOM.render(
             <HashRouter>
               <div>
-                <Menu />
+                <Loggedin />
                 <Switch>
                   <Route exact path='/home/:userId' component={Home} />
-                  <'/home/result.id' />
+                  <Home userId={home.userId} />
                 </Switch>
               </div>
             </HashRouter>
@@ -129,12 +143,12 @@ class ForgotPassword extends React.Component {
 }
 
 class Home extends React.Component {
-  constructor() {
+  constructor(props) {
     super(props);
 
     this.user = {};
 
-    this.id = props.match.params.userId;
+    this.id = props.userId;
   }
 
   render() {
@@ -154,6 +168,7 @@ class Home extends React.Component {
     userService.getUser(this.id, (result) => {
       this.user = result;
       this.forceUpdate();
+      console.log(this.user);
     });
 
     this.refs.submitnewpw.onclick = () => {
