@@ -5,6 +5,8 @@ import { userService } from './services';
 import { mailService } from './mail';
 import { styles } from './styles';
 
+let user = {};
+
 class Menu extends React.Component {
   render() {
     return (
@@ -37,7 +39,7 @@ class Loggedin extends React.Component {
 
   componentDidMount() {
     userService.getUser(this.id, (result) => {
-      this.user = result;
+      user = result;
       this.forceUpdate();
     });
   }
@@ -186,7 +188,7 @@ class Profile extends React.Component {
           Email: {this.user.email} <br />
           Adress: {this.user.adress + ', ' + this.user.postalnumber + ' ' + this.user.city} <br />
           <br />
-          <Link to={'/editProfile/' + this.id}><button ref='editUser'>Edit</button></Link>
+          <Link to={'/editProfile/' + this.userId}><button ref='editUser'>Edit</button></Link>
 
           <br />
           <br />
@@ -241,14 +243,20 @@ class EditProfile extends React.Component {
     this.id = props.match.params.userId;
   }
 
-  onChangehandler() {
 
-  }
 
   render() {
     return(
       <div>
-        <input ref='editFirstName' value={this.user.firstName} onChange=this.onChangehandler() />
+        <input ref='editFirstName' value={this.user.firstName} />
+        <input ref='editLastName' value={this.user.lastName} />
+        <br />
+        <input ref='editPhone' value={this.user.phonenumber} />
+        <input ref='editEmail' value={this.user.email} />
+        <br />
+        <input ref='editAdress' value={this.user.adress} />
+        <input ref='editPostalNumber' value={this.user.postalnumber} />
+        <input ref='editCity' value={this.user.city} />
       </div>
     );
   }
@@ -263,6 +271,7 @@ class EditProfile extends React.Component {
 
 class Events extends React.Component {
   render() {
+    console.log(user);
     return(
       <div>
         Test
