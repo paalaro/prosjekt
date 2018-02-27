@@ -69,8 +69,6 @@ class UserService {
     connection.query('SELECT * FROM Users WHERE (username=? AND password=?)', [username, password], (error, result) => {
       if (error) throw error;
 
-      console.log(result[0]);
-
       callback(result[0]);
     });
   }

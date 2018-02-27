@@ -17,14 +17,29 @@ class Menu extends React.Component {
 }
 
 class Loggedin extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.user = {};
+
+    this.id = props.userId;
+  }
+
   render() {
     return (
       <ul style={styles.nbul}>
         <li style={styles.nbil}><Link to='/events' style={styles.nbLink}>Arrangementer</Link></li>
         <li style={styles.nbil}><Link to='/skills' style={styles.nbLink}>Kompetanse</Link></li>
-        <li style={styles.nbil}><Link to='/profile' style={styles.nbLink}>Min profil</Link></li>
+        <li style={styles.nbil}><Link to={'/profile/' + this.id} style={styles.nbLink}>Min profil</Link></li>
       </ul>
     );
+  }
+
+  componentDidMount() {
+    userService.getUser(this.id, (result) => {
+      this.user = result;
+      this.forceUpdate();
+    });
   }
 }
 
@@ -49,13 +64,15 @@ class Login extends React.Component {
       userService.login(this.refs.username.value, this.refs.password.value, (result) => {
         if (result == undefined) {
           alert("Feil!")
-        } else {
-          let home = {
+        }
+        else {
+          let user = {
             userId: result.id,
-            name: result.firstName,
+            // name: result.firstName,
           }
-          renderLogin(home);
-          console.log('Logged in as ' + result.firstName + ' ' + result.lastName);
+
+          renderLogin(user);
+
         }
       });
     }
@@ -112,9 +129,14 @@ class ForgotPassword extends React.Component {
   componentDidMount() {
     this.refs.fpsubmit.onclick = () => {
       userService.getUserbyMail(this.refs.fpemail.value, (result) => {
-        userService.resetPassword(result.email, result.username, (result, subject, text, email) => {
-          mailService.sendMail(email, subject, text);
-        });
+        if (result == undefined) {
+          alert('No users with this email adress.');
+        }
+        else {
+          userService.resetPassword(result.email, result.username, (result, subject, text, email) => {
+            mailService.sendMail(email, subject, text);
+          });
+        }
       });
     }
   }
@@ -133,11 +155,6 @@ class Home extends React.Component {
     return(
       <div>
         <h5>Du er logget inn som { this.user.firstName + this.user.lastName }</h5>
-        Change password: <br/>
-        <input ref='oldpw' placeholder='Current password' type='password'></input> <br/>
-        <input ref='newpw' placeholder='New password' type='password'></input> <br/>
-        <input ref='confirmnewpw' placeholder='Confirm new password' type='password'></input> <br/>
-        <button ref='submitnewpw'>Change password</button>
       </div>
     );
   }
@@ -146,7 +163,50 @@ class Home extends React.Component {
     userService.getUser(this.id, (result) => {
       this.user = result;
       this.forceUpdate();
-      console.log(this.user);
+    });
+  }
+}
+
+class Profile extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.user = {};
+
+    this.id = props.match.params.userId;
+  }
+
+  render() {
+    return(
+      <div>
+        <div>
+          <br />
+          Name: {this.user.firstName + ' ' + this.user.lastName} <br />
+          Phone: {this.user.phonenumber} <br />
+          Email: {this.user.email} <br />
+          Adress: {this.user.adress + ', ' + this.user.postalnumber + ' ' + this.user.city} <br />
+          <br />
+          <Link to={'/editProfile/' + this.id}><button ref='editUser'>Edit</button></Link>
+
+          <br />
+          <br />
+          <hr />
+        </div>
+        <div>
+          Change password: <br/>
+          <input ref='oldpw' placeholder='Current password' type='password'></input> <br/>
+          <input ref='newpw' placeholder='New password' type='password'></input> <br/>
+          <input ref='confirmnewpw' placeholder='Confirm new password' type='password'></input> <br/>
+          <button ref='submitnewpw'>Change password</button>
+        </div>
+      </div>
+    );
+  }
+
+  componentDidMount() {
+    userService.getUser(this.id, (result) => {
+      this.user = result;
+      this.forceUpdate();
     });
 
     this.refs.submitnewpw.onclick = () => {
@@ -172,6 +232,57 @@ class Home extends React.Component {
   }
 }
 
+class EditProfile extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.user = {};
+
+    this.id = props.match.params.userId;
+  }
+
+  onChangehandler() {
+
+  }
+
+  render() {
+    return(
+      <div>
+        <input ref='editFirstName' value={this.user.firstName} onChange=this.onChangehandler() />
+      </div>
+    );
+  }
+
+  componentDidMount() {
+    userService.getUser(this.id, (result) => {
+      this.user = result;
+      this.forceUpdate();
+    });
+  }
+}
+
+class Events extends React.Component {
+  render() {
+    return(
+      <div>
+        Test
+      </div>
+    );
+  }
+}
+
+class Skills extends React.Component {
+  render() {
+    return(
+      <div>
+        Skills
+      </div>
+    );
+  }
+}
+
+
+
 // The Route-elements define the different pages of the application
 // through a path and which component should be used for the path.
 // The path can include a variable, for instance
@@ -193,13 +304,17 @@ ReactDOM.render((
   </HashRouter>
 ), document.getElementById('root'));
 
-function renderLogin(home) {
+function renderLogin(user) {
   ReactDOM.render((
     <HashRouter>
       <div>
-        <Loggedin />
+        <Loggedin userId={user.userId}/>
         <Switch>
-          <Home userId={home.userId} />
+          <Route exact path='/profile/:userId' component={Profile} />
+          <Route exact path='/events' component={Events} />
+          <Route exact path='/skills' component={Skills} />
+          <Route exact path='/editProfile/:userId' component={EditProfile} />
+          <Home userId={user.userId} />
         </Switch>
       </div>
     </HashRouter>
