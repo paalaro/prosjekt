@@ -238,34 +238,46 @@ class EditProfile extends React.Component {
   constructor(props) {
     super(props);
 
-    this.user = {};
+    this.user = user;
 
-    this.id = props.match.params.userId;
+    // this.id = props.match.params.userId;
+
+    this.state = {
+      fornavn: this.user.firstName,
+      etternavn: this.user.lastName,
+      tlf: this.user.phonenumber,
+      mail: this.user.mail,
+      adresse: this.user.adress,
+      postnr: this.user.postalnumber,
+      sted: this.user.city
+    };
   }
 
-
+  onChange(event) {
+    this.setState(fornavn: {event.target.value});
+  }
 
   render() {
     return(
       <div>
-        <input ref='editFirstName' value={this.user.firstName} />
-        <input ref='editLastName' value={this.user.lastName} />
+        <input ref='editFirstName' value={this.state.fornavn} name='fornavn' onChange={this.onChange.bind(event)} />
+        <input ref='editLastName' value={this.state.etternavn} name='etternavn' onChange={this.onChange.bind(event)} />
         <br />
-        <input ref='editPhone' value={this.user.phonenumber} />
-        <input ref='editEmail' value={this.user.email} />
+        <input ref='editPhone' value={this.state.tlf} name='tlf' onChange={this.onChange} />
+        <input ref='editEmail' value={this.state.mail} name='mail' onChange={this.onChange} />
         <br />
-        <input ref='editAdress' value={this.user.adress} />
-        <input ref='editPostalNumber' value={this.user.postalnumber} />
-        <input ref='editCity' value={this.user.city} />
+        <input ref='editAdress' value={this.state.adresse} name='adresse' onChange={this.onChange} />
+        <input ref='editPostalNumber' value={this.state.postnr} name='postnr' onChange={this.onChange} />
+        <input ref='editCity' value={this.state.sted} name='sted' onChange={this.onChange} />
       </div>
     );
   }
 
   componentDidMount() {
-    userService.getUser(this.id, (result) => {
-      this.user = result;
-      this.forceUpdate();
-    });
+    // userService.getUser(this.id, (result) => {
+    //   this.user = result;
+    //   this.forceUpdate();
+    // });
   }
 }
 
