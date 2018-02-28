@@ -3,16 +3,15 @@ import ReactDOM from 'react-dom';
 import { Link, HashRouter, Switch, Route } from 'react-router-dom';
 import { userService } from './services';
 import { mailService } from './mail';
-import { styles } from './styles';
 
 let user = {};
 
 class Menu extends React.Component {
   render() {
     return (
-      <ul style={styles.nbul}>
-        <li style={styles.nbil}><Link to='/login' style={styles.nbLink}>Login</Link></li>
-        <li style={styles.nbil}><Link to='/registration' style={styles.nbLink}>Registration</Link></li>
+      <ul className="navbar-ul">
+        <li className="navbar-li"><Link to='/login' className="navbar-link">Login</Link></li>
+        <li className="navbar-li"><Link to='/registration' className="navbar-link">Registration</Link></li>
       </ul>
     );
   }
@@ -29,10 +28,10 @@ class Loggedin extends React.Component {
 
   render() {
     return (
-      <ul style={styles.nbul}>
-        <li style={styles.nbil}><Link to='/events' style={styles.nbLink}>Arrangementer</Link></li>
-        <li style={styles.nbil}><Link to='/skills' style={styles.nbLink}>Kompetanse</Link></li>
-        <li style={styles.nbil}><Link to={'/profile/' + this.id} style={styles.nbLink}>Min profil</Link></li>
+      <ul className="navbar-ul">
+        <li className="navbar-li"><Link to='/events' className="navbar-link">Events</Link></li>
+        <li className="navbar-li"><Link to='/skills' className="navbar-link">Skills</Link></li>
+        <li className="navbar-li"><Link to={'/profile/' + this.id} className="navbar-link">My Profile</Link></li>
       </ul>
     );
   }
@@ -189,20 +188,93 @@ class Profile extends React.Component {
           Adress: {this.user.adress + ', ' + this.user.postalnumber + ' ' + this.user.city} <br />
           <br />
           <Link to={'/editProfile/' + this.userId}><button ref='editUser'>Edit</button></Link>
+          <Link to={'/changePassword/' + this.userId}><button ref='changePassword'>Change Password</button></Link>
 
           <br />
           <br />
           <hr />
         </div>
-        <div>
-          Change password: <br/>
-          <input ref='oldpw' placeholder='Current password' type='password'></input> <br/>
-          <input ref='newpw' placeholder='New password' type='password'></input> <br/>
-          <input ref='confirmnewpw' placeholder='Confirm new password' type='password'></input> <br/>
-          <button ref='submitnewpw'>Change password</button>
-        </div>
+
       </div>
     );
+  }
+
+  componentDidMount() {
+    userService.getUser(this.id, (result) => {
+      this.user = result;
+      this.forceUpdate();
+    });
+  }
+}
+
+class EditProfile extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.user = user;
+
+    // this.id = props.match.params.userId;
+
+    this.state = {
+      fornavn: this.user.firstName,
+      etternavn: this.user.lastName,
+      tlf: this.user.phonenumber,
+      mail: this.user.mail,
+      adresse: this.user.adress,
+      postnr: this.user.postalnumber,
+      sted: this.user.city
+    };
+  }
+
+<<<<<<< HEAD
+  onChange() {
+    
+=======
+  onChange(event) {
+    // this.setState(fornavn: {event.target.value});
+>>>>>>> 6fe27126121e3eb5f66658d40382bba9c35a8262
+  }
+
+  render() {
+    return(
+      <div>
+        <input ref='editFirstName' value={this.state.fornavn} name='fornavn' onChange={this.onChange} />
+        <input ref='editLastName' value={this.state.etternavn} name='etternavn' onChange={this.onChange.bind(event)} />
+        <br />
+        <input ref='editPhone' value={this.state.tlf} name='tlf' onChange={this.onChange} />
+        <input ref='editEmail' value={this.state.mail} name='mail' onChange={this.onChange} />
+        <br />
+        <input ref='editAdress' value={this.state.adresse} name='adresse' onChange={this.onChange} />
+        <input ref='editPostalNumber' value={this.state.postnr} name='postnr' onChange={this.onChange} />
+        <input ref='editCity' value={this.state.sted} name='sted' onChange={this.onChange} />
+      </div>
+    );
+  }
+
+  componentDidMount() {
+    // userService.getUser(this.id, (result) => {
+    //   this.user = result;
+    //   this.forceUpdate();
+    // });
+  }
+}
+
+class ChangePassword extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.user = user;
+  }
+  render() {
+    return(
+      <div>
+        Change password: <br/>
+        <input ref='oldpw' placeholder='Current password' type='password'></input> <br/>
+        <input ref='newpw' placeholder='New password' type='password'></input> <br/>
+        <input ref='confirmnewpw' placeholder='Confirm new password' type='password'></input> <br/>
+        <button ref='submitnewpw'>Change password</button>
+      </div>
+    )
   }
 
   componentDidMount() {
@@ -234,53 +306,6 @@ class Profile extends React.Component {
   }
 }
 
-class EditProfile extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.user = user;
-
-    // this.id = props.match.params.userId;
-
-    this.state = {
-      fornavn: this.user.firstName,
-      etternavn: this.user.lastName,
-      tlf: this.user.phonenumber,
-      mail: this.user.mail,
-      adresse: this.user.adress,
-      postnr: this.user.postalnumber,
-      sted: this.user.city
-    };
-  }
-
-  onChange() {
-    
-  }
-
-  render() {
-    return(
-      <div>
-        <input ref='editFirstName' value={this.state.fornavn} name='fornavn' onChange={this.onChange} />
-        <input ref='editLastName' value={this.state.etternavn} name='etternavn' onChange={this.onChange.bind(event)} />
-        <br />
-        <input ref='editPhone' value={this.state.tlf} name='tlf' onChange={this.onChange} />
-        <input ref='editEmail' value={this.state.mail} name='mail' onChange={this.onChange} />
-        <br />
-        <input ref='editAdress' value={this.state.adresse} name='adresse' onChange={this.onChange} />
-        <input ref='editPostalNumber' value={this.state.postnr} name='postnr' onChange={this.onChange} />
-        <input ref='editCity' value={this.state.sted} name='sted' onChange={this.onChange} />
-      </div>
-    );
-  }
-
-  componentDidMount() {
-    // userService.getUser(this.id, (result) => {
-    //   this.user = result;
-    //   this.forceUpdate();
-    // });
-  }
-}
-
 class Events extends React.Component {
   render() {
     console.log(user);
@@ -301,8 +326,6 @@ class Skills extends React.Component {
     );
   }
 }
-
-
 
 // The Route-elements define the different pages of the application
 // through a path and which component should be used for the path.
@@ -335,13 +358,10 @@ function renderLogin(user) {
           <Route exact path='/events' component={Events} />
           <Route exact path='/skills' component={Skills} />
           <Route exact path='/editProfile/:userId' component={EditProfile} />
+          <Route exact path='/changePassword/:userId' component={ChangePassword} />
           <Home userId={user.userId} />
         </Switch>
       </div>
     </HashRouter>
   ), document.getElementById('root'));
 }
-
-// <Route exact path='/profile' component={Profile} />
-// <Route exact path='/skills' component={Skills} />
-// <Route exact path='/events' component={Events} />
