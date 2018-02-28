@@ -226,10 +226,6 @@ class EditProfile extends React.Component {
     };
   }
 
-  onChange() {
-    // this.setState(fornavn: {event.target.value});
-  }
-
   onFieldChange(fieldName) {
         return function (event) {
             this.setState({[fieldName]: event.target.value});
