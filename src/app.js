@@ -238,12 +238,12 @@ class EditProfile extends React.Component {
         <input name='firstName' value={this.state.firstName} onChange={this.onFieldChange('firstName').bind(this)} />
         <input name='lastName' value={this.state.lastName} onChange={this.onFieldChange('lastName').bind(this)} />
         <br />
-        <input name='phonenumber' value={this.state.phonenumber} onChange={this.onFieldChange('fornavn').bind(this)} />
-        <input name='email' value={this.state.email} onChange={this.onFieldChange('fornavn').bind(this)} />
+        <input name='phonenumber' value={this.state.phonenumber} onChange={this.onFieldChange('phonenumber').bind(this)} />
+        <input name='email' value={this.state.email} onChange={this.onFieldChange('email').bind(this)} />
         <br />
-        <input name='adress' value={this.state.adress} onChange={this.onFieldChange('fornavn').bind(this)} />
-        <input name='postalnumber' value={this.state.postalnumber} onChange={this.onFieldChange('fornavn').bind(this)} />
-        <input name='city' value={this.state.city} onChange={this.onFieldChange('fornavn').bind(this)} />
+        <input name='adress' value={this.state.adress} onChange={this.onFieldChange('adress').bind(this)} />
+        <input name='postalnumber' value={this.state.postalnumber} onChange={this.onFieldChange('postalnumber').bind(this)} />
+        <input name='city' value={this.state.city} onChange={this.onFieldChange('city').bind(this)} />
       </div>
     );
   }
