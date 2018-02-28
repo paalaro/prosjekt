@@ -219,7 +219,7 @@ class EditProfile extends React.Component {
       fornavn: this.user.firstName,
       etternavn: this.user.lastName,
       tlf: this.user.phonenumber,
-      mail: this.user.mail,
+      mail: this.user.email,
       adresse: this.user.adress,
       postnr: this.user.postalnumber,
       sted: this.user.city
