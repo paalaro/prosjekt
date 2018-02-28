@@ -93,6 +93,10 @@ class UserService {
       callback(result);
     })
   }
+
+  editProfile(id) {
+    
+  }
 }
 
 let userService = new UserService();
