@@ -208,12 +208,10 @@ class Profile extends React.Component {
 }
 
 class EditProfile extends React.Component {
-  constructor(props) {
-    super(props);
+  constructor() {
+    super();
 
     this.user = user;
-
-    // this.id = props.match.params.userId;
 
     this.state = {
       firstName: this.user.firstName,
@@ -239,7 +237,7 @@ class EditProfile extends React.Component {
         <input name='lastName' ref='lastName' value={this.state.lastName} onChange={this.onFieldChange('lastName').bind(this)} />
         <br />
         <input name='phonenumber' ref='phonenumber' value={this.state.phonenumber} onChange={this.onFieldChange('phonenumber').bind(this)} />
-        <input name='email' ref='email' type='email' value={this.state.email} onChange={this.onFieldChange('email').bind(this)} />
+        <input name='email' ref='email' value={this.state.email} onChange={this.onFieldChange('email').bind(this)} />
         <br />
         <input name='adress' ref='adress' value={this.state.adress} onChange={this.onFieldChange('adress').bind(this)} />
         <input name='postalnumber' ref='postalnumber' type='number' value={this.state.postalnumber} onChange={this.onFieldChange('postalnumber').bind(this)} />
@@ -252,7 +250,12 @@ class EditProfile extends React.Component {
 
   componentDidMount() {
     this.refs.editUserBtn.onclick = () => {
-      userService.editProfile
+      userService.editProfile(user.id, this.refs.firstName.value, this.refs.lastName.value, Number(this.refs.phonenumber.value),
+        this.refs.email.value, this.refs.adress.value, Number(this.refs.postalnumber.value), this.refs.city.value, (result) => {
+          userService.getUser(user.id, (result) => {
+            user = result;
+          });
+        });
     }
   }
 }
