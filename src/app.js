@@ -253,14 +253,14 @@ class EditProfile extends React.Component {
     };
   }
 
-  onChange(event) {
-    this.setState(fornavn: {event.target.value});
+  onChange() {
+    
   }
 
   render() {
     return(
       <div>
-        <input ref='editFirstName' value={this.state.fornavn} name='fornavn' onChange={this.onChange.bind(event)} />
+        <input ref='editFirstName' value={this.state.fornavn} name='fornavn' onChange={this.onChange} />
         <input ref='editLastName' value={this.state.etternavn} name='etternavn' onChange={this.onChange.bind(event)} />
         <br />
         <input ref='editPhone' value={this.state.tlf} name='tlf' onChange={this.onChange} />
