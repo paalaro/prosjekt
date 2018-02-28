@@ -226,13 +226,8 @@ class EditProfile extends React.Component {
     };
   }
 
-<<<<<<< HEAD
   onChange() {
-    
-=======
-  onChange(event) {
-    // this.setState(fornavn: {event.target.value});
->>>>>>> 6fe27126121e3eb5f66658d40382bba9c35a8262
+
   }
 
   render() {
