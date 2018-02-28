@@ -189,10 +189,6 @@ class Profile extends React.Component {
           <br />
           <Link to={'/editProfile/' + this.userId}><button ref='editUser'>Edit</button></Link>
           <Link to={'/changePassword/' + this.userId}><button ref='changePassword'>Change Password</button></Link>
-
-          <br />
-          <br />
-          <hr />
         </div>
 
       </div>
@@ -224,6 +220,10 @@ class EditProfile extends React.Component {
     };
   }
 
+  nextPath(path) {
+    this.props.history.push(path);
+  }
+
   onFieldChange(fieldName) {
         return function (event) {
             this.setState({[fieldName]: event.target.value});
@@ -250,12 +250,18 @@ class EditProfile extends React.Component {
 
   componentDidMount() {
     this.refs.editUserBtn.onclick = () => {
-      userService.editProfile(user.id, this.refs.firstName.value, this.refs.lastName.value, Number(this.refs.phonenumber.value),
-        this.refs.email.value, this.refs.adress.value, Number(this.refs.postalnumber.value), this.refs.city.value, (result) => {
-          userService.getUser(user.id, (result) => {
-            user = result;
-          });
+      userService.editProfile(user.id, this.refs.firstName.value, this.refs.lastName.value,
+                              Number(this.refs.phonenumber.value),
+                              this.refs.email.value, this.refs.adress.value, Number(this.refs.postalnumber.value),
+                              this.refs.city.value, (result) => {
+        userService.getUser(user.id, (result) => {
+          user = result;
         });
+        this.nextPath('/profile/' + user.id);
+      });
+
+
+
     }
   }
 }
