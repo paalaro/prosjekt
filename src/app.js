@@ -216,13 +216,13 @@ class EditProfile extends React.Component {
     // this.id = props.match.params.userId;
 
     this.state = {
-      fornavn: this.user.firstName,
-      etternavn: this.user.lastName,
-      tlf: this.user.phonenumber,
-      mail: this.user.email,
-      adresse: this.user.adress,
-      postnr: this.user.postalnumber,
-      sted: this.user.city
+      firstName: this.user.firstName,
+      lastName: this.user.lastName,
+      phonenumber: this.user.phonenumber,
+      email: this.user.email,
+      adress: this.user.adress,
+      postalnumber: this.user.postalnumber,
+      city: this.user.city
     };
   }
 
@@ -235,15 +235,15 @@ class EditProfile extends React.Component {
   render() {
     return(
       <div>
-        <input ref='editFirstName' name='fornavn' value={this.state.fornavn} name='fornavn' onChange={this.onFieldChange('fornavn').bind(this)} />
-        <input ref='editLastName' value={this.state.etternavn} name='etternavn' onChange={this.onChange} />
+        <input name='firstName' value={this.state.firstName} onChange={this.onFieldChange('firstName').bind(this)} />
+        <input name='lastName' value={this.state.lastName} onChange={this.onFieldChange('lastName').bind(this)} />
         <br />
-        <input ref='editPhone' value={this.state.tlf} name='tlf' onChange={this.onChange} />
-        <input ref='editEmail' value={this.state.mail} name='mail' onChange={this.onChange} />
+        <input name='phonenumber' value={this.state.phonenumber} onChange={this.onFieldChange('fornavn').bind(this)} />
+        <input name='email' value={this.state.email} onChange={this.onFieldChange('fornavn').bind(this)} />
         <br />
-        <input ref='editAdress' value={this.state.adresse} name='adresse' onChange={this.onChange} />
-        <input ref='editPostalNumber' value={this.state.postnr} name='postnr' onChange={this.onChange} />
-        <input ref='editCity' value={this.state.sted} name='sted' onChange={this.onChange} />
+        <input name='adress' value={this.state.adress} onChange={this.onFieldChange('fornavn').bind(this)} />
+        <input name='postalnumber' value={this.state.postalnumber} onChange={this.onFieldChange('fornavn').bind(this)} />
+        <input name='city' value={this.state.city} onChange={this.onFieldChange('fornavn').bind(this)} />
       </div>
     );
   }
