@@ -2,6 +2,10 @@
     box-sizing: border-box;
 }
 
+html {
+    font-family: "Lucida Sans", sans-serif;
+}
+
 .col-1 {width: 8.33%;}
 .col-2 {width: 16.66%;}
 .col-3 {width: 25%;}
@@ -19,6 +23,11 @@
     float: left;
     padding: 15px;
     border: 1px solid black;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
 }
 
 .row::after {
@@ -39,10 +48,20 @@
   float: left;
 }
 
+.navbar-li:hover {
+  background-color: #444;
+}
+
 .navbar-link {
   display: block;
   color: white;
   text-align: center;
   padding: 14px 16px;
   text-decoration: none;
+}
+
+.btn {
+  text-align: center;
+  cursor: pointer;
+  padding: 1px;
 }
