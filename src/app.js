@@ -10,8 +10,8 @@ class Menu extends React.Component {
   render() {
     return (
       <ul className="navbar-ul">
-        <li className="navbar-li"><Link to='/login' className="navbar-link">Login</Link></li>
-        <li className="navbar-li"><Link to='/registration' className="navbar-link">Registration</Link></li>
+        <li className="navbar-li col-6 navbar"><Link to='/login' className="navbar-link">Login</Link></li>
+        <li className="navbar-li col-6 navbar"><Link to='/registration' className="navbar-link">Register</Link></li>
       </ul>
     );
   }
@@ -29,9 +29,9 @@ class Loggedin extends React.Component {
   render() {
     return (
       <ul className="navbar-ul">
-        <li className="navbar-li"><Link to='/events' className="navbar-link">Events</Link></li>
-        <li className="navbar-li"><Link to='/skills' className="navbar-link">Skills</Link></li>
-        <li className="navbar-li"><Link to={'/profile/' + this.id} className="navbar-link">My Profile</Link></li>
+        <li className="navbar-li col-4 navbar"><Link to='/events' className="navbar-link">Events</Link></li>
+        <li className="navbar-li col-4 navbar"><Link to='/skills' className="navbar-link">Skills</Link></li>
+        <li className="navbar-li col-4 navbar"><Link to={'/profile/' + this.id} className="navbar-link">My Profile</Link></li>
       </ul>
     );
   }
@@ -53,10 +53,10 @@ class Login extends React.Component {
     return (
         <div className="row">
           <div className="col-12">
-            <input ref='username' type='text' placeholder='Username' /> <br />
-            <input ref='password' type='password' placeholder='Password' /> <br />
-            <button ref='login' className="btn">Login</button> <br />
-            <Link to='/forgotpassword'>Forgot password</Link>
+            <input className="" ref='username' type='text' placeholder='Username' /> <br />
+            <input className="" ref='password' type='password' placeholder='Password' /> <br />
+            <button className="" ref='login'>Login</button> <br />
+            <Link className="" to='/forgotpassword'>Forgot password</Link>
           </div>
         </div>
     );
@@ -191,10 +191,6 @@ class Profile extends React.Component {
           <br />
           <Link to={'/editProfile/' + this.userId}><button ref='editUser'>Edit</button></Link>
           <Link to={'/changePassword/' + this.userId}><button ref='changePassword'>Change Password</button></Link>
-
-          <br />
-          <br />
-          <hr />
         </div>
 
       </div>

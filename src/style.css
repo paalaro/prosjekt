@@ -4,6 +4,13 @@
 
 html {
     font-family: "Lucida Sans", sans-serif;
+    border: 0;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+  margin: 0;
 }
 
 .col-1 {width: 8.33%;}
@@ -19,15 +26,19 @@ html {
 .col-11 {width: 91.66%;}
 .col-12 {width: 100%;}
 
+[class*="col-"].navbar {
+  border: none;
+  padding: inherit;
+}
+
 [class*="col-"] {
     float: left;
     padding: 15px;
     border: 1px solid black;
 }
 
-img {
-    max-width: 100%;
-    height: auto;
+.row {
+  width: 100%;
 }
 
 .row::after {
@@ -40,12 +51,14 @@ img {
   list-style-type: none;
   margin: 0;
   padding: 0;
+  border: 0;
   overflow: hidden;
   background-color: #333;
 }
 
 .navbar-li {
   float: left;
+  text-align: center;
 }
 
 .navbar-li:hover {
@@ -60,8 +73,12 @@ img {
   text-decoration: none;
 }
 
-.btn {
-  text-align: center;
-  cursor: pointer;
-  padding: 1px;
+input[type=text] {
+  padding: 8px 12px;
+  margin: 8px 0;
+}
+
+input[type=password] {
+  padding: 8px 12px;
+  margin: 8px 0;
 }
