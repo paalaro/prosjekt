@@ -95,9 +95,7 @@ class UserService {
   }
 
   editProfile(id, firstName, lastName, phonenumber, email, adress, postalnumber, city, callback) {
-    console.log(id, firstName, lastName, phonenumber, email, adress, postalnumber, city);
-
-    connection.query('UPDATE Users SET firstName=?, lastName=?, phonenumber=? WHERE id=?', [firstName, lastName, phonenumber, id], (error,result) => {
+    connection.query('UPDATE Users SET firstName=?, lastName=?, phonenumber=?, email=?, adress=?, postalnumber=?, city=? WHERE id=?', [firstName, lastName, phonenumber, email, adress, postalnumber, city, id], (error,result) => {
       if (error) throw error;
 
       callback(result[0]);

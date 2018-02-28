@@ -4,7 +4,7 @@ import { Link, HashRouter, Switch, Route } from 'react-router-dom';
 import { userService } from './services';
 import { mailService } from './mail';
 
-let user = {};
+let loggedinUser = {};
 
 class Menu extends React.Component {
   render() {
@@ -38,7 +38,7 @@ class Loggedin extends React.Component {
 
   componentDidMount() {
     userService.getUser(this.id, (result) => {
-      user = result;
+      loggedinUser = result;
       this.forceUpdate();
     });
   }
@@ -73,7 +73,6 @@ class Login extends React.Component {
           }
 
           renderLogin(user);
-
         }
       });
     }
@@ -127,6 +126,10 @@ class ForgotPassword extends React.Component {
     );
   }
 
+  nextPath(path) {
+    this.props.history.push(path);
+  }
+
   componentDidMount() {
     this.refs.fpsubmit.onclick = () => {
       userService.getUserbyMail(this.refs.fpemail.value, (result) => {
@@ -136,10 +139,28 @@ class ForgotPassword extends React.Component {
         else {
           userService.resetPassword(result.email, result.username, (result, subject, text, email) => {
             mailService.sendMail(email, subject, text);
+            this.nextPath('/passwordsent/' + email);
           });
         }
       });
     }
+  }
+}
+
+class PasswordSent extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.mail = props.match.params.mail;
+  }
+
+  render() {
+    return(
+      <div>
+        A new password has been sent to {this.mail} <br />
+        <Link to='/login'>Back to login</Link>
+      </div>
+    );
   }
 }
 
@@ -207,7 +228,7 @@ class EditProfile extends React.Component {
   constructor() {
     super();
 
-    this.user = user;
+    this.user = loggedinUser;
 
     this.state = {
       firstName: this.user.firstName,
@@ -250,14 +271,14 @@ class EditProfile extends React.Component {
 
   componentDidMount() {
     this.refs.editUserBtn.onclick = () => {
-      userService.editProfile(user.id, this.refs.firstName.value, this.refs.lastName.value,
+      userService.editProfile(loggedinUser.id, this.refs.firstName.value, this.refs.lastName.value,
                               Number(this.refs.phonenumber.value),
                               this.refs.email.value, this.refs.adress.value, Number(this.refs.postalnumber.value),
                               this.refs.city.value, (result) => {
-        userService.getUser(user.id, (result) => {
-          user = result;
+        userService.getUser(loggedinUser.id, (result) => {
+          loggedinUser = result;
+          this.nextPath('/profile/' + loggedinUser.id);
         });
-        this.nextPath('/profile/' + user.id);
       });
 
 
@@ -270,7 +291,7 @@ class ChangePassword extends React.Component {
   constructor(props) {
     super(props);
 
-    this.user = user;
+    this.user = loggedinUser;
   }
   render() {
     return(
@@ -284,12 +305,11 @@ class ChangePassword extends React.Component {
     )
   }
 
-  componentDidMount() {
-    userService.getUser(this.id, (result) => {
-      this.user = result;
-      this.forceUpdate();
-    });
+  nextPath(path) {
+    this.props.history.push(path);
+  }
 
+  componentDidMount() {
     this.refs.submitnewpw.onclick = () => {
       if (this.user.password != this.refs.oldpw.value) {
         console.log('Old password is wrong.');
@@ -302,9 +322,11 @@ class ChangePassword extends React.Component {
 
         else {
           userService.changePassword(this.user.id, this.refs.newpw.value, (result) => {
-            userService.getUser(this.id, (result) => {
+            userService.getUser(this.user.id, (result) => {
               console.log('Password for ' + this.user.username + ' is updated.');
-              this.user = result;
+              console.log(result);
+              loggedinUser = result;
+              this.nextPath('/profile/' + this.user.id);
             });
           });
         }
@@ -315,7 +337,6 @@ class ChangePassword extends React.Component {
 
 class Events extends React.Component {
   render() {
-    console.log(user);
     return(
       <div>
         Test
@@ -349,6 +370,7 @@ ReactDOM.render((
         <Route exact path='/registration' component={Registration} />
         <Route exact path='/login' component={Login} />
         <Route exact path='/forgotpassword' component={ForgotPassword} />
+        <Route exact path='/passwordsent/:mail' component={PasswordSent} />
         <Login />
       </Switch>
     </div>
