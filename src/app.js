@@ -51,11 +51,13 @@ class Login extends React.Component {
 
   render() {
     return (
-        <div>
-          <input ref='username' type='text' placeholder='Username' /> <br />
-          <input ref='password' type='password' placeholder='Password' /> <br />
-          <button ref='login'>Login</button> <br />
-          <Link to='/forgotpassword'>Forgot password</Link>
+        <div className="row">
+          <div className="col-12">
+            <input ref='username' type='text' placeholder='Username' /> <br />
+            <input ref='password' type='password' placeholder='Password' /> <br />
+            <button ref='login'>Login</button> <br />
+            <Link to='/forgotpassword'>Forgot password</Link>
+          </div>
         </div>
     );
   }
