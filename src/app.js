@@ -219,7 +219,7 @@ class EditProfile extends React.Component {
       fornavn: this.user.firstName,
       etternavn: this.user.lastName,
       tlf: this.user.phonenumber,
-      mail: this.user.mail,
+      mail: this.user.email,
       adresse: this.user.adress,
       postnr: this.user.postalnumber,
       sted: this.user.city
@@ -227,14 +227,18 @@ class EditProfile extends React.Component {
   }
 
   onChange() {
+<<<<<<< HEAD
     // this.setState(fornavn: {event.target.value});
+=======
+
+>>>>>>> e4ae3c858de50343767df33cb0c15fa917720bbe
   }
 
   render() {
     return(
       <div>
         <input ref='editFirstName' value={this.state.fornavn} name='fornavn' onChange={this.onChange} />
-        <input ref='editLastName' value={this.state.etternavn} name='etternavn' onChange={this.onChange.bind(event)} />
+        <input ref='editLastName' value={this.state.etternavn} name='etternavn' onChange={this.onChange} />
         <br />
         <input ref='editPhone' value={this.state.tlf} name='tlf' onChange={this.onChange} />
         <input ref='editEmail' value={this.state.mail} name='mail' onChange={this.onChange} />
