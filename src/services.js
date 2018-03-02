@@ -5,9 +5,9 @@ let connection;
 function connect() {
   connection = mysql.createConnection({
     host: 'mysql.stud.iie.ntnu.no',
-    user: 'paalaro',
-    password: '0O1nNGBm',
-    database: 'paalaro'
+    user: 'g_oops_28',
+    password: '1hhRtK1v',
+    database: 'g_oops_28'
   });
 
   // Connect to MySQL-server
@@ -91,7 +91,7 @@ class UserService {
       if (error) throw error;
 
       callback(result);
-    })
+    });
   }
 
   editProfile(id, firstName, lastName, phonenumber, email, adress, postalnumber, city, callback) {
@@ -99,7 +99,15 @@ class UserService {
       if (error) throw error;
 
       callback(result[0]);
-    })
+    });
+  }
+
+  getCity(postalnumber, callback) {
+    connection.query('SELECT Poststed FROM Postnummerregister  WHERE Postnummer = ?', [postalnumber], (error, result) => {
+      if (error) throw error;
+
+      callback(result[0]);
+    });
   }
 }
 
