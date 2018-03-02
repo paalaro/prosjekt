@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, HashRouter, Switch, Route } from 'react-router-dom';
 import { userService } from './services';
 import { loggedin, updateUserDetails } from './outlogged';
+import { history } from './app';
 
 let profileUser = {};
 
@@ -57,10 +58,6 @@ constructor() {
     };
   }
 
-  nextPath(path) {
-    this.props.history.push(path);
-  }
-
   onFieldChange(fieldName) {
         return function (event) {
             this.setState({[fieldName]: event.target.value});
@@ -93,7 +90,7 @@ constructor() {
                               this.refs.city.value, (result) => {
         userService.getUser(loggedin.id, (result) => {
           updateUserDetails();
-          this.nextPath('/profile/' + loggedin.id);
+          history.push('/profile/' + loggedin.id);
         });
       });
     }

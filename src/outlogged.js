@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, HashRouter, Switch, Route } from 'react-router-dom';
 import { userService } from './services';
-import { renderLogin } from './app';
+import { renderLogin, renderAdminLogin } from './app';
 import { mailService } from './mail';
 
 let loggedin = {};
@@ -31,9 +31,17 @@ export class Login extends React.Component {
           alert("Feil!")
         }
         else {
-          loggedin = result;
+          if (result.admin == true) {
+            loggedin = result;
 
-          renderLogin(result.id);
+            renderAdminLogin(result.id);
+          }
+
+          else {
+            loggedin = result;
+
+            renderLogin(result.id);
+          }
         }
       });
     }
@@ -45,7 +53,7 @@ export class Registration extends React.Component {
     super();
 
     this.state = {
-      city: 'Ringebu'
+      city: ''
     }
   }
 
@@ -55,8 +63,8 @@ export class Registration extends React.Component {
        <input ref="fname" placeholder="Type your firstname"></input><br/>
        <input ref="lname" placeholder="Type your lastname"></input><br/>
        <input ref="adress" placeholder="Type your adress"></input><br/>
-       <input ref="postalnumber" placeholder="Type your postalnumber"></input><br/>
-       <input ref="city" name="city" value={this.state.city} readOnly></input><br/>
+       <input ref="postalnumber" placeholder="Type your postalnumber" maxLength='4'></input><br/>
+       <input ref="city" name="city" value={this.state.city} type='text' readOnly></input><br/>
        <input ref="tlf" placeholder="Type your phonenumber"></input><br/>
        <input ref="email" placeholder="Type your email"></input><br/>
        <input ref="username" placeholder="Type your username"></input><br/>
@@ -71,20 +79,16 @@ export class Registration extends React.Component {
    this.props.history.push(path);
  }
 
-
  componentDidMount () {
    this.refs.postalnumber.oninput = () => {
-     console.log("Change");
      if (this.refs.postalnumber.value.length < 4) {
-       console.log("Not enough characters");
-       this.setState({["city"]: ""});
+       this.refs.city.value = "";
      }
 
      else {
        userService.getCity(this.refs.postalnumber.value, (result) => {
          if (result != undefined) {
-           console.log(result);
-           this.setState({["city"]: result.city});
+           this.refs.city.value = result.Poststed;
          }
        });
      }

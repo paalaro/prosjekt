@@ -109,6 +109,22 @@ class UserService {
       callback(result[0]);
     });
   }
+
+  getUnconfirmedUsers(callback) {
+    connection.query('SELECT * FROM Users WHERE aktivert = ?', [false], (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    })
+  }
+
+  confirm(id, callback) {
+    connection.query('UPDATE Users SET aktivert = ? WHERE id = ?', [true, id], (error, result) => {
+      if (error) throw error;
+
+      callback();
+    });
+  }
 }
 
 let userService = new UserService();

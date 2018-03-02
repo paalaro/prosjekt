@@ -3,9 +3,10 @@ import ReactDOM from 'react-dom';
 import { Link, HashRouter, Switch, Route } from 'react-router-dom';
 import { userService } from './services';
 import { mailService } from './mail';
-import { Menu, Loggedin } from './menues';
+import { Menu, LoggedinMenu, AdminLoggedinMenu } from './menues';
 import { Login, Registration, Registered, ForgotPassword, PasswordSent, loggedin, updateUserDetails } from './outlogged';
 import { Profile, EditProfile} from './profile';
+import { UnconfirmedUsers } from './unconfirmed';
 
 let loggedinUser = {};
 
@@ -128,7 +129,7 @@ export function renderLogin(user) {
   ReactDOM.render((
     <HashRouter>
       <div>
-        <Loggedin userId={user}/>
+        <LoggedinMenu userId={user}/>
         <Switch>
           <Route exact path='/profile/:userId' component={Profile} />
           <Route exact path='/events' component={Events} />
@@ -136,6 +137,19 @@ export function renderLogin(user) {
           <Route exact path='/editProfile/:userId' component={EditProfile} />
           <Route exact path='/changePassword/:userId' component={ChangePassword} />
           <Home userId={user} />
+        </Switch>
+      </div>
+    </HashRouter>
+  ), document.getElementById('root'));
+}
+
+export function renderAdminLogin(user) {
+  ReactDOM.render((
+    <HashRouter>
+      <div>
+        <AdminLoggedinMenu userId={user}/>
+        <Switch>
+          <UnconfirmedUsers />
         </Switch>
       </div>
     </HashRouter>
