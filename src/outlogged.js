@@ -31,16 +31,20 @@ export class Login extends React.Component {
           alert("Feil!")
         }
         else {
-          if (result.admin == true) {
-            loggedin = result;
+          loggedin = result;
 
+          if (result.admin == true) {
             renderAdminLogin(result.id);
           }
 
           else {
-            loggedin = result;
+            if (result.aktivert == false) {
+              alert('Brukeren din er ikke godkjent av administrator enda.')
+            }
 
-            renderLogin(result.id);
+            else {
+              renderLogin(result.id);
+            }
           }
         }
       });

@@ -4,7 +4,7 @@ import { userService } from './services';
 import { loggedin, updateUserDetails } from './outlogged';
 import { history } from './app';
 
-let profileUser = {};
+let selectedUser = {};
 
 export class Profile extends React.Component {
   constructor(props) {
@@ -25,8 +25,43 @@ export class Profile extends React.Component {
           Email: {this.user.email} <br />
           Adress: {this.user.adress + ', ' + this.user.postalnumber + ' ' + this.user.city} <br />
           <br />
-          <Link to={'/editProfile/' + this.userId}><button ref='editUser'>Edit</button></Link>
-          <Link to={'/changePassword/' + this.userId}><button ref='changePassword'>Change Password</button></Link>
+          <Link to='/editprofile'><button ref='editUser'>Edit</button></Link>
+          <Link to='/setpassword'><button ref='setPassword'>Set new password</button></Link>
+        </div>
+      </div>
+    );
+  }
+
+  componentDidMount() {
+    userService.getUser(this.id, (result) => {
+      this.user = result;
+      selectedUser = result;
+      this.forceUpdate();
+    });
+  }
+}
+
+export class MyProfile extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.user = {};
+
+    this.id = props.match.params.userId;
+  }
+
+  render() {
+    return(
+      <div>
+        <div>
+          <br />
+          Name: {this.user.firstName + ' ' + this.user.lastName} <br />
+          Phone: {this.user.phonenumber} <br />
+          Email: {this.user.email} <br />
+          Adress: {this.user.adress + ', ' + this.user.postalnumber + ' ' + this.user.city} <br />
+          <br />
+          <Link to='/editprofile'><button ref='editUser'>Edit</button></Link>
+          <Link to='/changepassword'><button ref='changePassword'>Change Password</button></Link>
         </div>
 
       </div>
@@ -36,6 +71,7 @@ export class Profile extends React.Component {
   componentDidMount() {
     userService.getUser(this.id, (result) => {
       this.user = result;
+      selectedUser = result;
       this.forceUpdate();
     });
   }
@@ -45,7 +81,7 @@ export class EditProfile extends React.Component {
 constructor() {
     super();
 
-    this.user = loggedin;
+    this.user = selectedUser;
 
     this.state = {
       firstName: this.user.firstName,
@@ -56,6 +92,10 @@ constructor() {
       postalnumber: this.user.postalnumber,
       city: this.user.city
     };
+  }
+
+  nextPath(path) {
+    this.props.history.push(path);
   }
 
   onFieldChange(fieldName) {
@@ -83,16 +123,61 @@ constructor() {
   }
 
   componentDidMount() {
+    userService.getUser(loggedin.id, (result) => {
+      this.user = result;
+      this.forceUpdate();
+    });
+
     this.refs.editUserBtn.onclick = () => {
-      userService.editProfile(loggedin.id, this.refs.firstName.value, this.refs.lastName.value,
+      userService.editProfile(selectedUser.id, this.refs.firstName.value, this.refs.lastName.value,
                               Number(this.refs.phonenumber.value),
                               this.refs.email.value, this.refs.adress.value, Number(this.refs.postalnumber.value),
                               this.refs.city.value, (result) => {
-        userService.getUser(loggedin.id, (result) => {
+        userService.getUser(selectedUser.id, (result) => {
           updateUserDetails();
-          history.push('/profile/' + loggedin.id);
+          this.nextPath('/profile/' + selectedUser.id);
         });
       });
+    }
+  }
+}
+
+export class SetPassword extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.user = selectedUser;
+  }
+  render() {
+    return(
+      <div>
+        Sett nytt passord for {this.user.firstName}: <br/>
+        <input ref='newpw' placeholder='Nytt passord' type='password'></input> <br/>
+        <input ref='confirmnewpw' placeholder='Bekreft nytt passord' type='password'></input> <br/>
+        <button ref='submitnewpw'>Sett passord</button>
+      </div>
+    )
+  }
+
+  nextPath(path) {
+    this.props.history.push(path);
+  }
+
+  componentDidMount() {
+    this.refs.submitnewpw.onclick = () => {
+      if(this.refs.newpw.value != this.refs.confirmnewpw.value) {
+        console.log('The new passwords are not matching.');
+      }
+
+      else {
+        userService.setPassword(this.user.id, this.refs.newpw.value, (result) => {
+          userService.getUser(this.user.id, (result) => {
+            console.log('Password for ' + this.user.username + ' is updated.');
+            updateUserDetails();
+            this.nextPath('/profile/' + this.user.id);
+          });
+        });
+      }
     }
   }
 }

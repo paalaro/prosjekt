@@ -5,8 +5,8 @@ import { userService } from './services';
 import { mailService } from './mail';
 import { Menu, LoggedinMenu, AdminLoggedinMenu } from './menues';
 import { Login, Registration, Registered, ForgotPassword, PasswordSent, loggedin, updateUserDetails } from './outlogged';
-import { Profile, EditProfile} from './profile';
-import { UnconfirmedUsers } from './unconfirmed';
+import { Profile, MyProfile, EditProfile, SetPassword } from './profile';
+import { UnconfirmedUsers, UserList } from './users';
 
 let loggedinUser = {};
 
@@ -131,11 +131,11 @@ export function renderLogin(user) {
       <div>
         <LoggedinMenu userId={user}/>
         <Switch>
-          <Route exact path='/profile/:userId' component={Profile} />
+          <Route exact path='/myprofile/:userId' component={MyProfile} />
           <Route exact path='/events' component={Events} />
           <Route exact path='/skills' component={Skills} />
-          <Route exact path='/editProfile/:userId' component={EditProfile} />
-          <Route exact path='/changePassword/:userId' component={ChangePassword} />
+          <Route exact path='/editprofile' component={EditProfile} />
+          <Route exact path='/changepassword' component={ChangePassword} />
           <Home userId={user} />
         </Switch>
       </div>
@@ -149,6 +149,12 @@ export function renderAdminLogin(user) {
       <div>
         <AdminLoggedinMenu userId={user}/>
         <Switch>
+          <Route exact path='/userlist' component={UserList} />
+          <Route exact path='/unconfirmedusers' component={UnconfirmedUsers} />
+          <Route exact path='/myprofile/:userId' component={MyProfile} />
+          <Route exact path='/profile/:userId' component={Profile} />
+          <Route exact path='/editprofile' component={EditProfile} />
+          <Route exact path='/setpassword' component={SetPassword} />
           <UnconfirmedUsers />
         </Switch>
       </div>

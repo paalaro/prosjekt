@@ -94,6 +94,14 @@ class UserService {
     });
   }
 
+  setPassword(id, newpw, callback) {
+    connection.query('UPDATE Users SET password = ? WHERE id = ?', [newpw, id], (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    })
+  }
+
   editProfile(id, firstName, lastName, phonenumber, email, adress, postalnumber, city, callback) {
     connection.query('UPDATE Users SET firstName=?, lastName=?, phonenumber=?, email=?, adress=?, postalnumber=?, city=? WHERE id=?', [firstName, lastName, phonenumber, email, adress, postalnumber, city, id], (error,result) => {
       if (error) throw error;
@@ -120,6 +128,14 @@ class UserService {
 
   confirm(id, callback) {
     connection.query('UPDATE Users SET aktivert = ? WHERE id = ?', [true, id], (error, result) => {
+      if (error) throw error;
+
+      callback();
+    });
+  }
+
+  confirmAll(callback) {
+    connection.query('UPDATE Users SET aktivert = ?', [true], (error, result) => {
       if (error) throw error;
 
       callback();
