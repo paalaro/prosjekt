@@ -7,13 +7,232 @@
 }
 
 .navbar-li {
+  width: 20%;
   float: left;
+}
+
+.navbar-li-right {
+  width: 10%;
+  float: right;
 }
 
 .navbar-link {
   display: block;
   color: white;
   text-align: center;
+  padding: 14px 0px;
+  text-decoration: none;
+  /* font-size: 1.2rem; */
+  font-family: sans-serif;
+}
+
+.navbar-link:hover {
+  background-color: #111;
+}
+
+.olnavbar-ul {
+  list-style-type: none;
+  margin-top: 0;
+  margin-bottom: 0;
+  margin-left: 20%;
+  margin-right: 20%;
+  padding: 0;
+  overflow: hidden;
+  background-color: #333;
+  border-radius: 10px;
+}
+
+.olnavbar-li {
+  width: 50%;
+  float: left;
+}
+
+.olnavbar-link {
+  display: block;
+  color: white;
+  text-align: center;
   padding: 14px 16px;
   text-decoration: none;
+  font-size: 1.2rem;
+  font-family: sans-serif;
+}
+
+.olnavbar-link:hover, .navbar-link:hover {
+  background-color: #111;
+}
+
+.dropdown {
+    float: left;
+    overflow: hidden;
+}
+
+.dropdown .dropbtn {
+    font-size: 16px;
+    border: none;
+    outline: none;
+    color: white;
+    padding: 14px 16px;
+    background-color: inherit;
+    font-family: inherit;
+    margin: 0;
+}
+
+.forgotPasswordLink {
+  color: black;
+  text-decoration: none;
+}
+
+.centeredDiv {
+  padding: 15px;
+}
+
+.forgotPasswordLinkDiv {
+  text-align: center;
+}
+
+.forgotPasswordLink:hover {
+  text-decoration: underline;
+}
+
+.regFirstName {
+  width: 50%;
+}
+
+.regLastName {
+  width: 50%;
+}
+
+.regPostal {
+  width: 27%;
+}
+
+.regCity {
+  width: 73%;
+  background-color: lightgray;
+}
+
+input {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+h3 {
+  font-family: sans-serif;
+  font-size: 1.2rem;
+}
+
+.submitBtn {
+  width: 100%;
+  background-color: #4CAF50;
+  color: white;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: sans-serif;
+  font-size: 1rem;
+}
+
+.loginDiv {
+  margin: 0 auto;
+  text-align: center;
+  width: 40%;
+  border-radius: 25px;
+  border: 2px solid gray;
+  padding: 20px;
+}
+
+.searchDiv {
+  margin: 0 auto;
+  text-align: center;
+  width: 100%;
+  padding: 0;
+}
+
+.registrationDiv {
+  margin: 0 auto;
+  text-align: center;
+  width: 80%;
+  border-radius: 25px;
+  border: 2px solid gray;
+  padding: 20px;
+}
+
+.submitBtn:hover {
+  background-color: #45a049;
+}
+
+.alert {
+  margin: 0 auto;
+  text-align: center;
+  width: 80%;
+  font-family: sans-serif;
+}
+
+.userUl {
+  padding: 0;
+  margin: 0;
+  list-style-type: none;
+}
+
+.userLi {
+  font-size: 1.2rem;
+  font-family: sans-serif;
+  text-decoration: none;
+}
+
+.userLink {
+  text-decoration: none;
+}
+
+.userLink:hover {
+  color: purple;
+}
+
+.userTable {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.eventTable {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.userList {
+  width: 90%;
+  margin: auto;
+}
+
+.tableLines {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.tableRow:hover {
+  background-color: #f5f5f5;
+}
+
+.editBtn {
+  width: 20%;
+  background-color: #4CAF50;
+  color: white;
+  padding: 4px 8px;
+  margin: 2px 0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: sans-serif;
+  font-size: 0.7rem;
+}
+
+.editBtn:hover {
+  background-color: #45a049;
 }

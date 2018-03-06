@@ -2,11 +2,14 @@ import React from 'react';
 import { Link, HashRouter, Switch, Route } from 'react-router-dom';
 import { userService } from './services';
 import { renderLogin, renderAdminLogin } from './app';
-import { mailService } from './mail';
 
 let loggedin = {};
 
 export { loggedin };
+
+export function deselectUser() {
+  loggedin = {};
+}
 
 export class Login extends React.Component {
   constructor(props) {
@@ -15,11 +18,16 @@ export class Login extends React.Component {
 
   render() {
     return (
-        <div>
-          <input ref='username' type='text' placeholder='Username' /> <br />
-          <input ref='password' type='password' placeholder='Password' /> <br />
-          <button ref='login'>Login</button> <br />
-          <Link to='/forgotpassword'>Forgot password</Link>
+        <div className='centeredDiv'>
+          <div className='loginDiv'>
+            <h3>Login</h3>
+            <input ref='username' type='text' placeholder='Brukernavn' /> <br />
+            <input ref='password' type='password' placeholder='Passord' /> <br />
+            <button ref='login' className='submitBtn'>Logg inn</button>
+            <div className='forgotPasswordLinkDiv'>
+              <Link to='/forgotpassword' className='forgotPasswordLink'>Glemt passord?</Link>
+            </div>
+          </div>
         </div>
     );
   }
@@ -28,7 +36,7 @@ export class Login extends React.Component {
     this.refs.login.onclick = () => {
       userService.login(this.refs.username.value, this.refs.password.value, (result) => {
         if (result == undefined) {
-          alert("Feil!")
+          alert("Feil brukernavn eller passord");
         }
         else {
           loggedin = result;
@@ -39,7 +47,7 @@ export class Login extends React.Component {
 
           else {
             if (result.aktivert == false) {
-              alert('Brukeren din er ikke godkjent av administrator enda.')
+              alert('Brukeren din er ikke godkjent av administrator enda.');
             }
 
             else {
@@ -63,18 +71,21 @@ export class Registration extends React.Component {
 
   render() {
    return (
-     <div>
-       <input ref="fname" placeholder="Type your firstname"></input><br/>
-       <input ref="lname" placeholder="Type your lastname"></input><br/>
-       <input ref="adress" placeholder="Type your adress"></input><br/>
-       <input ref="postalnumber" placeholder="Type your postalnumber" maxLength='4'></input><br/>
-       <input ref="city" name="city" value={this.state.city} type='text' readOnly></input><br/>
-       <input ref="tlf" placeholder="Type your phonenumber"></input><br/>
-       <input ref="email" placeholder="Type your email"></input><br/>
-       <input ref="username" placeholder="Type your username"></input><br/>
-       <input ref="password1" placeholder="Type your password" type='password'></input><br/>
-       <input ref="password2" placeholder="Type your password" type='password'></input><br/>
-       <button ref="newUserButton">Register</button>
+     <div className='centeredDiv'>
+      <div className='registrationDiv'>
+        <h3>Registrering</h3>
+        <input ref="fname" className='regFirstName' placeholder="Fornavn"></input>
+        <input ref="lname" className='regLastName' placeholder="Etternavn"></input><br/>
+        <input ref="adress" placeholder="Gateadresse"></input><br/>
+        <input ref="postalnumber" className='regPostal' placeholder="Postnummer" maxLength='4'></input>
+        <input ref="city" name="city" className='regCity' placeholder='Poststed' value={this.state.city} type='text' readOnly></input><br/>
+        <input ref="tlf" placeholder="Telefon"></input><br/>
+        <input ref="email" placeholder="Email"></input><br/>
+        <input ref="username" placeholder="Brukernavn"></input><br/>
+        <input ref="password1" placeholder="Passord" type='password'></input><br/>
+        <input ref="password2" placeholder="Bekreft passord" type='password'></input><br/>
+        <button ref="newUserButton" className='submitBtn'>Registrer</button>
+      </div>
      </div>
    );
  }
@@ -148,7 +159,6 @@ export class ForgotPassword extends React.Component {
         }
         else {
           userService.resetPassword(result.email, result.username, (result, subject, text, email) => {
-            mailService.sendMail(email, subject, text);
             this.nextPath('/passwordsent/' + email);
           });
         }

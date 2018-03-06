@@ -4,11 +4,10 @@ import { Link, HashRouter, Switch, Route } from 'react-router-dom';
 import { userService } from './services';
 import { mailService } from './mail';
 import { Menu, LoggedinMenu, AdminLoggedinMenu } from './menues';
-import { Login, Registration, Registered, ForgotPassword, PasswordSent, loggedin, updateUserDetails } from './outlogged';
+import { Login, Registration, Registered, ForgotPassword, PasswordSent, loggedin, updateUserDetails, deselectUser } from './outlogged';
 import { Profile, MyProfile, EditProfile, SetPassword } from './profile';
-import { UnconfirmedUsers, UserList } from './users';
-
-let loggedinUser = {};
+import { UnconfirmedUsers, UserListAdmin, UserList, UserDetails } from './users';
+import { EventList, EventDetails } from './events';
 
 class Home extends React.Component {
   constructor(props) {
@@ -82,16 +81,6 @@ class ChangePassword extends React.Component {
   }
 }
 
-class Events extends React.Component {
-  render() {
-    return(
-      <div>
-        Test
-      </div>
-    );
-  }
-}
-
 class Skills extends React.Component {
   render() {
     return(
@@ -109,21 +98,26 @@ class Skills extends React.Component {
 // means that the path /customer/5 will show the CustomerDetails
 // with props.match.params.customerId set to 5.
 
-ReactDOM.render((
-  <HashRouter>
-    <div>
-      <Menu />
-      <Switch>
-        <Route exact path='/registration' component={Registration} />
-        <Route exact path='/login' component={Login} />
-        <Route exact path='/forgotpassword' component={ForgotPassword} />
-        <Route exact path='/passwordsent/:mail' component={PasswordSent} />
-        <Route exact path='/registered' component={Registered} />
-        <Login />
-      </Switch>
-    </div>
-  </HashRouter>
-), document.getElementById('root'));
+export function renderOutlogged() {
+  deselectUser();
+  ReactDOM.render((
+    <HashRouter>
+      <div>
+        <Menu />
+        <Switch>
+          <Route exact path='/registration' component={Registration} />
+          <Route exact path='/login' component={Login} />
+          <Route exact path='/forgotpassword' component={ForgotPassword} />
+          <Route exact path='/passwordsent/:mail' component={PasswordSent} />
+          <Route exact path='/registered' component={Registered} />
+          <Login />
+        </Switch>
+      </div>
+    </HashRouter>
+  ), document.getElementById('root'));
+}
+
+renderOutlogged();
 
 export function renderLogin(user) {
   ReactDOM.render((
@@ -132,10 +126,14 @@ export function renderLogin(user) {
         <LoggedinMenu userId={user}/>
         <Switch>
           <Route exact path='/myprofile/:userId' component={MyProfile} />
-          <Route exact path='/events' component={Events} />
+          <Route exact path='/eventlist' component={EventList} />
           <Route exact path='/skills' component={Skills} />
           <Route exact path='/editprofile' component={EditProfile} />
           <Route exact path='/changepassword' component={ChangePassword} />
+          <Route exact path='/userlist' component={UserList} />
+          <Route exact path='/userdetails/:userId' component={UserDetails} />
+          <Route exact path='/eventlist' component={EventList} />
+          <Route exact path='/eventdetails/:eventId' component={EventDetails} />
           <Home userId={user} />
         </Switch>
       </div>
@@ -149,12 +147,14 @@ export function renderAdminLogin(user) {
       <div>
         <AdminLoggedinMenu userId={user}/>
         <Switch>
-          <Route exact path='/userlist' component={UserList} />
+          <Route exact path='/userlistadmin' component={UserListAdmin} />
           <Route exact path='/unconfirmedusers' component={UnconfirmedUsers} />
           <Route exact path='/myprofile/:userId' component={MyProfile} />
           <Route exact path='/profile/:userId' component={Profile} />
           <Route exact path='/editprofile' component={EditProfile} />
           <Route exact path='/setpassword' component={SetPassword} />
+          <Route exact path='/eventlist' component={EventList} />
+          <Route exact path='/eventdetails/:eventId' component={EventDetails} />
           <UnconfirmedUsers />
         </Switch>
       </div>

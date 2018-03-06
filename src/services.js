@@ -1,4 +1,5 @@
 import mysql from 'mysql';
+import { mailService } from './mail';
 
 // Setup database server reconnection when server timeouts connection:
 let connection;
@@ -82,6 +83,8 @@ class UserService {
       let subject = "Password reset for " + username;
       let text = "Your new password is: " + newPassword;
 
+      mailService.sendMail(email, subject, text);
+
       callback(result, subject, text, email);
     });
   }
@@ -141,8 +144,38 @@ class UserService {
       callback();
     });
   }
+
+  searchUser(input, callback) {
+    connection.query('SELECT * FROM Users WHERE CONCAT(firstName, " ", lastName) LIKE "%"?"%" OR CONCAT(lastName, " ", firstName) LIKE "%"?"%"', [input, input], (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
 }
 
 let userService = new UserService();
 
 export { userService };
+
+class EventService {
+  getAllEvents(callback) {
+    connection.query('SELECT * FROM Events', (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
+
+  getEvent(id, callback) {
+    connection.query('SELECT * FROM Events WHERE id = ?', [id], (error, result) => {
+      if (error) throw error;
+
+      callback(result[0]);
+    });
+  }
+}
+
+let eventService = new EventService();
+
+export { eventService };

@@ -6,6 +6,10 @@ import { history } from './app';
 
 let selectedUser = {};
 
+export function deselectUser() {
+  selectedUser = {};
+}
+
 export class Profile extends React.Component {
   constructor(props) {
     super(props);
@@ -13,6 +17,10 @@ export class Profile extends React.Component {
     this.user = {};
 
     this.id = props.match.params.userId;
+  }
+
+  nextPath(path) {
+    this.props.history.push(path);
   }
 
   render() {
@@ -25,8 +33,9 @@ export class Profile extends React.Component {
           Email: {this.user.email} <br />
           Adress: {this.user.adress + ', ' + this.user.postalnumber + ' ' + this.user.city} <br />
           <br />
-          <Link to='/editprofile'><button ref='editUser'>Edit</button></Link>
-          <Link to='/setpassword'><button ref='setPassword'>Set new password</button></Link>
+          <Link to='/editprofile'><button ref='editUser'>Endre</button></Link>
+          <Link to='/setpassword'><button ref='setPassword'>Sett nytt passord</button></Link>
+          <button ref='newpassword'>Send nytt passord på mail</button>
         </div>
       </div>
     );
@@ -38,6 +47,12 @@ export class Profile extends React.Component {
       selectedUser = result;
       this.forceUpdate();
     });
+
+    this.refs.newpassword.onclick = () => {
+      userService.resetPassword(selectedUser.email, selectedUser.username, (result) => {
+        alert('Passord sendt til ' + selectedUser.email);
+      });
+    }
   }
 }
 
@@ -55,13 +70,33 @@ export class MyProfile extends React.Component {
       <div>
         <div>
           <br />
-          Name: {this.user.firstName + ' ' + this.user.lastName} <br />
-          Phone: {this.user.phonenumber} <br />
-          Email: {this.user.email} <br />
-          Adress: {this.user.adress + ', ' + this.user.postalnumber + ' ' + this.user.city} <br />
+          <table>
+            <tbody>
+              <tr>
+                <td>Name:</td>
+                <td>{this.user.firstName} {this.user.lastName}</td>
+              </tr>
+              <tr>
+                <td>Telefon:</td>
+                <td>{this.user.phonenumber}</td>
+              </tr>
+              <tr>
+                <td>Epost:</td>
+                <td>{this.user.email}</td>
+              </tr>
+              <tr>
+                <td>Gateadresse:</td>
+                <td>{this.user.adress}</td>
+              </tr>
+              <tr>
+                <td>Poststed:</td>
+                <td>{this.user.postalnumber} {this.user.city}</td>
+              </tr>
+            </tbody>
+          </table>
           <br />
-          <Link to='/editprofile'><button ref='editUser'>Edit</button></Link>
-          <Link to='/changepassword'><button ref='changePassword'>Change Password</button></Link>
+          <Link to='/editprofile'><button ref='editUser' className='editBtn'>Endre detaljer</button></Link>
+          <Link to='/changepassword'><button ref='changePassword' className='editBtn'>Bytt passord</button></Link>
         </div>
 
       </div>
