@@ -7,7 +7,7 @@ import { Menu, LoggedinMenu, AdminLoggedinMenu } from './menues';
 import { Login, Registration, Registered, ForgotPassword, PasswordSent, loggedin, updateUserDetails, deselectUser } from './outlogged';
 import { Profile, MyProfile, EditProfile, SetPassword } from './profile';
 import { UnconfirmedUsers, UserListAdmin, UserList, UserDetails } from './users';
-import { EventList, EventDetails } from './events';
+import { EventList, EventDetails, CreateEvent } from './events';
 
 class Home extends React.Component {
   constructor(props) {
@@ -155,6 +155,7 @@ export function renderAdminLogin(user) {
           <Route exact path='/setpassword' component={SetPassword} />
           <Route exact path='/eventlist' component={EventList} />
           <Route exact path='/eventdetails/:eventId' component={EventDetails} />
+          <Route exact path='/createevent' component={CreateEvent} />
           <UnconfirmedUsers />
         </Switch>
       </div>

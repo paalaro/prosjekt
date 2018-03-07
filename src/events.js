@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, HashRouter, Switch, Route } from 'react-router-dom';
 import { eventService } from './services';
+import { loggedin } from './outlogged';
 
 export class EventList extends React.Component {
   constructor() {
@@ -9,14 +10,19 @@ export class EventList extends React.Component {
     this.evntList = [];
   }
 
-  nextPath(path) {
-    this.props.history.push(path);
+  toEvent(id) {
+    if (loggedin.admin == true) {
+      this.props.history.push('/eventdetailsadmin' + id);
+    }
+    else {
+      this.props.history.push('/eventdetails' + id);
+    }
   }
 
   render() {
     let evntsList = [];
     for (let evnt of this.evntList) {
-      evntsList.push(<tr key={evnt.id} className='tableRow' onClick={() => this.nextPath('/eventdetails/' + evnt.id)}><td className='tableLines'>{evnt.title}</td><td className='tableLines'>{evnt.start}</td><td className='tableLines'>{evnt.end}</td></tr>)
+      evntsList.push(<tr key={evnt.id} className='tableRow' onClick={() => this.toEvent(evnt.id)}><td className='tableLines'>{evnt.title}</td><td className='tableLines'>{evnt.start}</td><td className='tableLines'>{evnt.end}</td></tr>)
     }
 
     return(
@@ -67,5 +73,19 @@ export class EventDetails extends React.Component {
       this.event = result;
       this.forceUpdate();
     });
+  }
+}
+
+export class CreateEvent extends React.Component {
+  render() {
+    return(
+      <div>
+        <input ref='title' type='text' /> <br />
+        <input ref='text' type='text' /> <br />
+        <input ref='start' type='date' /> <br />
+        <input ref='end' type='date' /> <br />
+        <input ref='adresse' type='text' /> <br />
+      </div>
+    );
   }
 }
