@@ -114,7 +114,7 @@ class UserService {
   }
 
   getCity(postalnumber, callback) {
-    connection.query('SELECT Poststed FROM Postnummerregister  WHERE Postnummer = ?', [postalnumber], (error, result) => {
+    connection.query('SELECT poststed FROM Postnummerregister WHERE postnr = ?', [postalnumber], (error, result) => {
       if (error) throw error;
 
       callback(result[0]);
@@ -139,6 +139,14 @@ class UserService {
 
   confirmAll(callback) {
     connection.query('UPDATE Users SET aktivert = ?', [true], (error, result) => {
+      if (error) throw error;
+
+      callback();
+    });
+  }
+
+  deactivate(id, callback) {
+    connection.query('UPDATE Users SET aktivert = ? WHERE id = ?', [false, id], (error, result) => {
       if (error) throw error;
 
       callback();

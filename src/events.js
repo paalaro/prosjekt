@@ -85,7 +85,12 @@ export class CreateEvent extends React.Component {
         <input ref='start' type='date' /> <br />
         <input ref='end' type='date' /> <br />
         <input ref='adresse' type='text' /> <br />
+        <button></button>
       </div>
     );
+  }
+
+  componentDidMount() {
+
   }
 }

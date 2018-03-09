@@ -77,18 +77,37 @@ export class UserListAdmin extends React.Component {
     this.props.history.push(path);
   }
 
+  activate(id) {
+    console.log(id);
+  }
+
+  deactivate(id) {
+    userService.deactivate(id, (result) => {
+      userService.getUsers((result) => {
+        this.userList = result;
+        this.forceUpdate();
+      });
+    });
+  }
+
   render() {
     let userList = [];
     let adminList = [];
+    let deactivatedList = [];
     for (let user of this.userList) {
       if (user.admin == true) {
-        adminList.push(<tr key={user.id} className='tableRow' onClick={() => this.nextPath('/profile/' + user.id)}><td className='tableLines'>{user.firstName} {user.lastName}</td><td className='tableLines'>{user.phonenumber}</td><td className='tableLines'>{user.email}</td></tr>);
+        adminList.push(<tr key={user.id} className='tableRow'><td onClick={() => this.nextPath('/profile/' + user.id)} style={{width: 40+'%'}} className='tableLines'>{user.firstName} {user.lastName}</td><td style={{width: 35+'%'}} className='tableLines'>{user.phonenumber}</td><td className='tableLines'>{user.email}</td></tr>);
+      }
+
+      else if (user.aktivert == false) {
+        deactivatedList.push(<tr key={user.id} className='tableRow'><td onClick={() => this.nextPath('/profile/' + user.id)} style={{width: 40+'%'}} className='tableLines'>{user.firstName} {user.lastName}</td><td className='tableLines'><button onClick={() => this.activate(user.id)}>Aktiver</button></td></tr>);
       }
 
       else {
-        userList.push(<tr key={user.id} className='tableRow' onClick={() => this.nextPath('/profile/' + user.id)}><td className='tableLines'>{user.firstName} {user.lastName}</td><td className='tableLines'>{user.phonenumber}</td><td className='tableLines'>{user.email}</td></tr>);
+        userList.push(<tr key={user.id} className='tableRow' onClick={() => this.nextPath('/profile/' + user.id)}><td style={{width: 40+'%'}} className='tableLines'>{user.firstName} {user.lastName}</td><td style={{width: 35+'%'}} className='tableLines'>{user.phonenumber}</td><td className='tableLines'>{user.email}</td></tr>);
       }
     }
+
     return (
       <div className='userList'>
         <input ref='search' type='text' placeholder='Søk etter bruker' />
@@ -119,6 +138,21 @@ export class UserListAdmin extends React.Component {
           </thead>
           <tbody>
             {userList}
+          </tbody>
+        </table>
+
+        <br />
+
+        <h3>Deaktiverte brukere</h3>
+        <table className='userTable'>
+          <thead>
+            <tr>
+              <th className='tableLines'>Navn</th>
+              <th className='tableLines'>Knapp</th>
+            </tr>
+          </thead>
+          <tbody>
+            {deactivatedList}
           </tbody>
         </table>
       </div>

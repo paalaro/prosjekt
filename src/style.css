@@ -33,9 +33,9 @@
 .olnavbar-ul {
   list-style-type: none;
   margin-top: 0;
-  margin-bottom: 0;
-  margin-left: 20%;
-  margin-right: 20%;
+  margin-bottom: 20px;
+  margin-left: 28%;
+  margin-right: 28%;
   padding: 0;
   overflow: hidden;
   background-color: #333;
@@ -95,24 +95,24 @@
 }
 
 .regFirstName {
-  width: 50%;
+  width: 40%;
 }
 
 .regLastName {
-  width: 50%;
+  width: 40%;
 }
 
 .regPostal {
-  width: 27%;
+  width: 22%;
 }
 
 .regCity {
-  width: 73%;
+  width: 58%;
   background-color: lightgray;
 }
 
 input {
-  width: 100%;
+  width: 80%;
   padding: 12px 20px;
   margin: 8px 0;
   display: inline-block;
@@ -121,13 +121,17 @@ input {
   box-sizing: border-box;
 }
 
+.loginInput {
+  width: 80%;
+}
+
 h3 {
   font-family: sans-serif;
   font-size: 1.2rem;
 }
 
 .submitBtn {
-  width: 100%;
+  width: 80%;
   background-color: #4CAF50;
   color: white;
   padding: 14px 20px;
@@ -143,6 +147,7 @@ h3 {
   margin: 0 auto;
   text-align: center;
   width: 40%;
+  height: 400px;
   border-radius: 25px;
   border: 2px solid gray;
   padding: 20px;
@@ -158,10 +163,11 @@ h3 {
 .registrationDiv {
   margin: 0 auto;
   text-align: center;
-  width: 80%;
+  width: 60%;
+  height: 600px;
   border-radius: 25px;
   border: 2px solid gray;
-  padding: 20px;
+  padding: 10px;
 }
 
 .submitBtn:hover {

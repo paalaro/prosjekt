@@ -5,7 +5,7 @@ import { userService } from './services';
 import { mailService } from './mail';
 import { Menu, LoggedinMenu, AdminLoggedinMenu } from './menues';
 import { Login, Registration, Registered, ForgotPassword, PasswordSent, loggedin, updateUserDetails, deselectUser } from './outlogged';
-import { Profile, MyProfile, EditProfile, SetPassword } from './profile';
+import { Profile, MyProfile, EditProfile } from './profile';
 import { UnconfirmedUsers, UserListAdmin, UserList, UserDetails } from './users';
 import { EventList, EventDetails, CreateEvent } from './events';
 
@@ -152,7 +152,6 @@ export function renderAdminLogin(user) {
           <Route exact path='/myprofile/:userId' component={MyProfile} />
           <Route exact path='/profile/:userId' component={Profile} />
           <Route exact path='/editprofile' component={EditProfile} />
-          <Route exact path='/setpassword' component={SetPassword} />
           <Route exact path='/eventlist' component={EventList} />
           <Route exact path='/eventdetails/:eventId' component={EventDetails} />
           <Route exact path='/createevent' component={CreateEvent} />

@@ -20,9 +20,9 @@ export class Login extends React.Component {
     return (
         <div className='centeredDiv'>
           <div className='loginDiv'>
-            <h3>Login</h3>
-            <input ref='username' type='text' placeholder='Brukernavn' /> <br />
-            <input ref='password' type='password' placeholder='Passord' /> <br />
+            <h3>Login</h3> <br /> <br /> <br /> <br /> <br /> <br />
+            <input ref='username' className='loginInput' type='text' placeholder='Brukernavn' /> <br />
+            <input ref='password' className='loginInput' type='password' placeholder='Passord' /> <br />
             <button ref='login' className='submitBtn'>Logg inn</button>
             <div className='forgotPasswordLinkDiv'>
               <Link to='/forgotpassword' className='forgotPasswordLink'>Glemt passord?</Link>
@@ -74,7 +74,7 @@ export class Registration extends React.Component {
      <div className='centeredDiv'>
       <div className='registrationDiv'>
         <h3>Registrering</h3>
-        <input ref="fname" className='regFirstName' placeholder="Fornavn"></input>
+        <input ref="fname" className='regInput, regFirstName' placeholder="Fornavn"></input>
         <input ref="lname" className='regLastName' placeholder="Etternavn"></input><br/>
         <input ref="adress" placeholder="Gateadresse"></input><br/>
         <input ref="postalnumber" className='regPostal' placeholder="Postnummer" maxLength='4'></input>
@@ -103,7 +103,7 @@ export class Registration extends React.Component {
      else {
        userService.getCity(this.refs.postalnumber.value, (result) => {
          if (result != undefined) {
-           this.refs.city.value = result.Poststed;
+           this.refs.city.value = result.poststed;
          }
        });
      }

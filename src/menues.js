@@ -15,7 +15,7 @@ export class Menu extends React.Component {
     return (
       <ul className="olnavbar-ul">
         <li className="olnavbar-li"><Link to='/login' className="olnavbar-link">Login</Link></li>
-        <li className="olnavbar-li"><Link to='/registration' className="olnavbar-link">Registration</Link></li>
+        <li className="olnavbar-li"><Link to='/registration' className="olnavbar-link">Registrering</Link></li>
       </ul>
     );
   }

@@ -34,8 +34,8 @@ export class Profile extends React.Component {
           Adress: {this.user.adress + ', ' + this.user.postalnumber + ' ' + this.user.city} <br />
           <br />
           <Link to='/editprofile'><button ref='editUser'>Endre</button></Link>
-          <Link to='/setpassword'><button ref='setPassword'>Sett nytt passord</button></Link>
           <button ref='newpassword'>Send nytt passord på mail</button>
+          <button ref='deactivate'>Deaktiver</button>
         </div>
       </div>
     );
@@ -173,46 +173,6 @@ constructor() {
           this.nextPath('/profile/' + selectedUser.id);
         });
       });
-    }
-  }
-}
-
-export class SetPassword extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.user = selectedUser;
-  }
-  render() {
-    return(
-      <div>
-        Sett nytt passord for {this.user.firstName}: <br/>
-        <input ref='newpw' placeholder='Nytt passord' type='password'></input> <br/>
-        <input ref='confirmnewpw' placeholder='Bekreft nytt passord' type='password'></input> <br/>
-        <button ref='submitnewpw'>Sett passord</button>
-      </div>
-    )
-  }
-
-  nextPath(path) {
-    this.props.history.push(path);
-  }
-
-  componentDidMount() {
-    this.refs.submitnewpw.onclick = () => {
-      if(this.refs.newpw.value != this.refs.confirmnewpw.value) {
-        console.log('The new passwords are not matching.');
-      }
-
-      else {
-        userService.setPassword(this.user.id, this.refs.newpw.value, (result) => {
-          userService.getUser(this.user.id, (result) => {
-            console.log('Password for ' + this.user.username + ' is updated.');
-            updateUserDetails();
-            this.nextPath('/profile/' + this.user.id);
-          });
-        });
-      }
     }
   }
 }
