@@ -139,10 +139,17 @@ export class Registered extends React.Component {
 export class ForgotPassword extends React.Component {
   render() {
     return (
-      <div>
-        <Link to='/login'>Back to login</Link> <br/>
-        <input ref="fpemail" placeholder="Type your email"></input><br/>
-        <button ref="fpsubmit">Request</button>
+      <div className='centeredDiv'>
+        <div ref='newPassword' className='loginDiv'>
+          <div className='loginLogo'>
+          LOGO
+          </div>
+          <div ref='resetContent'>
+            <input ref="fpemail" placeholder="Type your email"></input><br/>
+            <button ref="fpsubmit">Request</button> <br />
+            <Link to='/login'>Back to login</Link>
+          </div>
+        </div>
       </div>
     );
   }
@@ -155,11 +162,11 @@ export class ForgotPassword extends React.Component {
     this.refs.fpsubmit.onclick = () => {
       userService.getUserbyMail(this.refs.fpemail.value, (result) => {
         if (result == undefined) {
-          alert('No users with this email adress.');
+          alert('Ingen brukere med denne epostadressen');
         }
         else {
           userService.resetPassword(result.email, result.username, (result, subject, text, email) => {
-            this.nextPath('/passwordsent/' + email);
+            this.refs.resetContent.textContent = 'Nytt passord er sendt.'
           });
         }
       });

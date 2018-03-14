@@ -12,11 +12,15 @@ export class EventList extends React.Component {
 
   toEvent(id) {
     if (loggedin.admin == true) {
-      this.props.history.push('/eventdetailsadmin' + id);
+      this.props.history.push('/eventdetailsadmin/' + id);
     }
     else {
-      this.props.history.push('/eventdetails' + id);
+      this.props.history.push('/eventdetails/' + id);
     }
+  }
+
+  nextPath(path) {
+    this.props.history.push(path);
   }
 
   render() {
@@ -25,22 +29,45 @@ export class EventList extends React.Component {
       evntsList.push(<tr key={evnt.id} className='tableRow' onClick={() => this.toEvent(evnt.id)}><td className='tableLines'>{evnt.title}</td><td className='tableLines'>{evnt.start}</td><td className='tableLines'>{evnt.end}</td></tr>)
     }
 
-    return(
-      <div className='tableList'>
-        <table className='eventTable'>
-          <thead>
-            <tr>
-              <th className='tableLines'>Navn</th>
-              <th className='tableLines'>Start</th>
-              <th className='tableLines'>Slutt</th>
-            </tr>
-          </thead>
-          <tbody>
-          {evntsList}
-          </tbody>
-        </table>
-      </div>
-    );
+    if (loggedin.admin == true) {
+      return(
+        <div className='tableList'>
+          <table className='eventTable'>
+            <thead>
+              <tr>
+                <th className='tableLines'>Navn</th>
+                <th className='tableLines'>Start</th>
+                <th className='tableLines'>Slutt</th>
+              </tr>
+            </thead>
+            <tbody>
+            {evntsList}
+            </tbody>
+          </table>
+          <br />
+          <button onClick={() => this.nextPath('/createevent')}>Lag arrangement</button>
+        </div>
+      );
+    }
+
+    else {
+      return(
+        <div className='tableList'>
+          <table className='eventTable'>
+            <thead>
+              <tr>
+                <th className='tableLines'>Navn</th>
+                <th className='tableLines'>Start</th>
+                <th className='tableLines'>Slutt</th>
+              </tr>
+            </thead>
+            <tbody>
+            {evntsList}
+            </tbody>
+          </table>
+        </div>
+      );
+    }
   }
 
   componentDidMount () {
@@ -76,6 +103,31 @@ export class EventDetails extends React.Component {
   }
 }
 
+export class EventDetailsAdmin extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.arrangement = {};
+
+    this.id = props.match.params.eventId;
+  }
+
+  render() {
+    return(
+      <div>
+        {this.arrangement.title}
+      </div>
+    );
+  }
+
+  componentDidMount() {
+    eventService.getEvent(this.id, (result) => {
+      this.arrangement = result;
+      this.forceUpdate();
+    });
+  }
+}
+
 export class CreateEvent extends React.Component {
   render() {
     return(
@@ -85,7 +137,7 @@ export class CreateEvent extends React.Component {
         <input ref='start' type='date' /> <br />
         <input ref='end' type='date' /> <br />
         <input ref='adresse' type='text' /> <br />
-        <button></button>
+        <button>Bekreft</button>
       </div>
     );
   }

@@ -78,7 +78,12 @@ export class UserListAdmin extends React.Component {
   }
 
   activate(id) {
-    console.log(id);
+    userService.confirm(id, (result) => {
+      userService.getUsers((result) => {
+        this.userList = result;
+        this.forceUpdate();
+      });
+    });
   }
 
   deactivate(id) {
@@ -91,8 +96,8 @@ export class UserListAdmin extends React.Component {
   }
 
   render() {
-    let userList = [];
     let adminList = [];
+    let userList = [];
     let deactivatedList = [];
     for (let user of this.userList) {
       if (user.admin == true) {
@@ -100,7 +105,7 @@ export class UserListAdmin extends React.Component {
       }
 
       else if (user.aktivert == false) {
-        deactivatedList.push(<tr key={user.id} className='tableRow'><td onClick={() => this.nextPath('/profile/' + user.id)} style={{width: 40+'%'}} className='tableLines'>{user.firstName} {user.lastName}</td><td className='tableLines'><button onClick={() => this.activate(user.id)}>Aktiver</button></td></tr>);
+        deactivatedList.push(<tr key={user.id} className='tableRow'><td onClick={() => this.nextPath('/profile/' + user.id)} style={{width: 40+'%'}} className='tableLines'>{user.firstName} {user.lastName}</td><td style={{width: 5 + '%'}} className='tableLines'><button className='activateBtn' onClick={() => this.activate(user.id)}>Aktiver</button></td></tr>);
       }
 
       else {
@@ -108,55 +113,92 @@ export class UserListAdmin extends React.Component {
       }
     }
 
-    return (
-      <div className='userList'>
-        <input ref='search' type='text' placeholder='Søk etter bruker' />
-        <h3>Admins</h3>
-        <table className='userTable'>
-          <thead>
-            <tr>
-              <th className='tableLines'>Navn</th>
-              <th className='tableLines'>Telefon</th>
-              <th className='tableLines'>Epost</th>
-            </tr>
-          </thead>
-          <tbody>
-            {adminList}
-          </tbody>
-        </table>
+    if (deactivatedList.length == 0) {
+      return(
+        <div className='userList'>
+          <input ref='search' type='text' placeholder='Søk etter bruker' />
+          <h3>Admins</h3>
+          <table className='userTable'>
+            <thead>
+              <tr>
+                <th className='tableLines'>Navn</th>
+                <th className='tableLines'>Telefon</th>
+                <th className='tableLines'>Epost</th>
+              </tr>
+            </thead>
+            <tbody>
+              {adminList}
+            </tbody>
+          </table>
 
-        <br />
+          <br />
 
-        <h3>Andre brukere</h3>
-        <table className='userTable'>
-          <thead>
-            <tr>
-              <th className='tableLines'>Navn</th>
-              <th className='tableLines'>Telefon</th>
-              <th className='tableLines'>Epost</th>
-            </tr>
-          </thead>
-          <tbody>
-            {userList}
-          </tbody>
-        </table>
+          <h3>Andre brukere</h3>
+          <table className='userTable'>
+            <thead>
+              <tr>
+                <th className='tableLines'>Navn</th>
+                <th className='tableLines'>Telefon</th>
+                <th className='tableLines'>Epost</th>
+              </tr>
+            </thead>
+            <tbody>
+              {userList}
+            </tbody>
+          </table>
 
-        <br />
+          <br />
 
-        <h3>Deaktiverte brukere</h3>
-        <table className='userTable'>
-          <thead>
-            <tr>
-              <th className='tableLines'>Navn</th>
-              <th className='tableLines'>Knapp</th>
-            </tr>
-          </thead>
-          <tbody>
-            {deactivatedList}
-          </tbody>
-        </table>
-      </div>
-    );
+          <h4>Ingen deaktiverte brukere</h4>
+        </div>
+      );
+    }
+
+    else {
+      return (
+        <div className='userList'>
+          <input ref='search' type='text' placeholder='Søk etter bruker' />
+          <h3>Admins</h3>
+          <table className='userTable'>
+            <thead>
+              <tr>
+                <th className='tableLines'>Navn</th>
+                <th className='tableLines'>Telefon</th>
+                <th className='tableLines'>Epost</th>
+              </tr>
+            </thead>
+            <tbody>
+              {adminList}
+            </tbody>
+          </table>
+
+          <br />
+
+          <h3>Andre brukere</h3>
+          <table className='userTable'>
+            <thead>
+              <tr>
+                <th className='tableLines'>Navn</th>
+                <th className='tableLines'>Telefon</th>
+                <th className='tableLines'>Epost</th>
+              </tr>
+            </thead>
+            <tbody>
+              {userList}
+            </tbody>
+          </table>
+
+          <br />
+
+          <h3>Deaktiverte brukere</h3>
+          <table className='userTable'>
+            <tbody>
+              {deactivatedList}
+            </tbody>
+          </table>
+        </div>
+      );
+    }
   }
 
   componentDidMount() {
@@ -164,6 +206,14 @@ export class UserListAdmin extends React.Component {
       this.userList = result;
       this.forceUpdate();
     });
+
+    this.refs.search.oninput = () => {
+      this.resultList = [];
+      userService.searchUser(this.refs.search.value, (result) => {
+        this.userList = result;
+        this.forceUpdate();
+      });
+    }
   }
 }
 

@@ -53,6 +53,12 @@ export class Profile extends React.Component {
         alert('Passord sendt til ' + selectedUser.email);
       });
     }
+
+    this.refs.deactivate.onclick = () => {
+      userService.deactivate(this.user.id, (result) => {
+        this.nextPath('/userlistadmin');
+      });
+    }
   }
 }
 
