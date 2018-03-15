@@ -42,6 +42,9 @@ export class Profile extends React.Component {
   }
 
   componentDidMount() {
+    if (this.id == loggedin.id) {
+      this.nextPath('/myprofile/' + this.id);
+    }
     userService.getUser(this.id, (result) => {
       this.user = result;
       selectedUser = result;

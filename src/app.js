@@ -39,6 +39,7 @@ class ChangePassword extends React.Component {
     super(props);
 
     this.user = loggedin;
+    console.log('Change password');
   }
   render() {
     return(
@@ -155,6 +156,7 @@ export function renderAdminLogin(user) {
           <Route exact path='/eventlist' component={EventList} />
           <Route exact path='/eventdetails/:eventId' component={EventDetails} />
           <Route exact path='/createevent' component={CreateEvent} />
+          <Route exact path='/changepassword' component={ChangePassword} />
           <UnconfirmedUsers />
         </Switch>
       </div>
