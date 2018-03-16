@@ -49,7 +49,7 @@ export class UnconfirmedUsers extends React.Component {
 
       return(
         <div className='centeredDiv'>
-          <h3>Unconfirmed users</h3>
+          <h3>Deaktiverte brukere</h3>
           <ul className='userUl'>{listItems}</ul>
           <br />
           <button ref='confirmAll' onClick={() => this.confirmAll()}>Confirm all</button>

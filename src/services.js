@@ -47,7 +47,7 @@ class UserService {
   }
 
   addUser(fname, lname, city, adress, postalnumber, phonenumber, email, username, password, callback) {
-    connection.query('INSERT INTO Users (firstName, lastName, city, adress, postalnumber, phonenumber, email, username, password) values (?, ?, ?, ?, ?, ?, ?, ?, ?)', [fname, lname, city, adress, postalnumber, phonenumber, email, username, password], (error, result) => {
+    connection.query('INSERT INTO Users (firstName, lastName, city, adress, postalnumber, phonenumber, email, username, passw) values (?, ?, ?, ?, ?, ?, ?, ?, ?)', [fname, lname, city, adress, postalnumber, phonenumber, email, username, password], (error, result) => {
       if (error) throw error;
 
       else {
@@ -67,7 +67,7 @@ class UserService {
   }
 
   login(username, password, callback) {
-    connection.query('SELECT * FROM Users WHERE (username=? AND password=?)', [username, password], (error, result) => {
+    connection.query('SELECT * FROM Users WHERE (username=? AND passw=?)', [username, password], (error, result) => {
       if (error) throw error;
 
       callback(result[0]);

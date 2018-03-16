@@ -9,6 +9,10 @@ import { Profile, MyProfile, EditProfile } from './profile';
 import { UnconfirmedUsers, UserListAdmin, UserList, UserDetails } from './users';
 import { EventList, EventDetails, CreateEvent } from './events';
 
+import crypto from 'crypto';
+
+crypto.DEFAULT_ENCODING = 'hex';
+
 class Home extends React.Component {
   constructor(props) {
     super(props);

@@ -2,6 +2,9 @@ import React from 'react';
 import { Link, HashRouter, Switch, Route } from 'react-router-dom';
 import { userService } from './services';
 import { renderLogin, renderAdminLogin } from './app';
+import crypto from 'crypto';
+
+crypto.DEFAULT_ENCODING = 'hex';
 
 let loggedin = {};
 
@@ -34,27 +37,34 @@ export class Login extends React.Component {
 
   componentDidMount () {
     this.refs.login.onclick = () => {
-      userService.login(this.refs.username.value, this.refs.password.value, (result) => {
-        if (result == undefined) {
-          alert("Feil brukernavn eller passord");
-        }
-        else {
-          loggedin = result;
+      crypto.pbkdf2(this.refs.password.value, 'RødeKors', 100, 64, 'sha512', (err, derivedKey) => {
+        if (err) throw err;
 
-          if (result.admin == true) {
-            renderAdminLogin(result.id);
+        this.password = derivedKey;
+
+
+        userService.login(this.refs.username.value, this.password, (result) => {
+          if (result == undefined) {
+            alert("Feil brukernavn eller passord");
           }
-
           else {
-            if (result.aktivert == false) {
-              alert('Brukeren din er ikke godkjent av administrator enda.');
+            loggedin = result;
+
+            if (result.admin == true) {
+              renderAdminLogin(result.id);
             }
 
             else {
-              renderLogin(result.id);
+              if (result.aktivert == false) {
+                alert('Brukeren din er ikke godkjent av administrator enda.');
+              }
+
+              else {
+                renderLogin(result.id);
+              }
             }
           }
-        }
+        });
       });
     }
   }
@@ -67,6 +77,8 @@ export class Registration extends React.Component {
     this.state = {
       city: ''
     }
+
+    this.password = '';
   }
 
   render() {
@@ -115,10 +127,16 @@ export class Registration extends React.Component {
      }
 
      else {
-     userService.addUser(this.refs.fname.value, this.refs.lname.value, this.refs.city.value,
-       this.refs.adress.value, Number(this.refs.postalnumber.value), Number(this.refs.tlf.value), this.refs.email.value, this.refs.username.value,
-       this.refs.password1.value, (result) => {
-         this.nextPath('/registered');
+       crypto.pbkdf2(this.refs.password1.value, 'RødeKors', 100, 64, 'sha512', (err, derivedKey) => {
+         if (err) throw err;
+
+         this.password = derivedKey;
+
+         userService.addUser(this.refs.fname.value, this.refs.lname.value, this.refs.city.value,
+           this.refs.adress.value, Number(this.refs.postalnumber.value), Number(this.refs.tlf.value), this.refs.email.value, this.refs.username.value,
+           this.password, (result) => {
+             this.nextPath('/registered');
+         });
        });
      }
    }
