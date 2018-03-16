@@ -8,7 +8,6 @@ import { Login, Registration, Registered, ForgotPassword, PasswordSent, loggedin
 import { Profile, MyProfile, EditProfile } from './profile';
 import { UnconfirmedUsers, UserListAdmin, UserList, UserDetails } from './users';
 import { EventList, EventDetails, CreateEvent } from './events';
-
 import crypto from 'crypto';
 
 crypto.DEFAULT_ENCODING = 'hex';
