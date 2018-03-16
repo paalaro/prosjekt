@@ -10,13 +10,8 @@ export class EventList extends React.Component {
     this.evntList = [];
   }
 
-  toEvent(id) {
-    if (loggedin.admin == true) {
-      this.props.history.push('/eventdetailsadmin/' + id);
-    }
-    else {
-      this.props.history.push('/eventdetails/' + id);
-    }
+  nextPath(path) {
+    this.props.history.push(path);
   }
 
   nextPath(path) {
@@ -26,7 +21,7 @@ export class EventList extends React.Component {
   render() {
     let evntsList = [];
     for (let evnt of this.evntList) {
-      evntsList.push(<tr key={evnt.id} className='tableRow' onClick={() => this.toEvent(evnt.id)}><td className='tableLines'>{evnt.title}</td><td className='tableLines'>{evnt.start}</td><td className='tableLines'>{evnt.end}</td></tr>)
+      evntsList.push(<tr key={evnt.eventid} className='tableRow' onClick={() => this.nextPath('/eventdetails/' + evnt.eventid)}><td className='tableLines'>{evnt.title}</td><td className='tableLines'>{evnt.start}</td><td className='tableLines'>{evnt.end}</td></tr>)
     }
 
     if (loggedin.admin == true) {

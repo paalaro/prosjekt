@@ -176,7 +176,7 @@ class EventService {
   }
 
   getEvent(id, callback) {
-    connection.query('SELECT * FROM Events WHERE id = ?', [id], (error, result) => {
+    connection.query('SELECT * FROM Events WHERE eventid = ?', [id], (error, result) => {
       if (error) throw error;
 
       callback(result[0]);
