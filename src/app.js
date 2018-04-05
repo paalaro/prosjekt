@@ -7,7 +7,7 @@ import { Menu, LoggedinMenu, AdminLoggedinMenu } from './menues';
 import { Login, Registration, Registered, ForgotPassword, PasswordSent, loggedin, updateUserDetails, deselectUser } from './outlogged';
 import { Profile, MyProfile, EditProfile } from './profile';
 import { UnconfirmedUsers, UserListAdmin, UserList, UserDetails } from './users';
-import { EventList, EventDetails, CreateEvent } from './events';
+import { EventList, EventDetails, CreateEvent } from './events'
 import crypto from 'crypto';
 
 crypto.DEFAULT_ENCODING = 'hex';
@@ -42,7 +42,6 @@ class ChangePassword extends React.Component {
     super(props);
 
     this.user = loggedin;
-    console.log('Change password');
   }
   render() {
     return(
@@ -62,25 +61,41 @@ class ChangePassword extends React.Component {
 
   componentDidMount() {
     this.refs.submitnewpw.onclick = () => {
-      if (this.user.password != this.refs.oldpw.value) {
-        console.log('Old password is wrong.');
-      }
 
-      else {
-        if(this.refs.newpw.value != this.refs.confirmnewpw.value) {
-          console.log('The new passwords are not matching.');
+      crypto.pbkdf2(this.refs.oldpw.value, 'RødeKors', 100, 64, 'sha512', (err, derivedKey) => {
+        if (err) throw err;
+
+        this.oldpw = derivedKey;
+
+        console.log(this.oldpw);
+        console.log(this.user.passw);
+
+        if (this.user.passw != this.oldpw) {
+          console.log('Det gamle passordet stemmer ikke');
         }
 
         else {
-          userService.changePassword(this.user.id, this.refs.newpw.value, (result) => {
-            userService.getUser(this.user.id, (result) => {
-              console.log('Password for ' + this.user.username + ' is updated.');
-              updateUserDetails();
-              this.nextPath('/profile/' + this.user.id);
+          if(this.refs.newpw.value != this.refs.confirmnewpw.value) {
+            console.log('De nye passordene stemmer ikke');
+          }
+
+          else {
+            crypto.pbkdf2(this.refs.newpw.value, 'RødeKors', 100, 64, 'sha512', (err, derivedKey) => {
+              if (err) throw err;
+
+              this.newpw = derivedKey;
+
+              userService.changePassword(this.user.id, this.newpw, (result) => {
+                userService.getUser(this.user.id, (result) => {
+                  console.log('Password for ' + this.user.username + ' is updated.');
+                  updateUserDetails();
+                  this.nextPath('/profile/' + this.user.id);
+                });
+              });
             });
-          });
+          }
         }
-      }
+      });
     }
   }
 }

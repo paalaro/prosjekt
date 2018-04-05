@@ -134,7 +134,6 @@ constructor() {
       email: this.user.email,
       adress: this.user.adress,
       postalnumber: this.user.postalnumber,
-      city: this.user.city
     };
   }
 
@@ -158,8 +157,7 @@ constructor() {
         <input name='email' ref='email' value={this.state.email} onChange={this.onFieldChange('email').bind(this)} />
         <br />
         <input name='adress' ref='adress' value={this.state.adress} onChange={this.onFieldChange('adress').bind(this)} />
-        <input name='postalnumber' ref='postalnumber' type='number' value={this.state.postalnumber} onChange={this.onFieldChange('postalnumber').bind(this)} />
-        <input name='city' ref='city' value={this.state.city} onChange={this.onFieldChange('city').bind(this)} />
+        <input name='postalnumber' ref='postalnumber' maxLength='4' value={this.state.postalnumber} onChange={this.onFieldChange('postalnumber').bind(this)} />
         <br />
         <button ref='editUserBtn'>Confirm</button>
       </div>
@@ -172,11 +170,19 @@ constructor() {
       this.forceUpdate();
     });
 
+    this.refs.postalnumber.oninput = () => {
+      userService.getCity(this.refs.postalnumber.value, (result) => {
+        if (result != undefined) {
+          this.city = result.poststed;
+        }
+      });
+    }
+
     this.refs.editUserBtn.onclick = () => {
       userService.editProfile(selectedUser.id, this.refs.firstName.value, this.refs.lastName.value,
                               Number(this.refs.phonenumber.value),
                               this.refs.email.value, this.refs.adress.value, Number(this.refs.postalnumber.value),
-                              this.refs.city.value, (result) => {
+                              this.city, (result) => {
         userService.getUser(selectedUser.id, (result) => {
           updateUserDetails();
           this.nextPath('/profile/' + selectedUser.id);

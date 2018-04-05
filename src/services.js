@@ -90,7 +90,7 @@ class UserService {
   }
 
   changePassword(id, newpw, callback) {
-    connection.query('UPDATE Users SET password=? WHERE id=?', [newpw, id], (error,result) => {
+    connection.query('UPDATE Users SET passw=? WHERE id=?', [newpw, id], (error,result) => {
       if (error) throw error;
 
       callback(result);
