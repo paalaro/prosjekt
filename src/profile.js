@@ -24,6 +24,19 @@ export class Profile extends React.Component {
   }
 
   render() {
+    let activateBtn;
+    let status;
+
+    if (this.user.aktivert == true) {
+      activateBtn = <button ref="activateBtn">Deaktiver</button>;
+      status = "Aktiv";
+    }
+
+    else {
+      activateBtn = <button ref="activateBtn">Aktiver</button>;
+      status = "Deaktivert";
+    }
+
     return(
       <div>
         <div>
@@ -33,9 +46,10 @@ export class Profile extends React.Component {
           Email: {this.user.email} <br />
           Adress: {this.user.adress + ', ' + this.user.postalnumber + ' ' + this.user.city} <br />
           <br />
+          Status: {status} <br />
           <Link to='/editprofile'><button ref='editUser'>Endre</button></Link>
           <button ref='newpassword'>Send nytt passord på mail</button>
-          <button ref='deactivate'>Deaktiver</button>
+          {activateBtn}
         </div>
       </div>
     );
@@ -57,10 +71,18 @@ export class Profile extends React.Component {
       });
     }
 
-    this.refs.deactivate.onclick = () => {
-      userService.deactivate(this.user.id, (result) => {
-        this.nextPath('/userlistadmin');
-      });
+    this.refs.activateBtn.onclick = () => {
+      if (this.user.aktivert == true) {
+        userService.deactivate(this.user.id, (result) => {
+          this.nextPath('/userlistadmin');
+        });
+      }
+
+      else {
+        userService.confirm(this.user.id, (result) => {
+          this.nextPath('/userlistadmin');
+        })
+      }
     }
   }
 }

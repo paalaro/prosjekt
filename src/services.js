@@ -1,5 +1,7 @@
 import mysql from 'mysql';
 import { mailService } from './mail';
+import crypto from 'crypto';
+crypto.DEFAULT_ENCODING = 'hex';
 
 // Setup database server reconnection when server timeouts connection:
 let connection;
@@ -75,17 +77,25 @@ class UserService {
   }
 
   resetPassword(email, username, callback) {
-    var newPassword = Math.random().toString(36).slice(-8);
+    let newPassword = Math.random().toString(36).slice(-8);
+    let cryptopw;
 
-    connection.query('UPDATE Users SET password=? WHERE email=?', [newPassword, email], (error, result) => {
-      if (error) throw error;
 
-      let subject = "Password reset for " + username;
-      let text = "Your new password is: " + newPassword;
+    crypto.pbkdf2(newPassword, 'RødeKors', 100, 64, 'sha512', (err, derivedKey) => {
+      if (err) throw err;
 
-      mailService.sendMail(email, subject, text);
+      cryptopw = derivedKey;
 
-      callback(result, subject, text, email);
+      connection.query('UPDATE Users SET passw=? WHERE email=?', [cryptopw, email], (error, result) => {
+        if (error) throw error;
+
+        let subject = "Tilbakestilling av passord for " + username;
+        let text = "Ditt nye passord er: " + newPassword;
+
+        mailService.sendMail(email, subject, text);
+
+        callback(result, subject, text, email);
+      });
     });
   }
 
@@ -180,6 +190,14 @@ class EventService {
       if (error) throw error;
 
       callback(result[0]);
+    });
+  }
+
+  createEvent(title, text, start, end, adress, postalnumber, callback) {
+    connection.query('INSERT INTO Events (title, text, start, end, adress, postalnumber) values (?, ?, ?, ?, ?, ?)', [title, text, start, end, adress, postalnumber], (error, result) => {
+      if (error) throw error;
+
+      callback();
     });
   }
 }

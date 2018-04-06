@@ -67,9 +67,6 @@ class ChangePassword extends React.Component {
 
         this.oldpw = derivedKey;
 
-        console.log(this.oldpw);
-        console.log(this.user.passw);
-
         if (this.user.passw != this.oldpw) {
           console.log('Det gamle passordet stemmer ikke');
         }
@@ -87,7 +84,6 @@ class ChangePassword extends React.Component {
 
               userService.changePassword(this.user.id, this.newpw, (result) => {
                 userService.getUser(this.user.id, (result) => {
-                  console.log('Password for ' + this.user.username + ' is updated.');
                   updateUserDetails();
                   this.nextPath('/profile/' + this.user.id);
                 });

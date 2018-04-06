@@ -127,17 +127,22 @@ export class CreateEvent extends React.Component {
   render() {
     return(
       <div>
-        <input ref='title' type='text' /> <br />
-        <input ref='text' type='text' /> <br />
-        <input ref='start' type='date' /> <br />
-        <input ref='end' type='date' /> <br />
-        <input ref='adresse' type='text' /> <br />
-        <button>Bekreft</button>
+        <input ref='title' type='text' placeholder='Tittel'/> <br />
+        <input ref='text' type='text' placeholder='Beskrivelse'/> <br />
+        <input ref='start' type='date' placeholder='Startdato'/> <br />
+        <input ref='end' type='date' placeholder='Sluttdato'/> <br />
+        <input ref='adresse' type='text' placeholder='Adresse'/> <br />
+        <input ref='postalnumber' type='text' maxLength='4' placeholder='Postnr'/> <br />
+        <button ref='createEvent'>Registrer arrangement</button>
       </div>
     );
   }
 
   componentDidMount() {
-
+    this.refs.createEvent.onclick = () => {
+      eventService.createEvent(this.refs.title.value, this.refs.text.value, this.refs.start.value, this.refs.end.value, this.refs.adresse.value, this.refs.postalnumber.value, (result) => {
+        console.log('Arr reg');
+      });
+    }
   }
 }
