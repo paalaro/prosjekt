@@ -2,11 +2,12 @@ import React from 'react';
 import { Link, NavLink, HashRouter, Switch, Route } from 'react-router-dom';
 import { userService } from './services';
 
-export class UnconfirmedUsers extends React.Component {
+export class Requests extends React.Component {
   constructor(props) {
     super(props);
 
     this.unconfirmedUsers = [];
+    this.vaktbytter = [];
   }
 
   confirm(userId) {
@@ -30,32 +31,65 @@ export class UnconfirmedUsers extends React.Component {
   }
 
   render() {
-    if (this.unconfirmedUsers.length == 0) {
-      return(
-        <div className='centeredDiv'>
-          <div className='alert'>
-            <h2>Ingen brukere venter på godkjenning</h2>
-          </div>
+    let vaktbytter;
+    let users;
+
+    if (this.vaktbytter.length == 0) {
+      vaktbytter = <div className='centeredDiv'>
+        <div className='alert'>
+          <h2>Ingen vaktbytter venter på godkjenning</h2>
         </div>
-      );
+      </div>
+    }
+
+    if (this.unconfirmedUsers.length == 0) {
+      users = <div className='centeredDiv'>
+        <div className='alert'>
+          <h2>Ingen brukere venter på godkjenning</h2>
+        </div>
+      </div>;
     }
 
     else {
-      let listItems = [];
+      let unconfirmedList = [];
+      let vaktbytteList = [];
       for(let unconfirmedUser of this.unconfirmedUsers) {
-        // NavLink is an extension of Link that can add style on the link that matches the active path
-        listItems.push(<li key={unconfirmedUser.id} className=''>{unconfirmedUser.firstName + ' ' + unconfirmedUser.lastName}<button onClick={() => this.confirm(unconfirmedUser.id)}>Confirm</button></li>);
+        unconfirmedList.push(<li key={unconfirmedUser.id} className=''>{unconfirmedUser.firstName + ' ' + unconfirmedUser.lastName}<button onClick={() => this.confirm(unconfirmedUser.id)}>Confirm</button></li>);
       }
 
-      return(
-        <div className='centeredDiv'>
-          <h3>Deaktiverte brukere</h3>
-          <ul className='userUl'>{listItems}</ul>
-          <br />
-          <button ref='confirmAll' onClick={() => this.confirmAll()}>Confirm all</button>
-        </div>
-      );
+      for(let vaktbytte of this.vaktbytter) {
+        eventService.getEvent(vaktbytte.eventid, (result) => {
+          this.eventName = result.title;
+          userService.getUser(vaktbytte.olduserid, (result) => {
+            this.oldUser = result.firstName + ' ' + result.lastName;
+            userService.getUser(vaktbytte.newuserid, (result) => {
+              this.newUser = result.firstName + ' ' + result.lastName;
+              adminList.push(<tr key={user.id} className='tableRow'><td onClick={() => this.nextPath('/profile/' + user.id)} style={{width: 40+'%'}} className='tableLines'>{user.firstName} {user.lastName}</td></tr>);
+              vaktbytteList.push(<tr key={vaktbytte.id} className='tableRow'><td>{this.eventName}</td><td>{this.oldUser}</td><td>{this.newUser}</td><td><button>Godkjenn</button></td></tr>)
+            });
+          });
+        });
+
+
+
+      }
+
+
+      users = <div className='centeredDiv'>
+        <h3>Deaktiverte brukere</h3>
+        <ul className='userUl'>{unconfirmedList}</ul>
+        <br />
+        <button ref='confirmAll' onClick={() => this.confirmAll()}>Confirm all</button>
+      </div>;
     }
+
+    return(
+      <div>
+        {vaktbytter}
+        <hr />
+        {users}
+      </div>
+    );
   }
 
   componentDidMount() {

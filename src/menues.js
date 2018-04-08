@@ -33,7 +33,7 @@ export class AdminLoggedinMenu extends React.Component {
       <ul className="navbar-ul">
         <li className="navbar-li"><Link to='/eventlist' className="navbar-link">Arrangement</Link></li>
         <li className="navbar-li"><Link to='/userlistadmin' className="navbar-link">Brukere</Link></li>
-        <li className="navbar-li"><Link to='/unconfirmedusers' className="navbar-link">Ventende brukere</Link></li>
+        <li className="navbar-li"><Link to='/requests' className="navbar-link">Forespørsler</Link></li>
         <li className="navbar-li"><Link to={'/myprofile/' + this.id} className="navbar-link">Min profil</Link></li>
 
         <li className="navbar-li-right"><Link to='#' onClick={() => logout()} className='navbar-link'>Logg ut</Link></li>

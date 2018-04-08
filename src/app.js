@@ -6,36 +6,11 @@ import { mailService } from './mail';
 import { Menu, LoggedinMenu, AdminLoggedinMenu } from './menues';
 import { Login, Registration, Registered, ForgotPassword, PasswordSent, loggedin, updateUserDetails, deselectUser } from './outlogged';
 import { Profile, MyProfile, EditProfile } from './profile';
-import { UnconfirmedUsers, UserListAdmin, UserList, UserDetails } from './users';
+import { Requests, UserListAdmin, UserList, UserDetails } from './users';
 import { EventList, EventDetails, CreateEvent } from './events'
 import crypto from 'crypto';
 
 crypto.DEFAULT_ENCODING = 'hex';
-
-class Home extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.user = {};
-
-    this.id = props.userId;
-  }
-
-  render() {
-    return(
-      <div>
-        <h5>Du er logget inn som { this.user.firstName + ' ' + this.user.lastName }</h5>
-      </div>
-    );
-  }
-
-  componentDidMount() {
-    userService.getUser(this.id, (result) => {
-      this.user = result;
-      this.forceUpdate();
-    });
-  }
-}
 
 class ChangePassword extends React.Component {
   constructor(props) {
@@ -149,7 +124,7 @@ export function renderLogin(user) {
           <Route exact path='/userdetails/:userId' component={UserDetails} />
           <Route exact path='/eventlist' component={EventList} />
           <Route exact path='/eventdetails/:eventId' component={EventDetails} />
-          <Home userId={user} />
+          <EventList />
         </Switch>
       </div>
     </HashRouter>
@@ -163,7 +138,7 @@ export function renderAdminLogin(user) {
         <AdminLoggedinMenu userId={user}/>
         <Switch>
           <Route exact path='/userlistadmin' component={UserListAdmin} />
-          <Route exact path='/unconfirmedusers' component={UnconfirmedUsers} />
+          <Route exact path='/requests' component={Requests} />
           <Route exact path='/myprofile/:userId' component={MyProfile} />
           <Route exact path='/profile/:userId' component={Profile} />
           <Route exact path='/editprofile' component={EditProfile} />
@@ -171,7 +146,7 @@ export function renderAdminLogin(user) {
           <Route exact path='/eventdetails/:eventId' component={EventDetails} />
           <Route exact path='/createevent' component={CreateEvent} />
           <Route exact path='/changepassword' component={ChangePassword} />
-          <UnconfirmedUsers />
+          <Requests />
         </Switch>
       </div>
     </HashRouter>

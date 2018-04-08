@@ -121,7 +121,7 @@ export class MyProfile extends React.Component {
               </tr>
               <tr>
                 <td>Poststed:</td>
-                <td>{this.user.postalnumber} {this.user.city}</td>
+                <td>{this.user.postalnumber} {this.city}</td>
               </tr>
             </tbody>
           </table>
@@ -138,7 +138,10 @@ export class MyProfile extends React.Component {
     userService.getUser(this.id, (result) => {
       this.user = result;
       selectedUser = result;
-      this.forceUpdate();
+      userService.getCity(this.user.postalnumber, (result) => {
+        this.city = result.poststed;
+        this.forceUpdate();
+      });
     });
   }
 }
@@ -204,7 +207,7 @@ constructor() {
       userService.editProfile(selectedUser.id, this.refs.firstName.value, this.refs.lastName.value,
                               Number(this.refs.phonenumber.value),
                               this.refs.email.value, this.refs.adress.value, Number(this.refs.postalnumber.value),
-                              this.city, (result) => {
+                              (result) => {
         userService.getUser(selectedUser.id, (result) => {
           updateUserDetails();
           this.nextPath('/profile/' + selectedUser.id);

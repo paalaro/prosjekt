@@ -115,8 +115,8 @@ class UserService {
     })
   }
 
-  editProfile(id, firstName, lastName, phonenumber, email, adress, postalnumber, city, callback) {
-    connection.query('UPDATE Users SET firstName=?, lastName=?, phonenumber=?, email=?, adress=?, postalnumber=?, city=? WHERE id=?', [firstName, lastName, phonenumber, email, adress, postalnumber, city, id], (error,result) => {
+  editProfile(id, firstName, lastName, phonenumber, email, adress, postalnumber, callback) {
+    connection.query('UPDATE Users SET firstName=?, lastName=?, phonenumber=?, email=?, adress=?, postalnumber=? WHERE id=?', [firstName, lastName, phonenumber, email, adress, postalnumber, id], (error,result) => {
       if (error) throw error;
 
       callback(result[0]);
@@ -198,6 +198,14 @@ class EventService {
       if (error) throw error;
 
       callback();
+    });
+  }
+
+  getVaktbytte(id, callback) {
+    connection.query('SELECT * FROM foresporsel WHERE id = ?', [id], (error, result) => {
+      if (error) throw error;
+
+      callback(result[0]);
     });
   }
 }
