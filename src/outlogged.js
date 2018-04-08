@@ -117,6 +117,10 @@ export class Registration extends React.Component {
          if (result != undefined) {
            this.refs.city.value = result.poststed;
          }
+
+         else {
+           this.refs.city.value = 'IKKE GYLDIG POSTNUMMER';
+         }
        });
      }
    }

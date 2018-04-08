@@ -44,7 +44,7 @@ export class Profile extends React.Component {
           Name: {this.user.firstName + ' ' + this.user.lastName} <br />
           Phone: {this.user.phonenumber} <br />
           Email: {this.user.email} <br />
-          Adress: {this.user.adress + ', ' + this.user.postalnumber + ' ' + this.user.city} <br />
+          Adress: {this.user.adress + ', ' + this.user.postalnumber + ' ' + this.city} <br />
           <br />
           Status: {status} <br />
           <Link to='/editprofile'><button ref='editUser'>Endre</button></Link>
@@ -62,7 +62,10 @@ export class Profile extends React.Component {
     userService.getUser(this.id, (result) => {
       this.user = result;
       selectedUser = result;
-      this.forceUpdate();
+      userService.getCity(this.user.postalnumber, (result) => {
+        this.city = result.poststed;
+        this.forceUpdate();
+      });
     });
 
     this.refs.newpassword.onclick = () => {
