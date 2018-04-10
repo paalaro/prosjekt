@@ -21,6 +21,10 @@ export class EventList extends React.Component {
   render() {
     let evntsList = [];
     for (let evnt of this.evntList) {
+      let day = evnt.start.getDate();
+      let month = evnt.start.getMonth() + 1;
+      let year = evnt.start.getFullYear();
+      console.log(day + '/' + month + '/' + year);
       evntsList.push(<tr key={evnt.eventid} className='tableRow' onClick={() => this.nextPath('/eventdetails/' + evnt.eventid)}><td className='tableLines'>{evnt.title}</td><td className='tableLines'>{evnt.start.toISOString().split("T")[0]}</td><td className='tableLines'>{evnt.end.toISOString().split("T")[0]}</td></tr>)
     }
 
@@ -92,22 +96,39 @@ export class EventDetails extends React.Component {
     this.evnt = {};
 
     this.id = props.match.params.eventId;
+    console.log(this.id);
+  }
+
+  fixDate(date) {
+    let day = date.getDate();
+    let month = date.getMonth() + 1;
+    let year = date.getFullYear();
+    let hours = date.getHours();
+    if (hours < 10) {
+      hours = '0' + hours;
+    }
+    let mins = date.getMinutes();
+    if (mins < 10) {
+      mins = '0' + mins;
+    }
+
+    let dateTime = startday + '/' + startmonth + '/' + startyear + ' ' + starthours + ':' + startmins;
+    console.log(dateTime);
+    return(dateTime);
   }
 
   render() {
-    console.log(this.evnt.start.toISOString().split("T")[0])
     return(
       <div>
         <h3>{this.evnt.title}</h3> <br />
-        Start: {this.evnt.start.toISOString().split("T")[0]} <br />
-        Slutt: <br />
+        Start: {this.start} <br />
+        Slutt: {this.end} <br />
       </div>
     );
   }
 
   componentDidMount() {
     eventService.getEvent(this.id, (result) => {
-      console.log(result.start.toISOString().split("T")[0]);
       this.evnt = result;
       this.forceUpdate();
     });
