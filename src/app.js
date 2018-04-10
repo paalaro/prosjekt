@@ -9,6 +9,7 @@ import { Profile, MyProfile, EditProfile } from './profile';
 import { Requests, UserListAdmin, UserList, UserDetails } from './users';
 import { EventList, EventDetails, CreateEvent } from './events'
 import crypto from 'crypto';
+import { Skills } from './skills';
 
 crypto.DEFAULT_ENCODING = 'hex';
 
@@ -71,15 +72,6 @@ class ChangePassword extends React.Component {
   }
 }
 
-class Skills extends React.Component {
-  render() {
-    return(
-      <div>
-        Skills
-      </div>
-    );
-  }
-}
 
 // The Route-elements define the different pages of the application
 // through a path and which component should be used for the path.

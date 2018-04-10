@@ -266,7 +266,7 @@ export class UserList extends React.Component {
         adminList.push(<tr key={user.id} className='tableRow'><td className='tableLines'>{user.firstName} {user.lastName}</td><td className='tableLines'>{user.phonenumber}</td><td className='tableLines'>{user.email}</td></tr>);
       }
 
-      else {
+      else if (user.admin == false && user.aktivert == true){
         userList.push(<tr key={user.id} className='tableRow'><td className='tableLines'>{user.firstName} {user.lastName}</td><td className='tableLines'>{user.phonenumber}</td><td className='tableLines'>{user.email}</td></tr>);
       }
     }

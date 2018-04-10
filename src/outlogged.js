@@ -141,7 +141,7 @@ export class Registration extends React.Component {
 
          this.password = derivedKey;
 
-         userService.addUser(this.refs.fname.value, this.refs.lname.value, this.refs.city.value,
+         userService.addUser(this.refs.fname.value, this.refs.lname.value,
            this.refs.adress.value, Number(this.refs.postalnumber.value), Number(this.refs.tlf.value), this.refs.email.value, this.refs.username.value,
            this.password, (result) => {
              this.nextPath('/registered');
