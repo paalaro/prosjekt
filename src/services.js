@@ -48,6 +48,13 @@ class UserService {
     });
   }
 
+  getSignedInUser() {
+    let item = localStorage.getItem('loggedinUser'); // Get User-object from browser
+    if(!item) return null;
+
+    return JSON.parse(item);
+  }
+
   addUser(fname, lname, city, adress, postalnumber, phonenumber, email, username, password, callback) {
     connection.query('INSERT INTO Users (firstName, lastName, city, adress, postalnumber, phonenumber, email, username, passw) values (?, ?, ?, ?, ?, ?, ?, ?, ?)', [fname, lname, city, adress, postalnumber, phonenumber, email, username, password], (error, result) => {
       if (error) throw error;

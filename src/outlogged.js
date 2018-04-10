@@ -14,6 +14,10 @@ export function deselectUser() {
   loggedin = {};
 }
 
+export function selectUser(user) {
+  loggedin = user;
+}
+
 export class Login extends React.Component {
   constructor(props) {
     super(props);
@@ -49,6 +53,7 @@ export class Login extends React.Component {
           }
           else {
             loggedin = result;
+            localStorage.setItem('loggedinUser', JSON.stringify(result));
 
             if (result.admin == true) {
               renderAdminLogin(result.id);

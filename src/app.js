@@ -4,7 +4,7 @@ import { Link, HashRouter, Switch, Route } from 'react-router-dom';
 import { userService } from './services';
 import { mailService } from './mail';
 import { Menu, LoggedinMenu, AdminLoggedinMenu } from './menues';
-import { Login, Registration, Registered, ForgotPassword, PasswordSent, loggedin, updateUserDetails, deselectUser } from './outlogged';
+import { Login, Registration, Registered, ForgotPassword, PasswordSent, loggedin, updateUserDetails, selectUser } from './outlogged';
 import { Profile, MyProfile, EditProfile } from './profile';
 import { Requests, UserListAdmin, UserList, UserDetails } from './users';
 import { EventList, EventDetails, CreateEvent } from './events'
@@ -88,23 +88,37 @@ class Skills extends React.Component {
 // means that the path /customer/5 will show the CustomerDetails
 // with props.match.params.customerId set to 5.
 
+
 export function renderOutlogged() {
-  deselectUser();
-  ReactDOM.render((
-    <HashRouter>
-      <div>
-        <Menu />
-        <Switch>
-          <Route exact path='/registration' component={Registration} />
-          <Route exact path='/login' component={Login} />
-          <Route exact path='/forgotpassword' component={ForgotPassword} />
-          <Route exact path='/passwordsent/:mail' component={PasswordSent} />
-          <Route exact path='/registered' component={Registered} />
-          <Login />
-        </Switch>
-      </div>
-    </HashRouter>
-  ), document.getElementById('root'));
+  let loggedinUser = userService.getSignedInUser();
+  if (loggedinUser != undefined) {
+    if (loggedinUser.admin == true) {
+      renderAdminLogin(loggedinUser.id);
+      selectUser(loggedinUser);
+    }
+    else {
+      renderLogin(loggedinUser.id);
+      selectUser(loggedinUser);
+    }
+  }
+  else {
+    console.log('Ingen bruker er innlogget');
+    ReactDOM.render((
+      <HashRouter>
+        <div>
+          <Menu />
+          <Switch>
+            <Route exact path='/registration' component={Registration} />
+            <Route exact path='/login' component={Login} />
+            <Route exact path='/forgotpassword' component={ForgotPassword} />
+            <Route exact path='/passwordsent/:mail' component={PasswordSent} />
+            <Route exact path='/registered' component={Registered} />
+            <Login />
+          </Switch>
+        </div>
+      </HashRouter>
+    ), document.getElementById('root'));
+  }
 }
 
 renderOutlogged();

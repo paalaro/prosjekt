@@ -6,6 +6,7 @@ import { deselectUser } from './outlogged';
 import { renderOutlogged } from './app';
 
 export function logout() {
+  localStorage.clear();
   deselectUser();
   renderOutlogged();
 }

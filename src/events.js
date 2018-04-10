@@ -5,6 +5,13 @@ import { loggedin } from './outlogged';
 import BigCalendar from 'react-big-calendar'
 import moment from 'moment'
 
+moment.locale('ko', {
+    week: {
+        dow: 1,
+        doy: 1,
+    },
+});
+
 BigCalendar.setLocalizer(BigCalendar.momentLocalizer(moment))
 
 export class EventList extends React.Component {
@@ -26,42 +33,9 @@ export class EventList extends React.Component {
       let year = evnt.start.getFullYear();
       evntsList.push(<tr key={evnt.eventid} className='tableRow' onClick={() => this.nextPath('/eventdetails/' + evnt.eventid)}><td className='tableLines'>{evnt.title}</td><td className='tableLines'>{evnt.start.toISOString().split("T")[0]}</td><td className='tableLines'>{evnt.end.toISOString().split("T")[0]}</td></tr>)
     }
-
-    if (loggedin.admin == true) {
-      return(
-        <div>
-          <div className='tableList'>
-            <table className='eventTable'>
-              <thead>
-                <tr>
-                  <th className='tableLines'>Navn</th>
-                  <th className='tableLines'>Start</th>
-                  <th className='tableLines'>Slutt</th>
-                </tr>
-              </thead>
-              <tbody>
-              {evntsList}
-              </tbody>
-            </table>
-            <br />
-            <button onClick={() => this.nextPath('/createevent')}>Lag arrangement</button>
-          </div>
-          <div style={{height: 400}}>
-             <BigCalendar
-               events={this.evntList}
-               showMultiDayTimes
-               defaultDate={new Date(2018, 2, 1)}
-               selectAble ={true}
-               onSelectEvent={event => this.props.history.push('/eventdetails/' + event.eventid)
-           }
-               />
-           </div>
-         </div>
-      );
-    }
-
-    else {
-      return(
+    
+    return(
+      <div>
         <div className='tableList'>
           <table className='eventTable'>
             <thead>
@@ -75,9 +49,21 @@ export class EventList extends React.Component {
             {evntsList}
             </tbody>
           </table>
+          <br />
+          <button onClick={() => this.nextPath('/createevent')}>Lag arrangement</button>
         </div>
-      );
-    }
+        <div style={{height: 400}}>
+           <BigCalendar
+             events={this.evntList}
+             showMultiDayTimes
+             defaultDate={new Date(2018, 2, 1)}
+             selectAble ={true}
+             onSelectEvent={event => this.props.history.push('/eventdetails/' + event.eventid)
+         }
+             />
+         </div>
+       </div>
+    );
   }
 
   componentDidMount () {
@@ -167,7 +153,7 @@ export class CreateEvent extends React.Component {
         <input ref='title' type='text' placeholder='Tittel'/> <br />
         <input ref='text' type='text' placeholder='Beskrivelse'/> <br />
         <input ref='start' type='datetime-local' placeholder='Startdato'/> <br />
-        <input ref='end' type='date' placeholder='Sluttdato'/> <br />
+        <input ref='end' type='datetime-local' placeholder='Sluttdato'/> <br />
         <input ref='adresse' type='text' placeholder='Adresse'/> <br />
         <input ref='postalnumber' type='text' maxLength='4' placeholder='Postnr'/> <br />
         <button ref='createEvent'>Registrer arrangement</button>
