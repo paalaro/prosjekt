@@ -173,7 +173,7 @@ constructor() {
         return function (event) {
             this.setState({[fieldName]: event.target.value});
         }
-    }
+  }
 
   render() {
     return(

@@ -24,7 +24,6 @@ export class EventList extends React.Component {
       let day = evnt.start.getDate();
       let month = evnt.start.getMonth() + 1;
       let year = evnt.start.getFullYear();
-      console.log(day + '/' + month + '/' + year);
       evntsList.push(<tr key={evnt.eventid} className='tableRow' onClick={() => this.nextPath('/eventdetails/' + evnt.eventid)}><td className='tableLines'>{evnt.title}</td><td className='tableLines'>{evnt.start.toISOString().split("T")[0]}</td><td className='tableLines'>{evnt.end.toISOString().split("T")[0]}</td></tr>)
     }
 
@@ -96,7 +95,6 @@ export class EventDetails extends React.Component {
     this.evnt = {};
 
     this.id = props.match.params.eventId;
-    console.log(this.id);
   }
 
   fixDate(date) {
@@ -112,8 +110,7 @@ export class EventDetails extends React.Component {
       mins = '0' + mins;
     }
 
-    let dateTime = startday + '/' + startmonth + '/' + startyear + ' ' + starthours + ':' + startmins;
-    console.log(dateTime);
+    let dateTime = day + '/' + month + '/' + year + ' ' + hours + ':' + mins;
     return(dateTime);
   }
 
@@ -123,6 +120,7 @@ export class EventDetails extends React.Component {
         <h3>{this.evnt.title}</h3> <br />
         Start: {this.start} <br />
         Slutt: {this.end} <br />
+        Bekrivelse: {this.evnt.text} <br />
       </div>
     );
   }
@@ -130,6 +128,8 @@ export class EventDetails extends React.Component {
   componentDidMount() {
     eventService.getEvent(this.id, (result) => {
       this.evnt = result;
+      this.start = this.fixDate(this.evnt.start);
+      this.end = this.fixDate(this.evnt.end);
       this.forceUpdate();
     });
   }
@@ -166,7 +166,7 @@ export class CreateEvent extends React.Component {
       <div>
         <input ref='title' type='text' placeholder='Tittel'/> <br />
         <input ref='text' type='text' placeholder='Beskrivelse'/> <br />
-        <input ref='start' type='datetime' placeholder='Startdato'/> <br />
+        <input ref='start' type='datetime-local' placeholder='Startdato'/> <br />
         <input ref='end' type='date' placeholder='Sluttdato'/> <br />
         <input ref='adresse' type='text' placeholder='Adresse'/> <br />
         <input ref='postalnumber' type='text' maxLength='4' placeholder='Postnr'/> <br />
@@ -181,5 +181,52 @@ export class CreateEvent extends React.Component {
         console.log('Arr reg');
       });
     }
+  }
+}
+
+export class EditEvent extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.id = props.match.params.eventId;
+
+    this.state = {
+      title: this.evnt.title,
+      start: this.evnt.start,
+      end: this.evnt.end,
+      text: this.evnt.text,
+      adress: this.evnt.adress,
+      postalnumber: this.evnt.postalnumber,
+    };
+  }
+
+  onFieldChange(fieldName) {
+        return function (event) {
+            this.setState({[fieldName]: event.target.value});
+        }
+  }
+
+  render() {
+    return(
+      <div>
+        <input name='title' ref='title' value={this.state.title} onChange={this.onFieldChange('title').bind(this)} />
+        <input name='start' ref='lastName' type='date' value={this.state.lastName} onChange={this.onFieldChange('lastName').bind(this)} />
+        <br />
+        <input name='phonenumber' ref='phonenumber' value={this.state.phonenumber} onChange={this.onFieldChange('phonenumber').bind(this)} />
+        <input name='email' ref='email' value={this.state.email} onChange={this.onFieldChange('email').bind(this)} />
+        <br />
+        <input name='adress' ref='adress' value={this.state.adress} onChange={this.onFieldChange('adress').bind(this)} />
+        <input name='postalnumber' ref='postalnumber' maxLength='4' value={this.state.postalnumber} onChange={this.onFieldChange('postalnumber').bind(this)} />
+        <br />
+        <button ref='editUserBtn'>Confirm</button>
+      </div>
+    );
+  }
+
+  componentDidMount() {
+    eventService.getEvent(this.id, (result) => {
+      this.evnt = result;
+      this.forceUpdate();
+    });
   }
 }
