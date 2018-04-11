@@ -84,7 +84,7 @@ export class Profile extends React.Component {
       else {
         userService.confirm(this.user.id, (result) => {
           this.nextPath('/userlistadmin');
-        })
+        });
       }
     }
   }
@@ -133,6 +133,8 @@ export class MyProfile extends React.Component {
           <Link to='/changepassword'><button ref='changePassword' className='editBtn'>Bytt passord</button></Link>
         </div>
 
+        <div>
+        </div>
       </div>
     );
   }

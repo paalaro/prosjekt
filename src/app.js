@@ -9,7 +9,6 @@ import { Profile, MyProfile, EditProfile } from './profile';
 import { Requests, UserListAdmin, UserList, UserDetails } from './users';
 import { EventList, EventDetails, CreateEvent } from './events'
 import crypto from 'crypto';
-import { Skills } from './skills';
 
 crypto.DEFAULT_ENCODING = 'hex';
 
@@ -94,7 +93,6 @@ export function renderOutlogged() {
     }
   }
   else {
-    console.log('Ingen bruker er innlogget');
     ReactDOM.render((
       <HashRouter>
         <div>
