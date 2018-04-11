@@ -180,7 +180,7 @@ export class MyProfile extends React.Component {
             removeSelected={true}
             multi={true}
             options={skillOptions}
-            onChange={(selectValue) => this.setState({ selectValue }, this.changeHandler( selectValue ), this.values = selectValue)}
+            onChange={(selectValue) => this.setState({ selectValue }, this.changeHandler( selectValue ))}
             value={selectValue}
           />
         </div>
@@ -228,6 +228,10 @@ export class MyProfile extends React.Component {
         }
       });
     }
+  }
+
+  handleDateChange(event) {
+    console.log(event);
   }
 
   registerSkills(selectValue) {
