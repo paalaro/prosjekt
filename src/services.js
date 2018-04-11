@@ -216,3 +216,49 @@ class EventService {
 let eventService = new EventService();
 
 export { eventService };
+
+class SkillService {
+  getAllSkills(callback) {
+    connection.query('SELECT * FROM Skills ORDER BY skilltitle', (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
+
+  addSkills(userid, skillid, callback) {
+    connection.query('INSERT INTO user_skills (userid, skillid) values (?, ?)', [userid, skillid], (error, result) => {
+      if (error) throw error;
+
+      callback();
+    });
+  }
+
+  checkUserSkill(userid, skillid, callback) {
+    connection.query('SELECT * FROM user_skills WHERE userid = ? AND skillid = ?', [userid, skillid, callback], (error, result) => {
+      if (error) throw error;
+
+      callback(result[0]);
+    });
+  }
+
+  getSkillInfo(skillid, callback) {
+    connection.query('SELECT * FROM Skills WHERE skillid = ?', [skillid, callback], (error, result) => {
+      if (error) throw error;
+
+      callback(result[0]);
+    });
+  }
+
+  getUserSkills(userid, callback) {
+    connection.query('SELECT * FROM Skills, user_skills WHERE user_skills.skillid = Skills.skillid AND user_skills.userid = ? ORDER BY validto', [userid], (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
+}
+
+let skillService = new SkillService();
+
+export { skillService };
