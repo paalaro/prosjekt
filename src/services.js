@@ -226,8 +226,8 @@ class SkillService {
     });
   }
 
-  addSkills(userid, skillid, callback) {
-    connection.query('INSERT INTO user_skills (userid, skillid) values (?, ?)', [userid, skillid], (error, result) => {
+  addSkills(userid, skillid, validto, callback) {
+    connection.query('INSERT INTO user_skills (userid, skillid, validto) values (?, ?, ?)', [userid, skillid, validto], (error, result) => {
       if (error) throw error;
 
       callback();

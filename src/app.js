@@ -121,7 +121,7 @@ export function renderLogin(user) {
         <Switch>
           <Route exact path='/myprofile/:userId' component={MyProfile} />
           <Route exact path='/eventlist' component={EventList} />
-          <Route exact path='/skills' component={Skills} />
+
           <Route exact path='/editprofile' component={EditProfile} />
           <Route exact path='/changepassword' component={ChangePassword} />
           <Route exact path='/userlist' component={UserList} />
