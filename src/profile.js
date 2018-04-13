@@ -14,14 +14,9 @@ export function deselectUser() {
 
 export function checkOldSkills() {
   let today = new Date();
-  let dd = today.getDate();
-  let mm = today.getMonth();
-  let yyyy = today.getFullYear();
 
-  let d = new Date(yyyy, mm, dd);
+  skillService.checkOldSkills(today, (result) => {
 
-  skillService.checkOldSkills(d, (result) => {
-    
   });
 }
 
