@@ -12,6 +12,19 @@ export function deselectUser() {
   selectedUser = {};
 }
 
+export function checkOldSkills() {
+  let today = new Date();
+  let dd = today.getDate();
+  let mm = today.getMonth();
+  let yyyy = today.getFullYear();
+
+  let d = new Date(yyyy, mm, dd);
+
+  skillService.checkOldSkills(d, (result) => {
+    
+  });
+}
+
 export class Profile extends React.Component {
   constructor(props) {
     super(props);
@@ -126,13 +139,6 @@ export class Profile extends React.Component {
     let month = date.getMonth() + 1;
     let year = date.getFullYear();
     let hours = date.getHours();
-    if (hours < 10) {
-      hours = '0' + hours;
-    }
-    let mins = date.getMinutes();
-    if (mins < 10) {
-      mins = '0' + mins;
-    }
 
     let dateTime = day + '/' + month + '/' + year;
     return(dateTime);
@@ -176,7 +182,6 @@ export class Profile extends React.Component {
         this.skill = result;
         if (this.skillDate == '') {
           alert('Vennligst velg en dato');
-
         }
 
         else if (this.skill.duration != 0 && this.skillDate != undefined) {
@@ -361,14 +366,6 @@ export class MyProfile extends React.Component {
     let day = date.getDate();
     let month = date.getMonth() + 1;
     let year = date.getFullYear();
-    let hours = date.getHours();
-    if (hours < 10) {
-      hours = '0' + hours;
-    }
-    let mins = date.getMinutes();
-    if (mins < 10) {
-      mins = '0' + mins;
-    }
 
     let dateTime = day + '/' + month + '/' + year;
     return(dateTime);

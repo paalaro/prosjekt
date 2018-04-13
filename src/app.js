@@ -5,7 +5,7 @@ import { userService } from './services';
 import { mailService } from './mail';
 import { Menu, LoggedinMenu, AdminLoggedinMenu } from './menues';
 import { Login, Registration, Registered, ForgotPassword, PasswordSent, loggedin, updateUserDetails, selectUser } from './outlogged';
-import { Profile, MyProfile, EditProfile } from './profile';
+import { Profile, MyProfile, EditProfile, checkOldSkills } from './profile';
 import { Requests, UserListAdmin, UserList, UserDetails } from './users';
 import { EventList, EventDetails, CreateEvent } from './events'
 import crypto from 'crypto';
@@ -81,6 +81,7 @@ class ChangePassword extends React.Component {
 
 
 export function renderOutlogged() {
+  checkOldSkills();
   let loggedinUser = userService.getSignedInUser();
   if (loggedinUser != undefined) {
     if (loggedinUser.admin == true) {

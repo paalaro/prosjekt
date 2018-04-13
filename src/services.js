@@ -251,10 +251,34 @@ class SkillService {
   }
 
   getUserSkills(userid, callback) {
-    connection.query('SELECT * FROM Skills, user_skills WHERE user_skills.skillid = Skills.skillid AND user_skills.userid = ? ORDER BY validto', [userid], (error, result) => {
+    connection.query('SELECT * FROM Skills, user_skills WHERE user_skills.skillid = Skills.skillid AND user_skills.userid = ? ORDER BY validto', [userid, callback], (error, result) => {
       if (error) throw error;
 
       callback(result);
+    });
+  }
+
+  getAllUserSkills(callback) {
+    connection.query('SELECT * FROM user_skills', (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
+
+  deleteSkill(userid, skillid, callback) {
+    connection.query('DELETE FROM user_skills WHERE (userid = ? AND skillid = ?)', [userid, skillid, callback], (error, result) => {
+      if (error) throw error;
+
+      callback();
+    });
+  }
+
+  checkOldSkills(date, callback) {
+    connection.query('DELETE FROM user_skills WHERE validto < ?', [date], (error, result) => {
+      if (error) throw error;
+
+      callback();
     });
   }
 }
