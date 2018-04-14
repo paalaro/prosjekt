@@ -214,11 +214,14 @@ export class CreateEvent extends React.Component {
 
   registerEvent(selectValue) {
     if(selectValue == null) {
-      let vaktliste = undefined;
       eventService.createEvent(this.refs.title.value, this.refs.text.value, this.refs.start.value, this.refs.end.value, this.refs.adresse.value, this.refs.postalnumber.value, selectValue.value, (result) => {
         this.nextId = result;
         this.props.history.push('/eventdetails/' + this.nextId);
       });
+    }
+
+    else {
+      let vaktmal = selectValue
     }
   }
 
