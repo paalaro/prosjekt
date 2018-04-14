@@ -1,9 +1,10 @@
 import React from 'react';
 import { Link, HashRouter, Switch, Route } from 'react-router-dom';
-import { eventService } from './services';
+import { eventService, userService } from './services';
 import { loggedin } from './outlogged';
 import BigCalendar from 'react-big-calendar'
-import moment from 'moment'
+import moment from 'moment';
+import VirtualizedSelect from 'react-virtualized-select';
 
 moment.locale('ko', {
     week: {
@@ -33,7 +34,7 @@ export class EventList extends React.Component {
       let year = evnt.start.getFullYear();
       evntsList.push(<tr key={evnt.eventid} className='tableRow' onClick={() => this.nextPath('/eventdetails/' + evnt.eventid)}><td className='tableLines'>{evnt.title}</td><td className='tableLines'>{evnt.start.toISOString().split("T")[0]}</td><td className='tableLines'>{evnt.end.toISOString().split("T")[0]}</td></tr>)
     }
-    
+
     return(
       <div>
         <div className='tableList'>
@@ -79,6 +80,8 @@ export class EventDetails extends React.Component {
     super(props);
 
     this.evnt = {};
+    this.rolle = {};
+    this.eventRoller = [];
 
     this.id = props.match.params.eventId;
   }
@@ -101,12 +104,29 @@ export class EventDetails extends React.Component {
   }
 
   render() {
+    let rolleList = [];
+    for (let rolle of this.eventRoller) {
+      rolleList.push(<tr key={ rolle.rolleid } ><td> { rolle.rollenavn } </td></tr>);
+    }
+
+    let loggedinUser = userService.getSignedInUser();
+
     return(
       <div>
-        <h3>{this.evnt.title}</h3> <br />
-        Start: {this.start} <br />
-        Slutt: {this.end} <br />
-        Bekrivelse: {this.evnt.text} <br />
+        <div>
+          <h3>{this.evnt.title}</h3> <br />
+          Start: {this.start} <br />
+          Slutt: {this.end} <br />
+          Bekrivelse: {this.evnt.text} <br />
+        </div>
+        <div>
+          <h4>Roller til dette arrangementet</h4>
+          <table>
+            <tbody>
+              {rolleList}
+            </tbody>
+          </table>
+        </div>
       </div>
     );
   }
@@ -116,7 +136,12 @@ export class EventDetails extends React.Component {
       this.evnt = result;
       this.start = this.fixDate(this.evnt.start);
       this.end = this.fixDate(this.evnt.end);
-      this.forceUpdate();
+      if (this.evnt.vaktmalid != null) {
+        eventService.getEventRollenavn(this.evnt.vaktmalid, (result) => {
+          this.eventRoller = result;
+          this.forceUpdate();
+        });
+      }
     });
   }
 }
@@ -147,7 +172,22 @@ export class EventDetailsAdmin extends React.Component {
 }
 
 export class CreateEvent extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.vaktmaler = [];
+
+    this.state = {};
+  }
+
   render() {
+    const { selectValue } = this.state;
+    let vaktmalOptions = [];
+
+    for (let vaktmal of this.vaktmaler) {
+      vaktmalOptions.push({label: vaktmal.vaktmaltittel, value: vaktmal.vaktmalid},);
+    }
+
     return(
       <div>
         <input ref='title' type='text' placeholder='Tittel'/> <br />
@@ -156,17 +196,37 @@ export class CreateEvent extends React.Component {
         <input ref='end' type='datetime-local' placeholder='Sluttdato'/> <br />
         <input ref='adresse' type='text' placeholder='Adresse'/> <br />
         <input ref='postalnumber' type='text' maxLength='4' placeholder='Postnr'/> <br />
-        <button ref='createEvent'>Registrer arrangement</button>
+        <div>
+          <h4>Vaktmal</h4> <br />
+          <VirtualizedSelect
+            autoFocus
+            clearable={true}
+            removeSelected={true}
+            options={vaktmalOptions}
+            onChange={(selectValue) => this.setState({ selectValue })}
+            value={selectValue}
+          />
+        </div>
+        <button onClick={() => this.registerEvent(selectValue)}>Registrer arrangement</button>
       </div>
     );
   }
 
-  componentDidMount() {
-    this.refs.createEvent.onclick = () => {
-      eventService.createEvent(this.refs.title.value, this.refs.text.value, this.refs.start.value, this.refs.end.value, this.refs.adresse.value, this.refs.postalnumber.value, (result) => {
-        console.log('Arr reg');
+  registerEvent(selectValue) {
+    if(selectValue == null) {
+      let vaktliste = undefined;
+      eventService.createEvent(this.refs.title.value, this.refs.text.value, this.refs.start.value, this.refs.end.value, this.refs.adresse.value, this.refs.postalnumber.value, selectValue.value, (result) => {
+        this.nextId = result;
+        this.props.history.push('/eventdetails/' + this.nextId);
       });
     }
+  }
+
+  componentDidMount() {
+    eventService.getVaktmaler((result) => {
+      this.vaktmaler = result;
+      this.forceUpdate();
+    });
   }
 }
 
@@ -204,6 +264,7 @@ export class EditEvent extends React.Component {
         <input name='adress' ref='adress' value={this.state.adress} onChange={this.onFieldChange('adress').bind(this)} />
         <input name='postalnumber' ref='postalnumber' maxLength='4' value={this.state.postalnumber} onChange={this.onFieldChange('postalnumber').bind(this)} />
         <br />
+        {rolleList}
         <button ref='editUserBtn'>Confirm</button>
       </div>
     );

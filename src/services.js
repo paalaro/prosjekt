@@ -196,11 +196,11 @@ class EventService {
     });
   }
 
-  createEvent(title, text, start, end, adress, postalnumber, callback) {
-    connection.query('INSERT INTO Events (title, text, start, end, adress, postalnumber) values (?, ?, ?, ?, ?, ?)', [title, text, start, end, adress, postalnumber], (error, result) => {
+  createEvent(title, text, start, end, adress, postalnumber, vaktmalid, callback) {
+    connection.query('INSERT INTO Events (title, text, start, end, adress, postalnumber, vaktmalid) values (?, ?, ?, ?, ?, ?, ?)', [title, text, start, end, adress, postalnumber, vaktmalid], (error, result) => {
       if (error) throw error;
 
-      callback();
+      callback(result.insertId);
     });
   }
 
@@ -209,6 +209,38 @@ class EventService {
       if (error) throw error;
 
       callback(result[0]);
+    });
+  }
+
+  getVaktmaler(callback) {
+    connection.query('SELECT * FROM vaktmal', (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
+
+  getRoller(vaktmalid, callback) {
+    connection.query('SELECT * FROM vakt_rolle WHERE vaktmalid = ?', [vaktmalid], (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
+
+  getRolle(rolleid, callback) {
+    connection.query('SELECT * FROM Roller WHERE rolleid = ?', [rolleid], (error, result) => {
+      if (error) throw error;
+
+      callback(result[0]);
+    });
+  }
+
+  getEventRollenavn(vaktmalid, callback) {
+    connection.query('SELECT * FROM Roller, vakt_rolle WHERE Roller.rolleid = vakt_rolle.rolleid AND vaktmalid = ?', [vaktmalid], (error, result) => {
+      if (error) throw error;
+
+      callback(result);
     });
   }
 }

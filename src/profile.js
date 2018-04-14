@@ -3,7 +3,7 @@ import { Link, HashRouter, Switch, Route } from 'react-router-dom';
 import { userService, skillService } from './services';
 import { loggedin, updateUserDetails } from './outlogged';
 import { history } from './app';
-import VirtualizedSelect from 'react-virtualized-select'
+import VirtualizedSelect from 'react-virtualized-select';
 
 let selectedUser = {};
 let refNr = 0;
@@ -34,7 +34,6 @@ export class Profile extends React.Component {
     this.inputList = [];
     this.dateInputList = [];
     this.userSkills = [];
-    this.userSkillList = [];
     this.refNr = 0;
   }
 
