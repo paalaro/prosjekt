@@ -82,6 +82,7 @@ export class EventDetails extends React.Component {
     this.evnt = {};
     this.rolle = {};
     this.eventRoller = [];
+    this.roleCount = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
     this.id = props.match.params.eventId;
   }
@@ -106,7 +107,16 @@ export class EventDetails extends React.Component {
   render() {
     let rolleList = [];
     for (let rolle of this.eventRoller) {
-      rolleList.push(<tr key={ rolle.rolleid } ><td> { rolle.rollenavn } </td></tr>);
+      let ready = true;
+      for (let check of rolleList) {
+        if (check.key == rolle.rolleid) {
+          ready = false;
+        }
+      }
+      if (ready == true) {
+        rolleList.push(<tr key={ rolle.rolleid } ><td> { rolle.rollenavn } </td><td> { this.roleCount[rolle.rolleid] } </td></tr>);
+      }
+
     }
 
     let loggedinUser = userService.getSignedInUser();
@@ -127,6 +137,7 @@ export class EventDetails extends React.Component {
             </tbody>
           </table>
         </div>
+        <button onClick={() => this.props.history.push('/roles/' + this.evnt.eventid)}>Roller</button>
       </div>
     );
   }
@@ -136,12 +147,86 @@ export class EventDetails extends React.Component {
       this.evnt = result;
       this.start = this.fixDate(this.evnt.start);
       this.end = this.fixDate(this.evnt.end);
-      if (this.evnt.vaktmalid != null) {
-        eventService.getEventRollenavn(this.evnt.vaktmalid, (result) => {
-          this.eventRoller = result;
-          this.forceUpdate();
+      eventService.getEventRoller(this.evnt.eventid, (result) => {
+        this.eventRoller = result;
+        eventService.countRoller((result) => {
+          let count = result + 1;
+          for (var i = 0; i < count; i++) {
+            eventService.testRolle(this.evnt.eventid, i, (result, idnr) => {
+              if (result[0] != undefined) {
+                this.roleCount[result[0].rolleid] = result.length;
+              }
+
+              if (idnr == count - 1) {
+                this.forceUpdate();
+              }
+            });
+          }
         });
-      }
+      });
+    });
+  }
+}
+
+export class Roles extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.evnt = {};
+    this.roleCount = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    this.allRoles = [];
+
+    this.id = props.match.params.eventId;
+  }
+
+  render() {
+    let rolleList = [];
+    for (let rolle of this.allRoles) {
+      rolleList.push(<tr key={rolle.rolleid}><td>{ rolle.rollenavn }</td><td>{this.roleCount[rolle.rolleid + 1]}</td><td><button>+</button></td><td><button>-</button></td></tr>)
+    }
+    return(
+      <div>
+        <table>
+          <tbody>
+            {rolleList}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  add() {
+
+  }
+
+  remove() {
+    
+  }
+
+  componentDidMount() {
+    eventService.getEvent(this.id, (result) => {
+      this.evnt = result;
+      eventService.getEventRoller(this.evnt.eventid, (result) => {
+        this.eventRoller = result;
+        eventService.getAllRoller((result) => {
+          this.allRoles = result;
+          console.log(this.allRoles);
+        });
+        eventService.countRoller((result) => {
+          let count = result + 1;
+          for (var i = 0; i < count; i++) {
+            eventService.testRolle(this.evnt.eventid, i, (result, idnr) => {
+              if (result[0] != undefined) {
+                this.roleCount[result[0].rolleid + 1] = result.length;
+              }
+
+              if (idnr == count - 1) {
+                this.forceUpdate();
+              }
+            });
+          }
+        });
+      });
     });
   }
 }
@@ -213,15 +298,20 @@ export class CreateEvent extends React.Component {
   }
 
   registerEvent(selectValue) {
-    if(selectValue == null) {
-      eventService.createEvent(this.refs.title.value, this.refs.text.value, this.refs.start.value, this.refs.end.value, this.refs.adresse.value, this.refs.postalnumber.value, selectValue.value, (result) => {
-        this.nextId = result;
-        this.props.history.push('/eventdetails/' + this.nextId);
+      eventService.createEvent(this.refs.title.value, this.refs.text.value, this.refs.start.value, this.refs.end.value, this.refs.adresse.value, this.refs.postalnumber.value, (result) => {
+        this.nextId = result.insertId;
+        eventService.getRoller(selectValue.value, (result) => {
+          this.registerRoller(result, this.nextId);
+          this.props.history.push('/roles/' + this.nextId);
+        });
       });
-    }
+  }
 
-    else {
-      let vaktmal = selectValue
+  registerRoller(roller, eventid) {
+    for (let rolle of roller) {
+      eventService.regRolle(eventid, rolle.rolleid, (result) => {
+
+      });
     }
   }
 

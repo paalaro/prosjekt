@@ -196,11 +196,11 @@ class EventService {
     });
   }
 
-  createEvent(title, text, start, end, adress, postalnumber, vaktmalid, callback) {
-    connection.query('INSERT INTO Events (title, text, start, end, adress, postalnumber, vaktmalid) values (?, ?, ?, ?, ?, ?, ?)', [title, text, start, end, adress, postalnumber, vaktmalid], (error, result) => {
+  createEvent(title, text, start, end, adress, postalnumber, callback) {
+    connection.query('INSERT INTO Events (title, text, start, end, adress, postalnumber) values (?, ?, ?, ?, ?, ?)', [title, text, start, end, adress, postalnumber], (error, result) => {
       if (error) throw error;
 
-      callback(result.insertId);
+      callback(result);
     });
   }
 
@@ -236,11 +236,43 @@ class EventService {
     });
   }
 
-  getEventRollenavn(vaktmalid, callback) {
-    connection.query('SELECT * FROM Roller, vakt_rolle WHERE Roller.rolleid = vakt_rolle.rolleid AND vaktmalid = ?', [vaktmalid], (error, result) => {
+  getAllRoller(callback) {
+    connection.query('SELECT * FROM Roller', (error, result) => {
       if (error) throw error;
 
       callback(result);
+    });
+  }
+
+  getEventRoller(eventid, callback) {
+    connection.query('SELECT * FROM event_rolle, Roller WHERE event_rolle.rolleid = Roller.rolleid AND eventid = ?', [eventid], (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
+
+  regRolle(eventid, rolleid, callback) {
+    connection.query('INSERT INTO event_rolle (eventid, rolleid) values (?, ?)', [eventid, rolleid, callback], (error, result) => {
+      if (error) throw error;
+
+      callback();
+    });
+  }
+
+  countRoller(callback) {
+    connection.query('SELECT * FROM Roller', (error, result) => {
+      if (error) throw error;
+
+      callback(result.length);
+    });
+  }
+
+  testRolle(eventid, rolleid, callback) {
+    connection.query('SELECT event_rolle.rolleid, event_rolle_id FROM event_rolle, Roller WHERE event_rolle.rolleid = Roller.rolleid AND eventid = ? AND event_rolle.rolleid = ?', [eventid, rolleid], (error, result) => {
+      if (error) throw error;
+
+      callback(result, rolleid);
     });
   }
 }

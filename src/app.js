@@ -7,7 +7,7 @@ import { Menu, LoggedinMenu, AdminLoggedinMenu } from './menues';
 import { Login, Registration, Registered, ForgotPassword, PasswordSent, loggedin, updateUserDetails, selectUser } from './outlogged';
 import { Profile, MyProfile, EditProfile, checkOldSkills } from './profile';
 import { Requests, UserListAdmin, UserList, UserDetails } from './users';
-import { EventList, EventDetails, CreateEvent, EditEvent } from './events'
+import { EventList, EventDetails, CreateEvent, EditEvent, Roles } from './events'
 import crypto from 'crypto';
 
 crypto.DEFAULT_ENCODING = 'hex';
@@ -122,7 +122,6 @@ export function renderLogin(user) {
         <Switch>
           <Route exact path='/myprofile/:userId' component={MyProfile} />
           <Route exact path='/eventlist' component={EventList} />
-
           <Route exact path='/editprofile' component={EditProfile} />
           <Route exact path='/changepassword' component={ChangePassword} />
           <Route exact path='/userlist' component={UserList} />
@@ -151,7 +150,8 @@ export function renderAdminLogin(user) {
           <Route exact path='/eventdetails/:eventId' component={EventDetails} />
           <Route exact path='/createevent' component={CreateEvent} />
           <Route exact path='/changepassword' component={ChangePassword} />
-          <Route exact path='/editevent/eventId' component={EditEvent} />
+          <Route exact path='/editevent/:eventId' component={EditEvent} />
+          <Route exact path='/roles/:eventId' component={Roles} />
           <Requests />
         </Switch>
       </div>
