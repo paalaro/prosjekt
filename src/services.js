@@ -200,7 +200,7 @@ class EventService {
     connection.query('INSERT INTO Events (title, text, start, end, adress, postalnumber) values (?, ?, ?, ?, ?, ?)', [title, text, start, end, adress, postalnumber], (error, result) => {
       if (error) throw error;
 
-      callback();
+      callback(result);
     });
   }
 
@@ -211,8 +211,158 @@ class EventService {
       callback(result[0]);
     });
   }
+
+  getVaktmaler(callback) {
+    connection.query('SELECT * FROM vaktmal', (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
+
+  getRoller(vaktmalid, callback) {
+    connection.query('SELECT * FROM vakt_rolle WHERE vaktmalid = ?', [vaktmalid], (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
+
+  getRolle(rolleid, callback) {
+    connection.query('SELECT * FROM Roller WHERE rolleid = ?', [rolleid], (error, result) => {
+      if (error) throw error;
+
+      callback(result[0]);
+    });
+  }
+
+  getAllRoller(callback) {
+    connection.query('SELECT * FROM Roller', (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
+
+  getEventRoller(eventid, callback) {
+    connection.query('SELECT * FROM event_rolle, Roller WHERE event_rolle.rolleid = Roller.rolleid AND eventid = ?', [eventid], (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
+
+  getEventRolle(eventid, rolleid, callback) {
+    connection.query('SELECT * FROM event_rolle, Roller WHERE event_rolle.rolleid = Roller.rolleid AND eventid = ? AND event_rolle.rolleid = ?', [eventid, rolleid], (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
+
+  deleteEventRolle(eventrolleid, callback) {
+    connection.query('DELETE FROM event_rolle WHERE event_rolle_id = ?', [eventrolleid], (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
+
+  regRolle(eventid, rolleid, callback) {
+    connection.query('INSERT INTO event_rolle (eventid, rolleid) values (?, ?)', [eventid, rolleid, callback], (error, result) => {
+      if (error) throw error;
+
+      callback();
+    });
+  }
+
+  countRoller(callback) {
+    connection.query('SELECT * FROM Roller', (error, result) => {
+      if (error) throw error;
+
+      callback(result.length);
+    });
+  }
+
+  testRolle(eventid, rolleid, callback) {
+    connection.query('SELECT event_rolle.rolleid, event_rolle_id FROM event_rolle, Roller WHERE event_rolle.rolleid = Roller.rolleid AND eventid = ? AND event_rolle.rolleid = ?', [eventid, rolleid], (error, result) => {
+      if (error) throw error;
+
+      callback(result, rolleid);
+    });
+  }
 }
 
 let eventService = new EventService();
 
 export { eventService };
+
+class SkillService {
+  getAllSkills(callback) {
+    connection.query('SELECT * FROM Skills ORDER BY skilltitle', (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
+
+  addSkills(userid, skillid, validto, callback) {
+    connection.query('INSERT INTO user_skills (userid, skillid, validto) values (?, ?, ?)', [userid, skillid, validto], (error, result) => {
+      if (error) throw error;
+
+      callback();
+    });
+  }
+
+  checkUserSkill(userid, skillid, callback) {
+    connection.query('SELECT * FROM user_skills WHERE userid = ? AND skillid = ?', [userid, skillid, callback], (error, result) => {
+      if (error) throw error;
+
+      callback(result[0]);
+    });
+  }
+
+  getSkillInfo(skillid, callback) {
+    connection.query('SELECT * FROM Skills WHERE skillid = ?', [skillid, callback], (error, result) => {
+      if (error) throw error;
+
+      callback(result[0]);
+    });
+  }
+
+  getUserSkills(userid, callback) {
+    connection.query('SELECT * FROM Skills, user_skills WHERE user_skills.skillid = Skills.skillid AND user_skills.userid = ? ORDER BY validto', [userid, callback], (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
+
+  getAllUserSkills(callback) {
+    connection.query('SELECT * FROM user_skills', (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
+
+  deleteSkill(userid, skillid, callback) {
+    connection.query('DELETE FROM user_skills WHERE (userid = ? AND skillid = ?)', [userid, skillid, callback], (error, result) => {
+      if (error) throw error;
+
+      callback();
+    });
+  }
+
+  checkOldSkills(date, callback) {
+    connection.query('DELETE FROM user_skills WHERE validto < ?', [date], (error, result) => {
+      if (error) throw error;
+
+      callback();
+    });
+  }
+}
+
+let skillService = new SkillService();
+
+export { skillService };

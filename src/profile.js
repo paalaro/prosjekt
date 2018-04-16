@@ -1,13 +1,23 @@
 import React from 'react';
 import { Link, HashRouter, Switch, Route } from 'react-router-dom';
-import { userService } from './services';
+import { userService, skillService } from './services';
 import { loggedin, updateUserDetails } from './outlogged';
 import { history } from './app';
+import VirtualizedSelect from 'react-virtualized-select';
 
 let selectedUser = {};
+let refNr = 0;
 
 export function deselectUser() {
   selectedUser = {};
+}
+
+export function checkOldSkills() {
+  let today = new Date();
+
+  skillService.checkOldSkills(today, (result) => {
+
+  });
 }
 
 export class Profile extends React.Component {
@@ -17,6 +27,14 @@ export class Profile extends React.Component {
     this.user = {};
 
     this.id = props.match.params.userId;
+
+    this.allSkills = [];
+    this.skillOptions = [];
+    this.state = {};
+    this.inputList = [];
+    this.dateInputList = [];
+    this.userSkills = [];
+    this.refNr = 0;
   }
 
   nextPath(path) {
@@ -26,6 +44,9 @@ export class Profile extends React.Component {
   render() {
     let activateBtn;
     let status;
+    const { selectValue } = this.state;
+    let skillOptions = [];
+    let userSkillList = [];
 
     if (this.user.aktivert == true) {
       activateBtn = <button ref="activateBtn">Deaktiver</button>;
@@ -35,6 +56,25 @@ export class Profile extends React.Component {
     else {
       activateBtn = <button ref="activateBtn">Aktiver</button>;
       status = "Deaktivert";
+    }
+
+    for (let skill of this.allSkills) {
+      skillService.checkUserSkill(this.user.id, skill.skillid, (result) => {
+        if (result == undefined) {
+          skillOptions.push({ label: skill.skilltitle, value: skill.skillid },);
+        }
+      });
+    }
+
+    for (let skill of this.userSkills) {
+      if (skill.validto === null) {
+        userSkillList.push(<tr key={skill.skillid} ><td> { skill.skilltitle } </td><td>Varer evig</td></tr>);
+      }
+
+      else {
+        this.date = this.fixDate(skill.validto);
+        userSkillList.push(<tr key={skill.skillid} ><td> { skill.skilltitle } </td><td>{this.date}</td></tr>);
+      }
     }
 
     return(
@@ -51,8 +91,118 @@ export class Profile extends React.Component {
           <button ref='newpassword'>Send nytt passord på mail</button>
           {activateBtn}
         </div>
+        <div>
+          <h4>Dine kurs og ferdigheter</h4> <br />
+          <table>
+            <tbody>
+              {userSkillList}
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <h4>Kurs og ferdigheter</h4> <br />
+          <VirtualizedSelect
+            autoFocus
+            clearable={true}
+            removeSelected={true}
+            multi={true}
+            options={skillOptions}
+            onChange={(selectValue) => this.setState({ selectValue }, this.changeHandler( selectValue ))}
+            value={selectValue}
+          />
+        </div>
+        <div>
+          <table>
+            <tbody>
+              {this.inputList}
+            </tbody>
+          </table>
+          <table>
+            <tbody>
+              {this.dateInputList}
+            </tbody>
+          </table>
+        </div>
+        <button className='editBtn' onClick={() => this.registerSkills(selectValue)}>Registrer</button>
       </div>
     );
+  }
+
+  fixDate(date) {
+    let day = date.getDate();
+    let month = date.getMonth() + 1;
+    let year = date.getFullYear();
+    let hours = date.getHours();
+
+    let dateTime = day + '/' + month + '/' + year;
+    return(dateTime);
+  }
+
+  changeHandler(selectValue) {
+    this.inputList = [];
+    this.dateInputList = [];
+    let ref = 0;
+    for (let skill of selectValue) {
+      skillService.getSkillInfo(skill.value, (result) => {
+        if (result.duration === 0) {
+          this.inputList.push(<tr key={skill.value}><td> { skill.label } </td><td>Varer evig</td></tr>);
+        }
+
+        else if (result.duration != 0 && this.dateInputList.length > 0) {
+          this.setState(selectValue.splice(-1, 1));
+          alert('Registrer ' + this.selectedSkillWithDate + ' før du legger til flere kurs med utløpsdato.');
+        }
+
+        else {
+          this.dateInputList.push(<tr key={skill.value}><td> { skill.label } </td><td><input type='date' ref={(ref) => this.refNr = ref} /></td></tr>);
+          this.selectedSkillWithDate = skill.label;
+        }
+        this.forceUpdate();
+      });
+    }
+  }
+
+  registerSkills(selectValue) {
+    if (this.refNr == null) {
+      this.skillDate = null;
+    }
+
+    else {
+      this.skillDate = this.refNr.value;
+    }
+
+    for (let skill of selectValue) {
+      skillService.getSkillInfo(skill.value, (result) => {
+        this.skill = result;
+        if (this.skillDate == '') {
+          alert('Vennligst velg en dato');
+        }
+
+        else if (this.skill.duration != 0 && this.skillDate != undefined) {
+          skillService.addSkills(this.user.id, skill.value, this.skillDate, (result) => {
+            skillService.getUserSkills(this.user.id, (result) => {
+              this.userSkills = result;
+              this.setState({selectValue: []});
+              this.inputList = [];
+              this.dateInputList = [];
+              this.forceUpdate();
+            });
+          });
+        }
+
+        else {
+          skillService.addSkills(this.user.id, skill.value, null, (result) => {
+            skillService.getUserSkills(this.user.id, (result) => {
+              this.userSkills = result;
+              this.setState({selectValue: []});
+              this.inputList = [];
+              this.dateInputList = [];
+              this.forceUpdate();
+            });
+          });
+        }
+      });
+    }
   }
 
   componentDidMount() {
@@ -64,7 +214,13 @@ export class Profile extends React.Component {
       selectedUser = result;
       userService.getCity(this.user.postalnumber, (result) => {
         this.city = result.poststed;
-        this.forceUpdate();
+        skillService.getAllSkills((result) => {
+          this.allSkills = result;
+          skillService.getUserSkills(this.user.id, (result) => {
+            this.userSkills = result;
+            this.forceUpdate();
+          });
+        });
       });
     });
 
@@ -94,12 +250,43 @@ export class MyProfile extends React.Component {
   constructor(props) {
     super(props);
 
-    this.user = {};
-
     this.id = props.match.params.userId;
+
+    this.user = {};
+    this.allSkills = [];
+    this.skillOptions = [];
+    this.state = {};
+    this.inputList = [];
+    this.dateInputList = [];
+    this.userSkills = [];
+    this.userSkillList = [];
+    this.refNr = 0;
   }
 
   render() {
+    const { selectValue } = this.state;
+    let skillOptions = [];
+    let userSkillList = [];
+
+    for (let skill of this.allSkills) {
+      skillService.checkUserSkill(this.user.id, skill.skillid, (result) => {
+        if (result == undefined) {
+          skillOptions.push({ label: skill.skilltitle, value: skill.skillid },);
+        }
+      });
+    }
+
+    for (let skill of this.userSkills) {
+      if (skill.validto === null) {
+        userSkillList.push(<tr key={skill.skillid} ><td> { skill.skilltitle } </td><td>Varer evig</td></tr>);
+      }
+
+      else {
+        this.date = this.fixDate(skill.validto);
+        userSkillList.push(<tr key={skill.skillid} ><td> { skill.skilltitle } </td><td>{this.date}</td></tr>);
+      }
+    }
+
     return(
       <div>
         <div>
@@ -132,11 +319,118 @@ export class MyProfile extends React.Component {
           <Link to='/editprofile'><button ref='editUser' className='editBtn'>Endre detaljer</button></Link>
           <Link to='/changepassword'><button ref='changePassword' className='editBtn'>Bytt passord</button></Link>
         </div>
-
         <div>
+          <h4>Dine kurs og ferdigheter</h4> <br />
+          <table>
+            <tbody>
+              {userSkillList}
+            </tbody>
+          </table>
         </div>
+        <div>
+          <h4>Kurs og ferdigheter</h4> <br />
+          <VirtualizedSelect
+            autoFocus
+            clearable={true}
+            removeSelected={true}
+            multi={true}
+            options={skillOptions}
+            onChange={(selectValue) => this.setState({ selectValue }, this.changeHandler( selectValue ))}
+            value={selectValue}
+          />
+        </div>
+        <div>
+          <table>
+            <tbody>
+              {this.inputList}
+            </tbody>
+          </table>
+          <table>
+            <tbody>
+              {this.dateInputList}
+            </tbody>
+          </table>
+        </div>
+        <button className='editBtn' onClick={() => this.registerSkills(selectValue)}>Registrer</button>
       </div>
     );
+  }
+
+  fixDate(date) {
+    let day = date.getDate();
+    let month = date.getMonth() + 1;
+    let year = date.getFullYear();
+
+    let dateTime = day + '/' + month + '/' + year;
+    return(dateTime);
+  }
+
+  changeHandler(selectValue) {
+    this.inputList = [];
+    this.dateInputList = [];
+    let ref = 0;
+    for (let skill of selectValue) {
+      skillService.getSkillInfo(skill.value, (result) => {
+        if (result.duration === 0) {
+          this.inputList.push(<tr key={skill.value}><td> { skill.label } </td><td>Varer evig</td></tr>);
+        }
+
+        else if (result.duration != 0 && this.dateInputList.length > 0) {
+          this.setState(selectValue.splice(-1, 1));
+          alert('Registrer ' + this.selectedSkillWithDate + ' før du legger til flere kurs med utløpsdato.');
+        }
+
+        else {
+          this.dateInputList.push(<tr key={skill.value}><td> { skill.label } </td><td><input type='date' ref={(ref) => this.refNr = ref} /></td></tr>);
+          this.selectedSkillWithDate = skill.label;
+        }
+        this.forceUpdate();
+      });
+    }
+  }
+
+  registerSkills(selectValue) {
+    if (this.refNr == null) {
+      this.skillDate = null;
+    }
+
+    else {
+      this.skillDate = this.refNr.value;
+    }
+
+    for (let skill of selectValue) {
+      skillService.getSkillInfo(skill.value, (result) => {
+        this.skill = result;
+        if (this.skillDate == '') {
+          alert('Vennligst velg en dato');
+
+        }
+
+        else if (this.skill.duration != 0 && this.skillDate != undefined) {
+          skillService.addSkills(this.user.id, skill.value, this.skillDate, (result) => {
+            skillService.getUserSkills(this.user.id, (result) => {
+              this.userSkills = result;
+              this.setState({selectValue: []});
+              this.inputList = [];
+              this.dateInputList = [];
+              this.forceUpdate();
+            });
+          });
+        }
+
+        else {
+          skillService.addSkills(this.user.id, skill.value, null, (result) => {
+            skillService.getUserSkills(this.user.id, (result) => {
+              this.userSkills = result;
+              this.setState({selectValue: []});
+              this.inputList = [];
+              this.dateInputList = [];
+              this.forceUpdate();
+            });
+          });
+        }
+      });
+    }
   }
 
   componentDidMount() {
@@ -145,7 +439,13 @@ export class MyProfile extends React.Component {
       selectedUser = result;
       userService.getCity(this.user.postalnumber, (result) => {
         this.city = result.poststed;
-        this.forceUpdate();
+        skillService.getAllSkills((result) => {
+          this.allSkills = result;
+          skillService.getUserSkills(this.user.id, (result) => {
+            this.userSkills = result;
+            this.forceUpdate();
+          });
+        });
       });
     });
   }
