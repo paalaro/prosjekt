@@ -252,6 +252,22 @@ class EventService {
     });
   }
 
+  getEventRolle(eventid, rolleid, callback) {
+    connection.query('SELECT * FROM event_rolle, Roller WHERE event_rolle.rolleid = Roller.rolleid AND eventid = ? AND event_rolle.rolleid = ?', [eventid, rolleid], (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
+
+  deleteEventRolle(eventrolleid, callback) {
+    connection.query('DELETE FROM event_rolle WHERE event_rolle_id = ?', [eventrolleid], (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
+
   regRolle(eventid, rolleid, callback) {
     connection.query('INSERT INTO event_rolle (eventid, rolleid) values (?, ?)', [eventid, rolleid, callback], (error, result) => {
       if (error) throw error;

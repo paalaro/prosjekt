@@ -37,22 +37,6 @@ export class EventList extends React.Component {
 
     return(
       <div>
-        <div className='tableList'>
-          <table className='eventTable'>
-            <thead>
-              <tr>
-                <th className='tableLines'>Navn</th>
-                <th className='tableLines'>Start</th>
-                <th className='tableLines'>Slutt</th>
-              </tr>
-            </thead>
-            <tbody>
-            {evntsList}
-            </tbody>
-          </table>
-          <br />
-          <button onClick={() => this.nextPath('/createevent')}>Lag arrangement</button>
-        </div>
         <div style={{height: 400}}>
            <BigCalendar
              events={this.evntList}
@@ -62,6 +46,22 @@ export class EventList extends React.Component {
              onSelectEvent={event => this.props.history.push('/eventdetails/' + event.eventid)
          }
              />
+         </div>
+         <button onClick={() => this.nextPath('/createevent')}>Lag arrangement</button>
+         <div className='tableList'>
+           <table className='eventTable'>
+             <thead>
+               <tr>
+                 <th className='tableLines'>Navn</th>
+                 <th className='tableLines'>Start</th>
+                 <th className='tableLines'>Slutt</th>
+               </tr>
+             </thead>
+             <tbody>
+             {evntsList}
+             </tbody>
+           </table>
+           <br />
          </div>
        </div>
     );
@@ -173,16 +173,35 @@ export class Roles extends React.Component {
     super(props);
 
     this.evnt = {};
-    this.roleCount = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    this.roleCount = [];
+    this.roleCountAfter = [];
     this.allRoles = [];
+    this.difference = [];
+    this.allRolleEvent = [];
 
     this.id = props.match.params.eventId;
   }
 
   render() {
     let rolleList = [];
+    // for (let rolle of this.allRoles) {
+    //   this.roleCountAfter[rolle.rolleid - 1] = this.roleCount[rolle.rolleid - 1];
+    // }
     for (let rolle of this.allRoles) {
-      rolleList.push(<tr key={rolle.rolleid}><td>{ rolle.rollenavn }</td><td>{this.roleCount[rolle.rolleid + 1]}</td><td><button>+</button></td><td><button>-</button></td></tr>)
+      rolleList.push(
+        <tr key={rolle.rolleid}>
+        <td>{ rolle.rollenavn }</td>
+        <td>{this.roleCountAfter[rolle.rolleid - 1]}</td>
+        <td><button onClick={() => {
+          this.roleCountAfter[rolle.rolleid - 1]++;
+          this.forceUpdate();
+        }}>+</button></td>
+        <td><button onClick={() => {
+          if (this.roleCountAfter[rolle.rolleid-1] > 0) {
+            this.roleCountAfter[rolle.rolleid-1]--;
+            this.forceUpdate();
+          }
+        }}>-</button></td></tr>)
     }
     return(
       <div>
@@ -191,16 +210,52 @@ export class Roles extends React.Component {
             {rolleList}
           </tbody>
         </table>
+        <button onClick={() => this.confirmRoles()}>Bekreft</button>
       </div>
     );
   }
 
-  add() {
+  confirmRoles() {
+    let equal = true;
+    for (let rolle of this.allRoles) {
+      if (this.roleCount[rolle.rolleid - 1] != this.roleCountAfter[rolle.rolleid - 1]) {
+        equal = false;
+      }
+    }
 
-  }
+    if (equal == true) {
+      this.props.history.push('/eventdetails/' + this.id);
+    }
 
-  remove() {
-    
+    else {
+      for (let rolle of this.allRoles) {
+        if (this.roleCount[rolle.rolleid - 1] != this.roleCountAfter[rolle.rolleid - 1]) {
+          this.difference[rolle.rolleid - 1] = this.roleCountAfter[rolle.rolleid - 1] - this.roleCount[rolle.rolleid - 1];
+        }
+      }
+
+      for (let i = 0; i < this.totalRoles; i++) {
+        if (this.difference[i] > 0) {
+          for (let j = 0; j < this.difference[i]; j++) {
+            eventService.regRolle(this.evnt.eventid, i + 1, (result) => {
+
+            });
+          }
+        }
+
+        else if (this.difference[i] < 0) {
+          eventService.getEventRolle(this.evnt.eventid, i + 1, (result) => {
+            this.allRolleEvent = result;
+            for (var j = 0; j < -this.difference[i]; j++) {
+              eventService.deleteEventRolle(this.allRolleEvent[j].event_rolle_id, (result) => {
+                
+              });
+            }
+          });
+        }
+      }
+      this.props.history.push('/eventdetails/' + this.id);
+    }
   }
 
   componentDidMount() {
@@ -210,17 +265,24 @@ export class Roles extends React.Component {
         this.eventRoller = result;
         eventService.getAllRoller((result) => {
           this.allRoles = result;
-          console.log(this.allRoles);
         });
         eventService.countRoller((result) => {
-          let count = result + 1;
-          for (var i = 0; i < count; i++) {
+          this.totalRoles = result;
+          for (let i = 0; i < this.totalRoles + 1; i++) {
             eventService.testRolle(this.evnt.eventid, i, (result, idnr) => {
               if (result[0] != undefined) {
-                this.roleCount[result[0].rolleid + 1] = result.length;
+                this.roleCount[idnr - 1] = result.length;
+                this.roleCountAfter[idnr - 1] = result.length;
+                this.difference[idnr - 1] = 0;
               }
 
-              if (idnr == count - 1) {
+              else {
+                this.roleCount[idnr - 1] = 0;
+                this.roleCountAfter[idnr - 1] = 0;
+                this.difference[idnr - 1] = 0;
+              }
+
+              if (idnr == this.totalRoles) {
                 this.forceUpdate();
               }
             });
