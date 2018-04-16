@@ -6,6 +6,8 @@ import BigCalendar from 'react-big-calendar'
 import moment from 'moment';
 import VirtualizedSelect from 'react-virtualized-select';
 
+let selectedEvent = {};
+
 moment.locale('ko', {
     week: {
         dow: 1,
@@ -20,6 +22,8 @@ export class EventList extends React.Component {
     super();
 
     this.evntList = [];
+
+    this.user = userService.getSignedInUser();
   }
 
   nextPath(path) {
@@ -28,11 +32,18 @@ export class EventList extends React.Component {
 
   render() {
     let evntsList = [];
+    let availableEvents = [];
     for (let evnt of this.evntList) {
       let day = evnt.start.getDate();
       let month = evnt.start.getMonth() + 1;
       let year = evnt.start.getFullYear();
       evntsList.push(<tr key={evnt.eventid} className='tableRow' onClick={() => this.nextPath('/eventdetails/' + evnt.eventid)}><td className='tableLines'>{evnt.title}</td><td className='tableLines'>{evnt.start.toISOString().split("T")[0]}</td><td className='tableLines'>{evnt.end.toISOString().split("T")[0]}</td></tr>)
+    }
+
+    for(let evnt of this.evntList) {
+      eventService.getEventRoller(evnt.eventid, (result) => {
+
+      });
     }
 
     return(
@@ -41,7 +52,7 @@ export class EventList extends React.Component {
            <BigCalendar
              events={this.evntList}
              showMultiDayTimes
-             defaultDate={new Date(2018, 2, 1)}
+             defaultDate={new Date()}
              selectAble ={true}
              onSelectEvent={event => this.props.history.push('/eventdetails/' + event.eventid)
          }
@@ -61,6 +72,19 @@ export class EventList extends React.Component {
              {evntsList}
              </tbody>
            </table>
+           <h4>Tilgjengelisge arrangementer</h4>
+           <table className='eventTable'>
+             <thead>
+               <tr>
+                 <th className='tableLines'>Navn</th>
+                 <th className='tableLines'>Start</th>
+                 <th className='tableLines'>Slutt</th>
+               </tr>
+             </thead>
+             <tbody>
+             {availableEvents}
+             </tbody>
+           </table>
            <br />
          </div>
        </div>
@@ -70,7 +94,10 @@ export class EventList extends React.Component {
   componentDidMount () {
     eventService.getAllEvents((result) => {
       this.evntList = result;
-      this.forceUpdate();
+      userService.getUserSkills(this.user.id, (result) => {
+        this.userSkills = result;
+        this.forceUpdate();
+      })
     });
   }
 }
@@ -106,20 +133,37 @@ export class EventDetails extends React.Component {
 
   render() {
     let rolleList = [];
+    let rolleBtn;
+    let editBtn;
     for (let rolle of this.eventRoller) {
-      let ready = true;
-      for (let check of rolleList) {
-        if (check.key == rolle.rolleid) {
-          ready = false;
-        }
-      }
-      if (ready == true) {
-        rolleList.push(<tr key={ rolle.rolleid } ><td> { rolle.rollenavn } </td><td> { this.roleCount[rolle.rolleid] } </td></tr>);
+      if (rolle.userid == undefined) {
+        rolleList.push(<tr key={ rolle.event_rolle_id } ><td> { rolle.rollenavn } </td><td> LEDIG </td></tr>);
       }
 
+      else {
+        rolleList.push(<tr key={ rolle.event_rolle_id } ><td> { rolle.rollenavn } </td><td> { rolle.userid } </td></tr>);
+      }
     }
 
+    // for (let rolle of this.eventRoller) {
+    //   let ready = true;
+    //   for (let check of rolleList) {
+    //     if (check.key == rolle.rolleid) {
+    //       ready = false;
+    //     }
+    //   }
+    //   if (ready == true) {
+    //     rolleList.push(<tr key={ rolle.rolleid } ><td> { rolle.rollenavn } </td><td> { this.roleCount[rolle.rolleid] } </td></tr>);
+    //   }
+    //
+    // }
+
     let loggedinUser = userService.getSignedInUser();
+
+    if (loggedinUser.admin == true) {
+      rolleBtn = <button onClick={() => this.props.history.push('/roles/' + this.evnt.eventid)}>Roller</button>;
+      editBtn = <button onClick={() => this.props.history.push('/editevent')}>Endre detaljer</button>;
+    }
 
     return(
       <div>
@@ -128,7 +172,9 @@ export class EventDetails extends React.Component {
           Start: {this.start} <br />
           Slutt: {this.end} <br />
           Bekrivelse: {this.evnt.text} <br />
+          Adresse: {this.evnt.adress}, {this.evnt.postalnumber} {this.city} <br />
         </div>
+        {editBtn}
         <div>
           <h4>Roller til dette arrangementet</h4>
           <table>
@@ -137,7 +183,7 @@ export class EventDetails extends React.Component {
             </tbody>
           </table>
         </div>
-        <button onClick={() => this.props.history.push('/roles/' + this.evnt.eventid)}>Roller</button>
+        {rolleBtn}
       </div>
     );
   }
@@ -145,23 +191,27 @@ export class EventDetails extends React.Component {
   componentDidMount() {
     eventService.getEvent(this.id, (result) => {
       this.evnt = result;
+      localStorage.setItem('selectedEvent', JSON.stringify(result));
       this.start = this.fixDate(this.evnt.start);
       this.end = this.fixDate(this.evnt.end);
-      eventService.getEventRoller(this.evnt.eventid, (result) => {
-        this.eventRoller = result;
-        eventService.countRoller((result) => {
-          let count = result + 1;
-          for (var i = 0; i < count; i++) {
-            eventService.testRolle(this.evnt.eventid, i, (result, idnr) => {
-              if (result[0] != undefined) {
-                this.roleCount[result[0].rolleid] = result.length;
-              }
+      userService.getCity(this.evnt.postalnumber, (result) => {
+        this.city = result.poststed;
+        eventService.getEventRoller(this.evnt.eventid, (result) => {
+          this.eventRoller = result;
+          eventService.countRoller((result) => {
+            let count = result + 1;
+            for (var i = 0; i < count; i++) {
+              eventService.testRolle(this.evnt.eventid, i, (result, idnr) => {
+                if (result[0] != undefined) {
+                  this.roleCount[result[0].rolleid] = result.length;
+                }
 
-              if (idnr == count - 1) {
-                this.forceUpdate();
-              }
-            });
-          }
+                if (idnr == count - 1) {
+                  this.forceUpdate();
+                }
+              });
+            }
+          });
         });
       });
     });
@@ -248,7 +298,7 @@ export class Roles extends React.Component {
             this.allRolleEvent = result;
             for (var j = 0; j < -this.difference[i]; j++) {
               eventService.deleteEventRolle(this.allRolleEvent[j].event_rolle_id, (result) => {
-                
+
               });
             }
           });
@@ -389,13 +439,18 @@ export class EditEvent extends React.Component {
   constructor(props) {
     super(props);
 
-    this.id = props.match.params.eventId;
+    this.evnt = this.getSelectedEvent();
+
+    let startTime = this.evnt.start;
+    let endTime = this.evnt.end;
+    this.startTime = startTime.slice(0, -1);
+    this.endTime = endTime.slice(0, -1);
 
     this.state = {
       title: this.evnt.title,
-      start: this.evnt.start,
-      end: this.evnt.end,
       text: this.evnt.text,
+      start: this.startTime,
+      end: this.endTime,
       adress: this.evnt.adress,
       postalnumber: this.evnt.postalnumber,
     };
@@ -407,28 +462,59 @@ export class EditEvent extends React.Component {
         }
   }
 
+  fixDate(d) {
+    let day = d.getDate();
+    if (day < 10) {
+      day = '0' + day;
+    }
+    let month = d.getMonth() + 1;
+    if (month < 10) {
+      month = '0' + month;
+    }
+    let year = d.getFullYear();
+    let hours = d.getHours();
+    if (hours < 10) {
+      hours = '0' + hours;
+    }
+    let mins = d.getMinutes();
+    if (mins < 10) {
+      mins = '0' + mins;
+    }
+
+    let dateTime = year + '-' + month + '-' + day + 'T' + hours + ':' + mins;
+    // day + '/' + month + '/' + year + ' ' + hours + ':' + mins;
+    return(dateTime);
+  }
+
+  getSelectedEvent() {
+    let item = localStorage.getItem('selectedEvent');
+    if(!item) return null;
+
+    return JSON.parse(item);
+  }
+
   render() {
     return(
       <div>
         <input name='title' ref='title' value={this.state.title} onChange={this.onFieldChange('title').bind(this)} />
-        <input name='start' ref='lastName' type='date' value={this.state.lastName} onChange={this.onFieldChange('lastName').bind(this)} />
+        <input name='text' ref='text' value={this.state.text} onChange={this.onFieldChange('text').bind(this)} />
         <br />
-        <input name='phonenumber' ref='phonenumber' value={this.state.phonenumber} onChange={this.onFieldChange('phonenumber').bind(this)} />
-        <input name='email' ref='email' value={this.state.email} onChange={this.onFieldChange('email').bind(this)} />
+        <input name='start' ref='start' type='datetime-local' value={this.state.start} onChange={this.onFieldChange('start').bind(this)} />
+        <input name='end' ref='end' type='datetime-local' value={this.state.end} onChange={this.onFieldChange('end').bind(this)} />
         <br />
         <input name='adress' ref='adress' value={this.state.adress} onChange={this.onFieldChange('adress').bind(this)} />
         <input name='postalnumber' ref='postalnumber' maxLength='4' value={this.state.postalnumber} onChange={this.onFieldChange('postalnumber').bind(this)} />
         <br />
-        {rolleList}
-        <button ref='editUserBtn'>Confirm</button>
+        <button ref='editEventBtn'>Confirm</button>
       </div>
     );
   }
 
   componentDidMount() {
-    eventService.getEvent(this.id, (result) => {
-      this.evnt = result;
-      this.forceUpdate();
-    });
+    this.refs.editEventBtn.onclick = () => {
+      eventService.editEvent(this.evnt.eventid, this.refs.title.value, this.refs.text.value, this.refs.start.value, this.refs.end.value, this.refs.adress.value, this.refs.postalnumber.value, (result) => {
+        this.props.history.push('/eventdetails/' + this.evnt.eventid);
+      });
+    }
   }
 }

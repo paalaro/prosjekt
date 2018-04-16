@@ -48,6 +48,14 @@ class UserService {
     });
   }
 
+  getUserforEvent(id, i, callback) {
+    connection.query('SELECT * FROM Users WHERE id=?', [id], (error, result) => {
+      if (error) throw error;
+
+      callback(result[0], i);
+    });
+  }
+
   getSignedInUser() {
     let item = localStorage.getItem('loggedinUser'); // Get User-object from browser
     if(!item) return null;
@@ -173,6 +181,14 @@ class UserService {
       callback(result);
     });
   }
+
+  getUserSkills(userid, callback) {
+    connection.query('SELECT * FROM user_skills where userid = ?', [userid], (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
 }
 
 let userService = new UserService();
@@ -201,6 +217,14 @@ class EventService {
       if (error) throw error;
 
       callback(result);
+    });
+  }
+
+  editEvent(eventid, title, text, start, end, adress, postalnumber, callback) {
+    connection.query('UPDATE Events SET title = ?, text = ?, start = ?, end = ?, adress = ?, postalnumber = ? WHERE eventid = ?', [title, text, start, end, adress, postalnumber, eventid], (error, result) => {
+      if (error) throw error;
+
+      callback();
     });
   }
 
