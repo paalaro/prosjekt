@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, HashRouter, Switch, Route } from 'react-router-dom';
-import { eventService, userService } from './services';
+import { eventService, userService, skillService } from './services';
 import { loggedin } from './outlogged';
 import BigCalendar from 'react-big-calendar'
 import moment from 'moment';
@@ -34,10 +34,7 @@ export class EventList extends React.Component {
     let evntsList = [];
     let availableEvents = [];
     for (let evnt of this.evntList) {
-      let day = evnt.start.getDate();
-      let month = evnt.start.getMonth() + 1;
-      let year = evnt.start.getFullYear();
-      evntsList.push(<tr key={evnt.eventid} className='tableRow' onClick={() => this.nextPath('/eventdetails/' + evnt.eventid)}><td className='tableLines'>{evnt.title}</td><td className='tableLines'>{evnt.start.toISOString().split("T")[0]}</td><td className='tableLines'>{evnt.end.toISOString().split("T")[0]}</td></tr>)
+      evntsList.push(<tr key={evnt.eventid} className='tableRow' onClick={() => this.nextPath('/eventdetails/' + evnt.eventid)}><td className='tableLines'>{evnt.title}</td><td className='tableLines'>{evnt.start.toLocaleString().slice(0, -3)}</td><td className='tableLines'>{evnt.end.toLocaleString().slice(0, -3)}</td></tr>)
     }
 
     for(let evnt of this.evntList) {
@@ -106,63 +103,77 @@ export class EventDetails extends React.Component {
   constructor(props) {
     super(props);
 
+    this.user = userService.getSignedInUser();
     this.evnt = {};
     this.rolle = {};
     this.eventRoller = [];
+    this.eventRollernoUser = [];
     this.roleCount = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    this.allUsers = [];
+    this.interestedUsers = [];
+    this.capableUsers = [];
+    this.usedUsers = [];
+    this.usedEventRoles = [];
 
     this.id = props.match.params.eventId;
-  }
-
-  fixDate(date) {
-    let day = date.getDate();
-    let month = date.getMonth() + 1;
-    let year = date.getFullYear();
-    let hours = date.getHours();
-    if (hours < 10) {
-      hours = '0' + hours;
-    }
-    let mins = date.getMinutes();
-    if (mins < 10) {
-      mins = '0' + mins;
-    }
-
-    let dateTime = day + '/' + month + '/' + year + ' ' + hours + ':' + mins;
-    return(dateTime);
   }
 
   render() {
     let rolleList = [];
     let rolleBtn;
     let editBtn;
+    let interestBtn;
+    let interessert;
+    let fordelRollerBtn;
+
+    if (this.interest == undefined) {
+      interestBtn = <button onClick={() =>
+        eventService.setInterest(this.evnt.eventid, this.user.id, (result) => {
+          eventService.getInterest(this.evnt.eventid, this.user.id, (result) => {
+            this.interest = result;
+            this.forceUpdate();
+          });
+        })}>Meld interesse</button>;
+    }
+
+    else {
+      interestBtn = <button onClick={() =>
+        eventService.removeInterest(this.evnt.eventid, this.user.id, (result) => {
+          eventService.getInterest(this.evnt.eventid, this.user.id, (result) => {
+            this.interest = result;
+            this.forceUpdate();
+          });
+        })}>Fjern interesse</button>;
+    }
+
+    if (this.interest != undefined) {
+      interessert = 'Du er interessert i dette arrangementet';
+    }
+
+    for (let rolle of this.eventRollernoUser) {
+      rolleList.push(<tr key={ rolle.event_rolle_id } ><td> { rolle.rollenavn } </td><td> LEDIG </td></tr>);
+    }
+
     for (let rolle of this.eventRoller) {
-      if (rolle.userid == undefined) {
-        rolleList.push(<tr key={ rolle.event_rolle_id } ><td> { rolle.rollenavn } </td><td> LEDIG </td></tr>);
+      rolleList.push(<tr key={ rolle.event_rolle_id } ><td> { rolle.rollenavn } </td><td> { rolle.firstName } </td></tr>);
+    }
+
+    if (this.evnt.start != undefined) {
+      if (this.evnt.oppmote == null) {
+        this.oppmote = this.evnt.start.toLocaleTimeString().slice(0, -3);
       }
 
       else {
-        rolleList.push(<tr key={ rolle.event_rolle_id } ><td> { rolle.rollenavn } </td><td> { rolle.userid } </td></tr>);
+        this.oppmote = this.evnt.oppmote.slice(0, -3);
       }
     }
-
-    // for (let rolle of this.eventRoller) {
-    //   let ready = true;
-    //   for (let check of rolleList) {
-    //     if (check.key == rolle.rolleid) {
-    //       ready = false;
-    //     }
-    //   }
-    //   if (ready == true) {
-    //     rolleList.push(<tr key={ rolle.rolleid } ><td> { rolle.rollenavn } </td><td> { this.roleCount[rolle.rolleid] } </td></tr>);
-    //   }
-    //
-    // }
 
     let loggedinUser = userService.getSignedInUser();
 
     if (loggedinUser.admin == true) {
       rolleBtn = <button onClick={() => this.props.history.push('/roles/' + this.evnt.eventid)}>Roller</button>;
       editBtn = <button onClick={() => this.props.history.push('/editevent')}>Endre detaljer</button>;
+      fordelRollerBtn = <button onClick={() => this.giveRoles()}>Fordel roller</button>;
     }
 
     return(
@@ -171,10 +182,15 @@ export class EventDetails extends React.Component {
           <h3>{this.evnt.title}</h3> <br />
           Start: {this.start} <br />
           Slutt: {this.end} <br />
+          Oppmøtetidspunkt: {this.oppmote} <br />
           Bekrivelse: {this.evnt.text} <br />
           Adresse: {this.evnt.adress}, {this.evnt.postalnumber} {this.city} <br />
+          <br />
+          {interessert} <br />
         </div>
         {editBtn}
+        {interestBtn}
+        {fordelRollerBtn}
         <div>
           <h4>Roller til dette arrangementet</h4>
           <table>
@@ -188,29 +204,122 @@ export class EventDetails extends React.Component {
     );
   }
 
+  giveRoles() {
+    let stop = false;
+    eventService.getInterestedUsers(this.evnt.eventid, (result) => {
+      this.interestedUsers = result;
+      // console.log(this.interestedUsers);
+      skillService.countRoleReq((result) => {
+        this.roleReq = result;
+        if (this.interestedUsers != undefined) {
+          let countUsers = 0;
+          let countRoles = 0;
+          for (let user of this.interestedUsers) {
+            for (let eventRolle of this.eventRollernoUser) {
+              // console.log(result);
+              eventService.getUsersSkillsofRoles(eventRolle.rolleid, user.userid, (result) => {
+                if (result.userid != null) {
+                  let numberOfSkills = result.antall;
+                  // console.log(eventRolle);
+                  // console.log('Krav: ' + this.roleReq[eventRolle.rolleid - 1].antallskills);
+                  // console.log('Bruker har: ' + numberOfSkills);
+
+                  if (numberOfSkills != undefined && numberOfSkills == this.roleReq[eventRolle.rolleid - 1].antallskills) {
+                    // console.log(user.userid);
+                    this.capableUsers.push({rolleid: eventRolle.rolleid, userid: user.userid, vaktpoeng: user.vaktpoeng, eventrolleid: eventRolle.event_rolle_id})
+
+                  }
+                }
+              });
+              countRoles++;
+              if (countUsers == this.interestedUsers.length - 1 && countRoles == (this.eventRollernoUser.length) * (this.interestedUsers.length) && stop == false) {
+                this.add();
+                stop = true;
+              }
+            }
+
+
+            countUsers++;
+            // console.log(countUsers);
+          }
+        }
+      });
+    });
+  }
+
+  add () {
+    eventService.getUsedUsers((result) => {
+      this.usedUsers = result;
+      // console.log(this.usedUsers)
+      eventService.getUsedEventRoles((result) => {
+        this.usedEventRoles = result;
+        for (let i = 0; i < this.capableUsers.length; i++) {
+            if (this.capableUsers[i] != undefined) {
+
+              let ready = true;
+
+              for (let j = 0; j < this.usedUsers.length; j++) {
+                if (this.capableUsers[i].userid == this.usedUsers[j].userid) {
+                  ready = false;
+                }
+              }
+
+              if (ready == true) {
+                let addReady = true;
+                this.usedUsers.push({userid: this.capableUsers[i].userid});
+
+                eventService.checkUserRoleById(this.capableUsers[i].eventrolleid, (result) => {
+                  for (let n = 0; n < this.usedEventRoles.length; n++) {
+                    if (this.capableUsers[i].eventrolleid == this.usedEventRoles[n].eventrolleid) {
+                      addReady = false;
+                    }
+                  }
+                  if (addReady == true) {
+                    this.usedEventRoles.push({eventrolleid: this.capableUsers[i].eventrolleid});
+                    eventService.setRole(this.capableUsers[i].userid, this.capableUsers[i].eventrolleid, (result) => {
+
+                    });
+                  }
+                });
+              }
+            }
+          }
+        });
+    });
+  }
+
   componentDidMount() {
     eventService.getEvent(this.id, (result) => {
       this.evnt = result;
       localStorage.setItem('selectedEvent', JSON.stringify(result));
-      this.start = this.fixDate(this.evnt.start);
-      this.end = this.fixDate(this.evnt.end);
+      this.start = this.evnt.start.toLocaleString().slice(0, -3);
+      this.end = this.evnt.end.toLocaleString().slice(0, -3);
       userService.getCity(this.evnt.postalnumber, (result) => {
         this.city = result.poststed;
         eventService.getEventRoller(this.evnt.eventid, (result) => {
           this.eventRoller = result;
-          eventService.countRoller((result) => {
-            let count = result + 1;
-            for (var i = 0; i < count; i++) {
-              eventService.testRolle(this.evnt.eventid, i, (result, idnr) => {
-                if (result[0] != undefined) {
-                  this.roleCount[result[0].rolleid] = result.length;
-                }
+          eventService.getInterest(this.evnt.eventid, this.user.id, (result) => {
+            this.interest = result;
+            eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
+              this.eventRollernoUser = result;
+              userService.getUsers((result) => {
+                this.allUsers = result
+                eventService.countRoller((result) => {
+                  let count = result + 1;
+                  for (var i = 0; i < count; i++) {
+                    eventService.testRolle(this.evnt.eventid, i, (result, idnr) => {
+                      if (result[0] != undefined) {
+                        this.roleCount[result[0].rolleid] = result.length;
+                      }
 
-                if (idnr == count - 1) {
-                  this.forceUpdate();
-                }
+                      if (idnr == count - 1) {
+                        this.forceUpdate();
+                      }
+                    });
+                  }
+                });
               });
-            }
+            });
           });
         });
       });

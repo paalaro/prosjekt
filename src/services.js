@@ -269,7 +269,15 @@ class EventService {
   }
 
   getEventRoller(eventid, callback) {
-    connection.query('SELECT * FROM event_rolle, Roller WHERE event_rolle.rolleid = Roller.rolleid AND eventid = ?', [eventid], (error, result) => {
+    connection.query('SELECT * FROM event_rolle, Roller, Users WHERE event_rolle.rolleid = Roller.rolleid AND event_rolle.userid = Users.id AND eventid = ?', [eventid], (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
+
+  getEventRollernoUser(eventid, callback) {
+    connection.query('SELECT * FROM event_rolle, Roller WHERE event_rolle.rolleid = Roller.rolleid AND userid IS NULL AND eventid = ?', [eventid], (error, result) => {
       if (error) throw error;
 
       callback(result);
@@ -313,6 +321,94 @@ class EventService {
       if (error) throw error;
 
       callback(result, rolleid);
+    });
+  }
+
+  getInterest(eventid, userid, callback) {
+    connection.query('SELECT * FROM interesse WHERE eventid = ? AND userid = ?', [eventid, userid], (error, result) => {
+      if (error) throw error;
+
+      callback(result[0]);
+    });
+  }
+
+  getInterestedUsers(eventid, callback) {
+    connection.query('SELECT * FROM interesse, Users WHERE interesse.userid = Users.id AND eventid = ? ORDER BY vaktpoeng DESC', [eventid], (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
+
+  setInterest(eventid, userid, callback) {
+    connection.query('INSERT INTO interesse (eventid, userid) values (?, ?)', [eventid, userid], (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
+
+  removeInterest(eventid, userid, callback) {
+    connection.query('DELETE FROM interesse WHERE eventid = ? AND userid = ?', [eventid, userid], (error, result) => {
+      if (error) throw error;
+
+      callback();
+    });
+  }
+
+  getUsersSkillsofRoles(rolleid, userid, callback) {
+    connection.query('SELECT COUNT(*) AS antall, userid FROM user_skills, roller_skills WHERE user_skills.skillid = roller_skills.skillid and rolleid = ? AND userid = ?', [rolleid, userid], (error, result) => {
+      if (error) throw error;
+
+      callback(result[0]);
+    });
+  }
+
+  setRole(userid, eventrolleid, callback) {
+    connection.query('UPDATE event_rolle SET userid = ? WHERE event_rolle_id = ?', [userid, eventrolleid], (error, result) => {
+      if (error) throw error;
+
+      callback();
+    })
+  }
+
+  getUsedUsers(callback) {
+    connection.query('SELECT userid FROM event_rolle WHERE userid IS NOT NULL', (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    })
+  }
+
+  getUsedEventRoles(callback) {
+    connection.query('SELECT event_rolle_id FROM event_rolle WHERE userid IS NOT NULL', (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    })
+  }
+
+  checkUserRole(eventid, userid, callback) {
+    connection.query('SELECT * FROM event_rolle WHERE eventid = ? AND userid = ?', [eventid, userid], (error, result) => {
+      if (error) throw error;
+
+      callback(result[0]);
+    });
+  }
+
+  checkUserRoleById(eventrolleid, callback) {
+    connection.query('SELECT * FROM event_rolle WHERE event_rolle_id = ?', [eventrolleid], (error, result) => {
+      if (error) throw error;
+
+      callback(result[0]);
+    });
+  }
+
+  checkRole(eventid, callback) {
+    connection.query('SELECT * FROM event_rolle WHERE eventid = ?', [eventid], (error, result) => {
+      if (error) throw error;
+
+      callback(result[0]);
     });
   }
 }
@@ -383,6 +479,14 @@ class SkillService {
       if (error) throw error;
 
       callback();
+    });
+  }
+
+  countRoleReq(callback) {
+    connection.query('SELECT COUNT(*) AS antallskills, rolleid FROM roller_skills GROUP BY rolleid', (error, result) => {
+      if (error) throw error;
+
+      callback(result);
     });
   }
 }
