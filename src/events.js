@@ -209,6 +209,9 @@ export class EventDetails extends React.Component {
     eventService.getInterestedUsers(this.evnt.eventid, (result) => {
       this.interestedUsers = result;
       // console.log(this.interestedUsers);
+      eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
+        this.eventRollernoUser = result;
+        console.log(this.eventRollernoUser);
       skillService.countRoleReq((result) => {
         this.roleReq = result;
         if (this.interestedUsers != undefined) {
@@ -244,6 +247,7 @@ export class EventDetails extends React.Component {
           }
         }
       });
+      });
     });
   }
 
@@ -277,7 +281,16 @@ export class EventDetails extends React.Component {
                   if (addReady == true) {
                     this.usedEventRoles.push({eventrolleid: this.capableUsers[i].eventrolleid});
                     eventService.setRole(this.capableUsers[i].userid, this.capableUsers[i].eventrolleid, (result) => {
-
+                      console.log(this.capableUsers[i].userid + ' registrert på eventrolleid ' + this.capableUsers[i].eventrolleid);
+                      eventService.getEmptyRoles(this.evnt.eventid, (result) => {
+                        let emptyRoles = result;
+                        if (emptyRoles.length > 0) {
+                          this.giveRoles();
+                        }
+                        else {
+                          this.forceUpdate();
+                        }
+                      });
                     });
                   }
                 });

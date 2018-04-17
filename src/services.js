@@ -411,6 +411,14 @@ class EventService {
       callback(result[0]);
     });
   }
+
+  getEmptyRoles(eventid, callback) {
+    connection.query('SELECT * FROM event_rolle WHERE eventid = ? AND userid IS NULL', [eventid], (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
 }
 
 let eventService = new EventService();
