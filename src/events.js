@@ -119,6 +119,10 @@ export class EventList extends React.Component {
     });
   }
 
+  regPassiv() {
+
+  }
+
   componentDidMount () {
     eventService.getAllEvents((result) => {
       this.evntList = result;
@@ -160,7 +164,6 @@ export class EventDetails extends React.Component {
     let interestBtn;
     let interessert;
     let fordelRollerBtn;
-    let emptyRolesBtn;
 
     if (this.interest == undefined) {
       interestBtn = <button onClick={() =>
@@ -182,19 +185,6 @@ export class EventDetails extends React.Component {
         })}>Fjern interesse</button>;
     }
 
-    if (this.eventRoller[0] != undefined) {
-      emptyRolesBtn = <button onClick={() =>
-        eventService.emptyEventRoles(this.evnt.eventid, (result) => {
-          eventService.getEventRoller(this.evnt.eventid, (result) => {
-            this.eventRoller = result;
-            eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
-              this.eventRollernoUser = result;
-              this.forceUpdate();
-            })
-          })
-        })}>Tøm roller</button>;
-    }
-
     if (this.interest != undefined) {
       interessert = 'Du er interessert i dette arrangementet';
     }
@@ -213,12 +203,8 @@ export class EventDetails extends React.Component {
       }
     }
 
-    if (this.eventRoller.length > 0) {
+    if (this.eventRollernoUser.length == 0) {
       rolleListHeader = <tr><th>Rolle</th><th>Status</th><th>Tildelt</th><th>Godkjent</th></tr>;
-    }
-
-    else if (this.eventRoller.length == 0 && this.eventRollernoUser.length > 0) {
-      rolleListHeader = <tr><th>Rolle</th><th>Status</th></tr>;
     }
 
     if (this.evnt.start != undefined) {
@@ -266,7 +252,6 @@ export class EventDetails extends React.Component {
           </table>
         </div>
         {rolleBtn}
-        {emptyRolesBtn}
       </div>
     );
   }
@@ -275,9 +260,6 @@ export class EventDetails extends React.Component {
     let stop = false;
     let usedUserids = [];
     let usedEventRoleids = [];
-    let interestedUsersNotUsed = [];
-    this.capableUsers = [];
-
     eventService.getUsedUsers(this.evnt.eventid, (result) => {
       for (let id of result) {
         usedUserids.push(id.userid);
@@ -290,28 +272,23 @@ export class EventDetails extends React.Component {
 
         eventService.getInterestedUsers(this.evnt.eventid, (result) => {
           this.interestedUsers = result;
-          for (let id of this.interestedUsers) {
-            let includes = usedUserids.includes(id.id);
-
-            if (includes == false) {
-              interestedUsersNotUsed.push(id);
-            }
-          }
 
           eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
             this.eventRollernoUser = result;
           skillService.countRoleReq((result) => {
             this.roleReq = result;
             if (this.interestedUsers != undefined) {
-              for (let user of interestedUsersNotUsed) {
-                if (user == interestedUsersNotUsed[interestedUsersNotUsed.length - 1]) {
-                  for (let eventRolle of this.eventRollernoUser) {
-                    eventService.getUsersSkillsofRoles(eventRolle.rolleid, user.userid, (result) => {
-                      let numberOfSkills = result.antall;
+              let countUsers = 0;
+              let countRoles = 0;
+              for (let user of this.interestedUsers) {
+                for (let eventRolle of this.eventRollernoUser) {
+                  eventService.getUsersSkillsofRoles(eventRolle.rolleid, user.userid, (result) => {
+                    let numberOfSkills = result.antall;
 
-                      if (numberOfSkills != undefined && numberOfSkills == this.roleReq[eventRolle.rolleid - 1].antallskills) {
-                        this.capableUsers.push({userid: user.userid, rolleid: eventRolle.rolleid, points: user.vaktpoeng, eventrolleid: eventRolle.event_rolle_id});
+                    if (numberOfSkills != undefined && numberOfSkills == this.roleReq[eventRolle.rolleid - 1].antallskills) {
+                      this.capableUsers.push({userid: user.userid, rolleid: eventRolle.rolleid, points: user.vaktpoeng, eventrolleid: eventRolle.event_rolle_id});
 
+                      if (countUsers == this.interestedUsers.length && countRoles == this.eventRollernoUser.length * this.interestedUsers.length) {
                         for (let i = 0; i < this.capableUsers.length; i++) {
                           let exists = usedUserids.includes(this.capableUsers[i].userid);
                           let hasUser = usedEventRoleids.includes(this.capableUsers[i].eventrolleid);
@@ -321,46 +298,17 @@ export class EventDetails extends React.Component {
                             usedEventRoleids.push(this.capableUsers[i].eventrolleid);
 
                             eventService.setRole(this.capableUsers[i].userid, this.capableUsers[i].eventrolleid, (result) => {
-                              eventService.getEventRoller(this.evnt.eventid, (result) => {
-                                this.eventRoller = result;
-                                eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
-                                  this.eventRollernoUser = result;
-                                  this.forceUpdate();
-                                });
-                              });
-                            });
-                          }
-                        }
-                      }
-                    })
-                  }
-                }
-
-                else {
-                  for (let eventRolle of this.eventRollernoUser) {
-                    eventService.getUsersSkillsofRoles(eventRolle.rolleid, user.userid, (result) => {
-                      let numberOfSkills = result.antall;
-
-                      if (numberOfSkills != undefined && numberOfSkills == this.roleReq[eventRolle.rolleid - 1].antallskills) {
-                        this.capableUsers.push({userid: user.userid, rolleid: eventRolle.rolleid, points: user.vaktpoeng, eventrolleid: eventRolle.event_rolle_id});
-
-                        for (let i = 0; i < this.capableUsers.length; i++) {
-                          let exists = usedUserids.includes(this.capableUsers[i].userid);
-                          let hasUser = usedEventRoleids.includes(this.capableUsers[i].eventrolleid);
-
-                          if (exists == false && hasUser == false) {
-                            usedUserids.push(this.capableUsers[i].userid);
-                            usedEventRoleids.push(this.capableUsers[i].eventrolleid);
-
-                            eventService.setRole(this.capableUsers[i].userid, this.capableUsers[i].eventrolleid, (result) => {
+                              console.log(this.capableUsers[i].userid + ' har blitt tildelt vakt ' + this.capableUsers[i].eventrolleid);
 
                             });
                           }
                         }
                       }
-                    })
-                  }
+                    }
+                  })
+                  countRoles++;
                 }
+                countUsers++;
               }
             }
           });
