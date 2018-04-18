@@ -22,6 +22,7 @@ export class EventList extends React.Component {
     super();
 
     this.evntList = [];
+    this.userRoles = [];
 
     this.user = userService.getSignedInUser();
   }
@@ -33,14 +34,21 @@ export class EventList extends React.Component {
   render() {
     let evntsList = [];
     let availableEvents = [];
+    let userRoles = [];
+
     for (let evnt of this.evntList) {
       evntsList.push(<tr key={evnt.eventid} className='tableRow' onClick={() => this.nextPath('/eventdetails/' + evnt.eventid)}><td className='tableLines'>{evnt.title}</td><td className='tableLines'>{evnt.start.toLocaleString().slice(0, -3)}</td><td className='tableLines'>{evnt.end.toLocaleString().slice(0, -3)}</td></tr>)
     }
 
-    for(let evnt of this.evntList) {
-      eventService.getEventRoller(evnt.eventid, (result) => {
+    for (let rolle of this.userRoles) {
+      if (rolle.confirmed == false) {
+        userRoles.push(<tr key={rolle.event_rolle_id}><td>{rolle.title}</td><td>{rolle.rollenavn}</td><td><button onClick={() => this.confirmRole(rolle.event_rolle_id)}>Godkjenn</button></td></tr>)
 
-      });
+      }
+
+      else {
+        userRoles.push(<tr key={rolle.event_rolle_id}><td>{rolle.title}</td><td>{rolle.rollenavn}</td><td>Godkjent</td></tr>)
+      }
     }
 
     return(
@@ -84,8 +92,24 @@ export class EventList extends React.Component {
            </table>
            <br />
          </div>
+         <div>
+          <table>
+            <tbody>
+              {userRoles}
+            </tbody>
+          </table>
+         </div>
        </div>
     );
+  }
+
+  confirmRole(eventrolleid) {
+    eventService.confirmRoleEvent(eventrolleid, (result) => {
+      eventService.getUserEventRoller(this.user.id, (result) => {
+        this.userRoles = result;
+        this.forceUpdate();
+      });
+    });
   }
 
   componentDidMount () {
@@ -93,7 +117,10 @@ export class EventList extends React.Component {
       this.evntList = result;
       userService.getUserSkills(this.user.id, (result) => {
         this.userSkills = result;
-        this.forceUpdate();
+        eventService.getUserEventRoller(this.user.id, (result) => {
+          this.userRoles = result;
+          this.forceUpdate();
+        });
       })
     });
   }
@@ -120,6 +147,7 @@ export class EventDetails extends React.Component {
 
   render() {
     let rolleList = [];
+    let rolleListHeader;
     let rolleBtn;
     let editBtn;
     let interestBtn;
@@ -155,7 +183,17 @@ export class EventDetails extends React.Component {
     }
 
     for (let rolle of this.eventRoller) {
-      rolleList.push(<tr key={ rolle.event_rolle_id } ><td> { rolle.rollenavn } </td><td> { rolle.firstName } </td></tr>);
+      if (rolle.confirmed == true) {
+        rolleList.push(<tr key={ rolle.event_rolle_id} ><td> { rolle.rollenavn } </td><td> { rolle.firstName } </td><td> {rolle.timecalled.toLocaleString().slice(0, -3) }</td><td>{ rolle.timeconfirmed.toLocaleString().slice(0, -3) }</td></tr>);
+      }
+
+      else {
+        rolleList.push(<tr key={ rolle.event_rolle_id } ><td> { rolle.rollenavn } </td><td> { rolle.firstName } </td><td> { rolle.timecalled.toLocaleString().slice(0, -3) } </td><td>Ikke godkjent</td></tr>);
+      }
+    }
+
+    if (this.eventRollernoUser.length == 0) {
+      rolleListHeader = <tr><th>Rolle</th><th>Status</th><th>Tildelt</th><th>Godkjent</th></tr>;
     }
 
     if (this.evnt.start != undefined) {
@@ -194,6 +232,9 @@ export class EventDetails extends React.Component {
         <div>
           <h4>Roller til dette arrangementet</h4>
           <table>
+            <thead>
+              {rolleListHeader}
+            </thead>
             <tbody>
               {rolleList}
             </tbody>
@@ -223,7 +264,6 @@ export class EventDetails extends React.Component {
 
           eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
             this.eventRollernoUser = result;
-            console.log(this.eventRollernoUser);
           skillService.countRoleReq((result) => {
             this.roleReq = result;
             if (this.interestedUsers != undefined) {
@@ -248,16 +288,7 @@ export class EventDetails extends React.Component {
 
                             eventService.setRole(this.capableUsers[i].userid, this.capableUsers[i].eventrolleid, (result) => {
                               console.log(this.capableUsers[i].userid + ' har blitt tildelt vakt ' + this.capableUsers[i].eventrolleid);
-                              if (i == this.capableUsers - 1) {
-                                eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
-                                  this.eventRollernoUser = result;
-                                  eventService.getEventRolle(this.evnt.eventid, (result) => {
-                                    this.eventRoller = result;
-                                    console.log('Update');
-                                    this.forceUpdate();
-                                  });
-                                });
-                              }
+
                             });
                           }
                         }

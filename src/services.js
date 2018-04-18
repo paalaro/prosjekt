@@ -276,6 +276,14 @@ class EventService {
     });
   }
 
+  getUserEventRoller(userid, callback) {
+    connection.query('SELECT * FROM event_rolle, Roller, Events WHERE event_rolle.rolleid = Roller.rolleid AND event_rolle.eventid = Events.eventid AND userid = ?', [userid], (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
+
   getEventRollernoUser(eventid, callback) {
     connection.query('SELECT event_rolle_id, userid, eventid, rollenavn, event_rolle.rolleid, COUNT(skillid) as antall FROM event_rolle, Roller, roller_skills WHERE event_rolle.rolleid = Roller.rolleid AND event_rolle.rolleid = roller_skills.rolleid AND event_rolle.userid IS NULL AND event_rolle.eventid = 32 GROUP BY event_rolle_id ORDER BY `antall` DESC', [eventid], (error, result) => {
       if (error) throw error;
@@ -365,11 +373,21 @@ class EventService {
   }
 
   setRole(userid, eventrolleid, callback) {
-    connection.query('UPDATE event_rolle SET userid = ? WHERE event_rolle_id = ?', [userid, eventrolleid], (error, result) => {
+    let timedate = new Date();
+    connection.query('UPDATE event_rolle SET userid = ?, timecalled = ? WHERE event_rolle_id = ?', [userid, timedate, eventrolleid], (error, result) => {
       if (error) throw error;
 
       callback();
     })
+  }
+
+  confirmRoleEvent(eventrolleid, callback) {
+    let timedate = new Date();
+    connection.query('UPDATE event_rolle SET confirmed = ?, timeconfirmed = ? WHERE event_rolle_id = ?', [true, timedate, eventrolleid], (error, result) => {
+      if (error) throw error;
+
+      callback();
+    });
   }
 
   getUsedUsers(eventid, callback) {
