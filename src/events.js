@@ -99,6 +99,13 @@ export class EventList extends React.Component {
             </tbody>
           </table>
          </div>
+         <div>
+          <h4>Passivperiode:</h4><br />
+          Sett deg selv som passiv for en periode. <br />
+          <input ref='startPassiv' type='date' />
+          <input ref='endPassiv' type='date' />
+          <button onClick={() => this.regPassiv()}>Registrer</button>
+         </div>
        </div>
     );
   }
