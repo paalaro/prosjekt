@@ -19,7 +19,11 @@ export class Stats extends React.Component {
 
     return(
       <div>
-        {statistikk}
+      <h3>Statistikk</h3>
+        <div>
+        <h4>Vaktpoeng</h4>
+          {statistikk}
+        </div>
       </div>
     );
   }

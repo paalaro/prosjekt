@@ -191,7 +191,7 @@ class UserService {
   }
 
   getConfirmedUsers(callback) {
-    connection.query('SELECT * FROM Users WHERE aktivert = 1', (error, result) => {
+    connection.query('SELECT * FROM Users WHERE aktivert = 1 ORDER BY vaktpoeng DESC', (error, result) => {
       if(error) throw error;
 
       callback(result);
