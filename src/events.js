@@ -323,7 +323,27 @@ export class EventDetails extends React.Component {
                               });
                             });
                           }
+
+                          else {
+                            eventService.getEventRoller(this.evnt.eventid, (result) => {
+                              this.eventRoller = result;
+                              eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
+                                this.eventRollernoUser = result;
+                                this.forceUpdate();
+                              });
+                            });
+                          }
                         }
+                      }
+
+                      else {
+                        eventService.getEventRoller(this.evnt.eventid, (result) => {
+                          this.eventRoller = result;
+                          eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
+                            this.eventRollernoUser = result;
+                            this.forceUpdate();
+                          });
+                        });
                       }
                     })
                   }
