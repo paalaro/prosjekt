@@ -189,6 +189,22 @@ class UserService {
       callback(result);
     });
   }
+
+  setPassiv(userid, start, end, callback) {
+    connection.query('INSERT INTO passiv (userid, passivstart, passivend) values (?, ?, ?)', [userid, start, end], (error, result) => {
+      if (error) throw error;
+
+      callback();
+    });
+  }
+
+  getPassiv(userid, callback) {
+    connection.query('SELECT * FROM passiv WHERE userid = ?', [userid], (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
 }
 
 let userService = new UserService();
