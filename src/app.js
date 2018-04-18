@@ -150,7 +150,7 @@ export function renderAdminLogin(user) {
           <Route exact path='/eventdetails/:eventId' component={EventDetails} />
           <Route exact path='/createevent' component={CreateEvent} />
           <Route exact path='/changepassword' component={ChangePassword} />
-          <Route exact path='/editevent/:eventId' component={EditEvent} />
+          <Route exact path='/editevent' component={EditEvent} />
           <Route exact path='/roles/:eventId' component={Roles} />
           <Requests />
         </Switch>
