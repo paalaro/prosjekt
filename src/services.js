@@ -381,6 +381,14 @@ class EventService {
     })
   }
 
+  emptyEventRoles(eventid, callback) {
+    connection.query('UPDATE event_rolle SET userid = ?, timeconfirmed = ?, confirmed = ?  WHERE eventid = ?', [null, null, false, eventid], (error, result) => {
+      if (error) throw error;
+
+      callback();
+    });
+  }
+
   confirmRoleEvent(eventrolleid, callback) {
     let timedate = new Date();
     connection.query('UPDATE event_rolle SET confirmed = ?, timeconfirmed = ? WHERE event_rolle_id = ?', [true, timedate, eventrolleid], (error, result) => {
