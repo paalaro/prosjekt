@@ -189,6 +189,14 @@ class UserService {
       callback(result);
     });
   }
+
+  getConfirmedUsers(callback) {
+    connection.query('SELECT * FROM Users WHERE aktivert = 1', (error, result) => {
+      if(error) throw error;
+
+      callback(result);
+    })
+  }
 }
 
 let userService = new UserService();
