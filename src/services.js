@@ -277,7 +277,7 @@ class EventService {
   }
 
   getEventRollernoUser(eventid, callback) {
-    connection.query('SELECT * FROM event_rolle, Roller WHERE event_rolle.rolleid = Roller.rolleid AND userid IS NULL AND eventid = ?', [eventid], (error, result) => {
+    connection.query('SELECT event_rolle_id, userid, eventid, rollenavn, event_rolle.rolleid, COUNT(skillid) as antall FROM event_rolle, Roller, roller_skills WHERE event_rolle.rolleid = Roller.rolleid AND event_rolle.rolleid = roller_skills.rolleid AND event_rolle.userid IS NULL AND event_rolle.eventid = 32 GROUP BY event_rolle_id ORDER BY `antall` DESC', [eventid], (error, result) => {
       if (error) throw error;
 
       callback(result);
@@ -372,16 +372,16 @@ class EventService {
     })
   }
 
-  getUsedUsers(callback) {
-    connection.query('SELECT userid FROM event_rolle WHERE userid IS NOT NULL', (error, result) => {
+  getUsedUsers(eventid, callback) {
+    connection.query('SELECT userid FROM event_rolle WHERE eventid = ? AND userid IS NOT NULL', [eventid], (error, result) => {
       if (error) throw error;
 
       callback(result);
     })
   }
 
-  getUsedEventRoles(callback) {
-    connection.query('SELECT event_rolle_id FROM event_rolle WHERE userid IS NOT NULL', (error, result) => {
+  getUsedEventRoles(eventid, callback) {
+    connection.query('SELECT event_rolle_id FROM event_rolle WHERE eventid = ? AND userid IS NOT NULL', [eventid], (error, result) => {
       if (error) throw error;
 
       callback(result);

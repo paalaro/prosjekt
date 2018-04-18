@@ -206,98 +206,73 @@ export class EventDetails extends React.Component {
 
   giveRoles() {
     let stop = false;
-    eventService.getInterestedUsers(this.evnt.eventid, (result) => {
-      this.interestedUsers = result;
-      // console.log(this.interestedUsers);
-      eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
-        this.eventRollernoUser = result;
-        console.log(this.eventRollernoUser);
-      skillService.countRoleReq((result) => {
-        this.roleReq = result;
-        if (this.interestedUsers != undefined) {
-          let countUsers = 0;
-          let countRoles = 0;
-          for (let user of this.interestedUsers) {
-            for (let eventRolle of this.eventRollernoUser) {
-              // console.log(result);
-              eventService.getUsersSkillsofRoles(eventRolle.rolleid, user.userid, (result) => {
-                if (result.userid != null) {
-                  let numberOfSkills = result.antall;
-                  // console.log(eventRolle);
-                  // console.log('Krav: ' + this.roleReq[eventRolle.rolleid - 1].antallskills);
-                  // console.log('Bruker har: ' + numberOfSkills);
+    let usedUserids = [];
+    let usedEventRoleids = [];
+    eventService.getUsedUsers(this.evnt.eventid, (result) => {
+      for (let id of result) {
+        usedUserids.push(id.userid);
+      }
 
-                  if (numberOfSkills != undefined && numberOfSkills == this.roleReq[eventRolle.rolleid - 1].antallskills) {
-                    // console.log(user.userid);
-                    this.capableUsers.push({rolleid: eventRolle.rolleid, userid: user.userid, vaktpoeng: user.vaktpoeng, eventrolleid: eventRolle.event_rolle_id})
-
-                  }
-                }
-              });
-              countRoles++;
-              if (countUsers == this.interestedUsers.length - 1 && countRoles == (this.eventRollernoUser.length) * (this.interestedUsers.length) && stop == false) {
-                this.add();
-                stop = true;
-              }
-            }
-
-
-            countUsers++;
-            // console.log(countUsers);
-          }
+      eventService.getUsedEventRoles(this.evnt.eventid, (result) => {
+        for (let id of result) {
+          usedEventRoleids.push(id.event_rolle_id);
         }
-      });
-      });
-    });
-  }
 
-  add () {
-    eventService.getUsedUsers((result) => {
-      this.usedUsers = result;
-      // console.log(this.usedUsers)
-      eventService.getUsedEventRoles((result) => {
-        this.usedEventRoles = result;
-        for (let i = 0; i < this.capableUsers.length; i++) {
-            if (this.capableUsers[i] != undefined) {
+        eventService.getInterestedUsers(this.evnt.eventid, (result) => {
+          this.interestedUsers = result;
 
-              let ready = true;
+          eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
+            this.eventRollernoUser = result;
+            console.log(this.eventRollernoUser);
+          skillService.countRoleReq((result) => {
+            this.roleReq = result;
+            if (this.interestedUsers != undefined) {
+              let countUsers = 0;
+              let countRoles = 0;
+              for (let user of this.interestedUsers) {
+                for (let eventRolle of this.eventRollernoUser) {
+                  eventService.getUsersSkillsofRoles(eventRolle.rolleid, user.userid, (result) => {
+                    let numberOfSkills = result.antall;
 
-              for (let j = 0; j < this.usedUsers.length; j++) {
-                if (this.capableUsers[i].userid == this.usedUsers[j].userid) {
-                  ready = false;
-                }
-              }
+                    if (numberOfSkills != undefined && numberOfSkills == this.roleReq[eventRolle.rolleid - 1].antallskills) {
+                      this.capableUsers.push({userid: user.userid, rolleid: eventRolle.rolleid, points: user.vaktpoeng, eventrolleid: eventRolle.event_rolle_id});
 
-              if (ready == true) {
-                let addReady = true;
-                this.usedUsers.push({userid: this.capableUsers[i].userid});
+                      if (countUsers == this.interestedUsers.length && countRoles == this.eventRollernoUser.length * this.interestedUsers.length) {
+                        for (let i = 0; i < this.capableUsers.length; i++) {
+                          let exists = usedUserids.includes(this.capableUsers[i].userid);
+                          let hasUser = usedEventRoleids.includes(this.capableUsers[i].eventrolleid);
 
-                eventService.checkUserRoleById(this.capableUsers[i].eventrolleid, (result) => {
-                  for (let n = 0; n < this.usedEventRoles.length; n++) {
-                    if (this.capableUsers[i].eventrolleid == this.usedEventRoles[n].eventrolleid) {
-                      addReady = false;
+                          if (exists == false && hasUser == false) {
+                            usedUserids.push(this.capableUsers[i].userid);
+                            usedEventRoleids.push(this.capableUsers[i].eventrolleid);
+
+                            eventService.setRole(this.capableUsers[i].userid, this.capableUsers[i].eventrolleid, (result) => {
+                              console.log(this.capableUsers[i].userid + ' har blitt tildelt vakt ' + this.capableUsers[i].eventrolleid);
+                              if (i == this.capableUsers - 1) {
+                                eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
+                                  this.eventRollernoUser = result;
+                                  eventService.getEventRolle(this.evnt.eventid, (result) => {
+                                    this.eventRoller = result;
+                                    console.log('Update');
+                                    this.forceUpdate();
+                                  });
+                                });
+                              }
+                            });
+                          }
+                        }
+                      }
                     }
-                  }
-                  if (addReady == true) {
-                    this.usedEventRoles.push({eventrolleid: this.capableUsers[i].eventrolleid});
-                    eventService.setRole(this.capableUsers[i].userid, this.capableUsers[i].eventrolleid, (result) => {
-                      console.log(this.capableUsers[i].userid + ' registrert på eventrolleid ' + this.capableUsers[i].eventrolleid);
-                      eventService.getEmptyRoles(this.evnt.eventid, (result) => {
-                        let emptyRoles = result;
-                        if (emptyRoles.length > 0) {
-                          this.giveRoles();
-                        }
-                        else {
-                          this.forceUpdate();
-                        }
-                      });
-                    });
-                  }
-                });
+                  })
+                  countRoles++;
+                }
+                countUsers++;
               }
             }
-          }
+          });
+          });
         });
+      });
     });
   }
 
