@@ -37,12 +37,12 @@ export class AdminLoggedinMenu extends React.Component {
         <li className="navbar-li"><Link to='/userlistadmin' className="navbar-link">Brukere</Link></li>
         <li className="navbar-li"><Link to='/requests' className="navbar-link">Forespørsler</Link></li>
         <div className="dropdownknapp">
-        <li className="dropdown-li"><Link to={'/myprofile/' + this.id} className="navbar-link">Min profil</Link></li>
+        <li className="dropdown-li"><Link to={'/myprofile/' + this.id} className="navbar-link">Profil</Link></li>
           <div className="dropdowncontent">
           <ul className="navbar-ul">
-            <li className="dropdown-li"><Link to={'/myprofile/' + this.id} className="navbar-link">Min profil</Link></li>
+            <li className="dropdown-li"><Link to={'/myprofile/' + this.id} className="dropdown-link">Min profil</Link></li>
             <li className="dropdown-li"><Link to='#' onClick={() => logout()} className='dropdown-link' >Logg ut</Link></li>
-            <li className="dropdown-li"><Link to=   className='dropdown-link'>Siste</Link></li>
+            <li className="dropdown-li"><Link to='#' onClick={() => logout()} className='dropdown-link' >Logg ut</Link></li>
           </ul>
         </div>
         </div>
@@ -61,13 +61,24 @@ export class LoggedinMenu extends React.Component {
 
   render() {
     return (
+      <div>
       <ul className="navbar-ul">
         <li className="navbar-li"><Link to='/eventlist' className="navbar-link">Events</Link></li>
         <li className="navbar-li"><Link to='/userlist' className="navbar-link">Brukere</Link></li>
         <li className="navbar-li"><Link to='/skills' className="navbar-link">Skills</Link></li>
-        <li className="navbar-li"><Link to={'/myprofile/' + this.id} className="navbar-link">My Profile</Link></li>
-        <li className="navbar-li-right"><Link to='#' onClick={() => logout()} className='navbar-link'>Logg ut</Link></li>
+        <div className="dropdownknapp">
+          <li className="dropdown-li"><Link to={'/myprofile/' + this.id} className="navbar-link">Profil</Link></li>
+          <div className="dropdowncontent">
+            <ul className="navbar-ul">
+              <li className="dropdown-li"><Link to={'/myprofile/' + this.id} className="dropdown-link">Min profil</Link></li>
+              <li className="dropdown-li"><Link to='#' onClick={() => logout()} className='dropdown-link' >Logg ut</Link></li>
+              <li className="dropdown-li"><Link to='#' onClick={() => logout()} className='dropdown-link' >Logg ut</Link></li>
+            </ul>
+          </div>
+        </div>
+
       </ul>
+      </div>
     );
   }
 }

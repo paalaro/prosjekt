@@ -1,8 +1,7 @@
 .dropdown-li {
-  width: 421%;
-  height:100%;
-
+  width: 700%;
   background-color: #333;
+  float:left;
 
 }
 .dropdown-li:hover {
@@ -14,8 +13,7 @@
     position: absolute;
     box-shadow: 0px 6px 12px 0px rgba(0,0,0,0.2);
     width:20%;
-    z-index: 1;
-    color:white;
+    z-index: 10;
 
 
 }
@@ -23,16 +21,21 @@
     float:left;
     border-top: 1px;
     display: inline-block;
+
+
+
 }
 .dropdownknapp:hover .dropdowncontent {
     display: block;
+    color: white;
+
   }
 .dropdown-link {
-  display: block;
-
-  text-align: center;
+  display: inline-block;
+  color:white;
   padding: 14px 0px;
   text-decoration: none;
+
   font-family: sans-serif;
 }
 .navbar-ul {
