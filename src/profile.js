@@ -68,12 +68,24 @@ export class Profile extends React.Component {
 
     for (let skill of this.userSkills) {
       if (skill.validto === null) {
-        userSkillList.push(<tr key={skill.skillid} ><td> { skill.skilltitle } </td><td>Varer evig</td></tr>);
+        userSkillList.push(<tr key={skill.skillid} ><td> { skill.skilltitle } </td><td>Varer evig</td>
+          <td><button onClick={() => skillService.deleteSkill(this.id, skill.skillid, (result) => {
+            skillService.getUserSkills(this.user.id, (result) => {
+              this.userSkills = result;
+              this.forceUpdate();
+            });
+          })}>Slett</button></td></tr>);
       }
 
       else {
         this.date = this.fixDate(skill.validto);
-        userSkillList.push(<tr key={skill.skillid} ><td> { skill.skilltitle } </td><td>{this.date}</td></tr>);
+        userSkillList.push(<tr key={skill.skillid} ><td> { skill.skilltitle } </td><td>{this.date}</td>
+          <td><button onClick={() => skillService.deleteSkill(this.id, skill.skillid, (result) => {
+            skillService.getUserSkills(this.user.id, (result) => {
+              this.userSkills = result;
+              this.forceUpdate();
+            });
+          })}>Slett</button></td></tr>);
       }
     }
 

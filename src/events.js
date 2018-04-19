@@ -58,7 +58,13 @@ export class EventList extends React.Component {
 
     for (let passiv of this.userPassiv) {
       if (passiv.passivstart.toLocaleDateString() > today || passiv.passivend.toLocaleDateString() > today) {
-        passivList.push(<tr key={passiv.passivid}><td>{passiv.passivstart.toLocaleDateString()}</td><td>{passiv.passivend.toLocaleDateString()}</td></tr>)
+        passivList.push(<tr key={passiv.passivid}><td>{passiv.passivstart.toLocaleDateString()}</td><td>{passiv.passivend.toLocaleDateString()}</td>
+        <td><button onClick={() => userService.deletePassiv(passiv.passivid, (result) => {
+          this.getPassiv(this.user.id, (result) => {
+            userService.userPassiv = result;
+            this.forceUpdate();
+          });
+        })}>Slett</button></td></tr>)
       }
     }
 
@@ -274,7 +280,9 @@ export class EventDetails extends React.Component {
     if (loggedinUser.admin == true) {
       rolleBtn = <button onClick={() => this.props.history.push('/roles/' + this.evnt.eventid)}>Roller</button>;
       editBtn = <button onClick={() => this.props.history.push('/editevent')}>Endre detaljer</button>;
-      fordelRollerBtn = <button onClick={() => this.giveRoles()}>Fordel roller</button>;
+      if (this.eventRollernoUser.length != 0) {
+        fordelRollerBtn = <button onClick={() => this.giveRoles()}>Fordel roller</button>;
+      }
     }
 
     return(
@@ -292,6 +300,7 @@ export class EventDetails extends React.Component {
         {editBtn}
         {interestBtn}
         {fordelRollerBtn}
+        <div ref='fordelRollerDiv'></div>
         <div>
           <h4>Roller til dette arrangementet</h4>
           <table>
@@ -310,6 +319,7 @@ export class EventDetails extends React.Component {
   }
 
   giveRoles() {
+    this.refs.fordelRollerDiv.textContent = 'Roller fordeles';
     let stop = false;
     let usedUserids = [];
     let usedEventRoleids = [];
@@ -353,13 +363,32 @@ export class EventDetails extends React.Component {
                       let eventStart = this.evnt.start.toLocaleDateString();
                       let eventEnd = this.evnt.end.toLocaleDateString();
 
-                      if ((startPassive >= eventStart && startPassive <= eventEnd) || (endPassive >= eventStart && endPassive <= eventEnd)) {
+                      if (startPassive <= eventStart && endPassive >= eventStart) {
                         passiv = true;
                       }
                     }
 
-                    if (passiv == false && user == interestedUsersNotUsed[interestedUsersNotUsed.length - 1]) {
+                    if (user == interestedUsersNotUsed[interestedUsersNotUsed.length - 1]) {
                       for (let eventRolle of this.eventRollernoUser) {
+                        if (passiv == true) {
+                          eventService.getEventRoller(this.evnt.eventid, (result) => {
+                            this.eventRoller = result;
+                            eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
+                              this.eventRollernoUser = result;
+                              if (this.eventRollernoUser.length != 0 && eventRolle.event_rolle_id == this.eventRollernoUser[this.eventRollernoUser.length - 1].event_rolle_id) {
+                                stop = true;
+                                this.giveRolesToNotInterested();
+                              }
+
+                              else if (this.eventRollernoUser.length == 0) {
+                                this.refs.fordelRollerDiv.textContent = '';
+                                this.forceUpdate();
+                              }
+                            });
+                          });
+                        }
+
+                        else {
                         eventService.getUsersSkillsofRoles(eventRolle.rolleid, user.userid, (result) => {
                           let numberOfSkills = result.antall;
 
@@ -374,16 +403,18 @@ export class EventDetails extends React.Component {
                                 usedEventRoleids.push(this.capableUsers[i].eventrolleid);
 
                                 eventService.setRole(this.capableUsers[i].userid, this.capableUsers[i].eventrolleid, (result) => {
+                                  console.log(this.capableUsers[i].userid + ' har fått vakt');
                                   eventService.getEventRoller(this.evnt.eventid, (result) => {
                                     this.eventRoller = result;
                                     eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
                                       this.eventRollernoUser = result;
-                                      if (this.eventRollernoUser.length != 0 && eventRolle.event_rolle_id == this.eventRollernoUser[this.eventRollernoUser.length - 1].event_rolle_id) {
+                                      if (this.eventRollernoUser.length != 0 && eventRolle.event_rolle_id == this.eventRollernoUser[this.eventRollernoUser.length - 1].event_rolle_id && stop == false) {
                                         stop = true;
                                         this.giveRolesToNotInterested();
                                       }
 
                                       else if (this.eventRollernoUser.length == 0) {
+                                        this.refs.fordelRollerDiv.textContent = '';
                                         this.forceUpdate();
                                       }
                                     });
@@ -402,6 +433,7 @@ export class EventDetails extends React.Component {
                                     }
 
                                     else if (this.eventRollernoUser.length == 0) {
+                                      this.refs.fordelRollerDiv.textContent = '';
                                       this.forceUpdate();
                                     }
                                   });
@@ -415,18 +447,20 @@ export class EventDetails extends React.Component {
                               this.eventRoller = result;
                               eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
                                 this.eventRollernoUser = result;
-                                if (this.eventRollernoUser.length != 0 && eventRolle.event_rolle_id == this.eventRollernoUser[this.eventRollernoUser.length - 1].event_rolle_id) {
+                                if (this.eventRollernoUser.length != 0 && eventRolle.event_rolle_id == this.eventRollernoUser[this.eventRollernoUser.length - 1].event_rolle_id && stop == false) {
                                   stop = true;
                                   this.giveRolesToNotInterested();
                                 }
 
                                 else if (this.eventRollernoUser.length == 0){
+                                  this.refs.fordelRollerDiv.textContent = '';
                                   this.forceUpdate();
                                 }
                               });
                             });
                           }
                         });
+                        }
                       }
                     }
 
@@ -448,6 +482,7 @@ export class EventDetails extends React.Component {
                                 usedEventRoleids.push(this.capableUsers[i].eventrolleid);
 
                                 eventService.setRole(this.capableUsers[i].userid, this.capableUsers[i].eventrolleid, (result) => {
+                                  console.log(this.capableUsers[i].userid + ' har fått vakt');
 
                                 });
                               }
@@ -467,7 +502,7 @@ export class EventDetails extends React.Component {
   }
 
   giveRolesToNotInterested() {
-    let stop = false;
+    this.refs.fordelRollerDiv.textContent = 'Roller fordeles, snart ferdig';
     let usedUserids = [];
     let usedEventRoleids = [];
     let usersNotUsed = [];
@@ -534,10 +569,12 @@ export class EventDetails extends React.Component {
                                 usedEventRoleids.push(this.capableUsers[i].eventrolleid);
 
                                 eventService.setRole(this.capableUsers[i].userid, this.capableUsers[i].eventrolleid, (result) => {
+                                  console.log(this.capableUsers[i].userid + ' har fått vakt');
                                   eventService.getEventRoller(this.evnt.eventid, (result) => {
                                     this.eventRoller = result;
                                     eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
                                       this.eventRollernoUser = result;
+                                      this.refs.fordelRollerDiv.textContent = '';
                                       this.forceUpdate();
                                     });
                                   });
@@ -549,6 +586,7 @@ export class EventDetails extends React.Component {
                                   this.eventRoller = result;
                                   eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
                                     this.eventRollernoUser = result;
+                                    this.refs.fordelRollerDiv.textContent = '';
                                     this.forceUpdate();
                                   });
                                 });
@@ -561,6 +599,7 @@ export class EventDetails extends React.Component {
                               this.eventRoller = result;
                               eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
                                 this.eventRollernoUser = result;
+                                this.refs.fordelRollerDiv.textContent = '';
                                 this.forceUpdate();
                               });
                             });
@@ -587,6 +626,7 @@ export class EventDetails extends React.Component {
                                 usedEventRoleids.push(this.capableUsers[i].eventrolleid);
 
                                 eventService.setRole(this.capableUsers[i].userid, this.capableUsers[i].eventrolleid, (result) => {
+                                  console.log(this.capableUsers[i].userid + ' har fått vakt');
 
                                 });
                               }

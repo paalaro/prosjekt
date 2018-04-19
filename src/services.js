@@ -205,6 +205,14 @@ class UserService {
       callback(result);
     });
   }
+
+  deletePassiv(passivid, callback) {
+    connection.query('DELETE FROM passiv WHERE passivid = ?', [passivid], (error, result) => {
+      if (error) throw error;
+
+      callback();
+    });
+  }
 }
 
 let userService = new UserService();
@@ -245,7 +253,7 @@ class EventService {
   }
 
   getVaktbytte(id, callback) {
-    connection.query('SELECT * FROM foresporsel WHERE id = ?', [id], (error, result) => {
+    connection.query('SELECT * FROM vaktbytte WHERE id = ?', [id], (error, result) => {
       if (error) throw error;
 
       callback(result[0]);
