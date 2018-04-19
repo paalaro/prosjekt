@@ -292,7 +292,6 @@ export class EventDetails extends React.Component {
         {editBtn}
         {interestBtn}
         {fordelRollerBtn}
-        <button onClick={() => this.giveRolesToNotInterested()}>Fordellll</button>
         <div>
           <h4>Roller til dette arrangementet</h4>
           <table>
