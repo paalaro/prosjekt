@@ -1,7 +1,11 @@
+body{
+  margin:0;
+}
+
 .dropdown-li {
-  width: 700%;
+  width: 100%;
   background-color: #333;
-  float:left;
+
 }
 
 .dropdown-li:hover {
@@ -12,26 +16,28 @@
     display: none;
     position: absolute;
     box-shadow: 0px 6px 12px 0px rgba(0,0,0,0.2);
-    width:20%;
+    width:25%;
     z-index: 10;
-
-
+    text-align: center;
 }
 .dropdownknapp{
+    text-align: center;
     float:left;
     border-top: 1px;
     display: inline-block;
+    width: 25%;
 
 }
 .dropdownknapp:hover .dropdowncontent {
     display: block;
-    color: white;
+
 
   }
 .dropdown-link {
   display: block;
-  color:white;
+  color: white;
   padding: 14px 0px;
+  text-align: center;
   text-decoration: none;
   font-family: sans-serif;
 }

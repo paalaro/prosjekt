@@ -41,7 +41,7 @@ export class AdminLoggedinMenu extends React.Component {
           <div className="dropdowncontent">
           <ul className="navbar-ul">
             <li className="dropdown-li"><Link to={'/myprofile/' + this.id} className="dropdown-link">Min profil</Link></li>
-            <li className="dropdown-li"><Link to='#' onClick={() => logout()} className='dropdown-link' >Logg ut</Link></li>
+            <li className="dropdown-li"><Link to={'/changepassword/'} className='dropdown-link' >Endre passord</Link></li>
             <li className="dropdown-li"><Link to='#' onClick={() => logout()} className='dropdown-link' >Logg ut</Link></li>
           </ul>
         </div>
@@ -71,7 +71,7 @@ export class LoggedinMenu extends React.Component {
           <div className="dropdowncontent">
             <ul className="navbar-ul">
               <li className="dropdown-li"><Link to={'/myprofile/' + this.id} className="dropdown-link">Min profil</Link></li>
-              <li className="dropdown-li"><Link to='#' onClick={() => logout()} className='dropdown-link' >Logg ut</Link></li>
+              <li className="dropdown-li"><Link to={'/changepassword/'} className='dropdown-link' >Endre passord</Link></li>
               <li className="dropdown-li"><Link to='#' onClick={() => logout()} className='dropdown-link' >Logg ut</Link></li>
             </ul>
           </div>
