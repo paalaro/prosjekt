@@ -364,6 +364,14 @@ class EventService {
     });
   }
 
+  getAllUsersByVaktpoeng(callback) {
+    connection.query('SELECT * FROM Users ORDER BY vaktpoeng', (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
+
   setInterest(eventid, userid, callback) {
     connection.query('INSERT INTO interesse (eventid, userid) values (?, ?)', [eventid, userid], (error, result) => {
       if (error) throw error;
