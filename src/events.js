@@ -516,9 +516,6 @@ export class EventDetails extends React.Component {
                       }
                     }
 
-                    console.log(user);
-                    console.log(usersNotUsed[usersNotUsed.length - 1]);
-
                     if (passiv == false && user == usersNotUsed[usersNotUsed.length - 1]) {
 
                       for (let eventRolle of this.eventRollernoUser) {
@@ -598,10 +595,6 @@ export class EventDetails extends React.Component {
                           }
                         })
                       }
-                    }
-
-                    else if (user == usersNotUsed[usersNotUsed.length - 1]) {
-                      console.log('Siste');
                     }
                   });
                 }
