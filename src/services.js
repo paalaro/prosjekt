@@ -189,6 +189,22 @@ class UserService {
       callback(result);
     });
   }
+
+  setPassiv(userid, start, end, callback) {
+    connection.query('INSERT INTO passiv (userid, passivstart, passivend) values (?, ?, ?)', [userid, start, end], (error, result) => {
+      if (error) throw error;
+
+      callback();
+    });
+  }
+
+  getPassiv(userid, callback) {
+    connection.query('SELECT * FROM passiv WHERE userid = ?', [userid], (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
 }
 
 let userService = new UserService();
@@ -285,7 +301,7 @@ class EventService {
   }
 
   getEventRollernoUser(eventid, callback) {
-    connection.query('SELECT event_rolle_id, userid, eventid, rollenavn, event_rolle.rolleid, COUNT(skillid) as antall FROM event_rolle, Roller, roller_skills WHERE event_rolle.rolleid = Roller.rolleid AND event_rolle.rolleid = roller_skills.rolleid AND event_rolle.userid IS NULL AND event_rolle.eventid = 32 GROUP BY event_rolle_id ORDER BY `antall` DESC', [eventid], (error, result) => {
+    connection.query('SELECT event_rolle_id, userid, eventid, rollenavn, event_rolle.rolleid, COUNT(skillid) as antall FROM event_rolle, Roller, roller_skills WHERE event_rolle.rolleid = Roller.rolleid AND event_rolle.rolleid = roller_skills.rolleid AND event_rolle.userid IS NULL AND event_rolle.eventid = ? GROUP BY event_rolle_id ORDER BY `antall` DESC', [eventid], (error, result) => {
       if (error) throw error;
 
       callback(result);
@@ -348,6 +364,14 @@ class EventService {
     });
   }
 
+  getAllUsersByVaktpoeng(callback) {
+    connection.query('SELECT * FROM Users ORDER BY vaktpoeng', (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
+
   setInterest(eventid, userid, callback) {
     connection.query('INSERT INTO interesse (eventid, userid) values (?, ?)', [eventid, userid], (error, result) => {
       if (error) throw error;
@@ -379,6 +403,14 @@ class EventService {
 
       callback();
     })
+  }
+
+  emptyEventRoles(eventid, callback) {
+    connection.query('UPDATE event_rolle SET userid = ?, timeconfirmed = ?, confirmed = ?  WHERE eventid = ?', [null, null, false, eventid], (error, result) => {
+      if (error) throw error;
+
+      callback();
+    });
   }
 
   confirmRoleEvent(eventrolleid, callback) {

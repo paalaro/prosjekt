@@ -23,6 +23,7 @@ export class EventList extends React.Component {
 
     this.evntList = [];
     this.userRoles = [];
+    this.userPassiv = [];
 
     this.user = userService.getSignedInUser();
   }
@@ -35,6 +36,8 @@ export class EventList extends React.Component {
     let evntsList = [];
     let availableEvents = [];
     let userRoles = [];
+    let passivList = [];
+    let passivHeader;
 
     for (let evnt of this.evntList) {
       evntsList.push(<tr key={evnt.eventid} className='tableRow' onClick={() => this.nextPath('/eventdetails/' + evnt.eventid)}><td className='tableLines'>{evnt.title}</td><td className='tableLines'>{evnt.start.toLocaleString().slice(0, -3)}</td><td className='tableLines'>{evnt.end.toLocaleString().slice(0, -3)}</td></tr>)
@@ -49,6 +52,18 @@ export class EventList extends React.Component {
       else {
         userRoles.push(<tr key={rolle.event_rolle_id}><td>{rolle.title}</td><td>{rolle.rollenavn}</td><td>Godkjent</td></tr>)
       }
+    }
+
+    let today = new Date().toLocaleDateString();
+
+    for (let passiv of this.userPassiv) {
+      if (passiv.passivstart.toLocaleDateString() > today || passiv.passivend.toLocaleDateString() > today) {
+        passivList.push(<tr key={passiv.passivid}><td>{passiv.passivstart.toLocaleDateString()}</td><td>{passiv.passivend.toLocaleDateString()}</td></tr>)
+      }
+    }
+
+    if (passivList.length > 0) {
+      passivHeader = <tr><th>Start</th><th>Slutt</th></tr>;
     }
 
     return(
@@ -99,6 +114,24 @@ export class EventList extends React.Component {
             </tbody>
           </table>
          </div>
+         <div>
+          <h4>Dine passivperioder</h4>
+          <table>
+            <thead>
+              {passivHeader}
+            </thead>
+            <tbody>
+              {passivList}
+            </tbody>
+          </table>
+         </div>
+         <div>
+          <h4>Passivperiode:</h4><br />
+          Sett deg selv som passiv for en periode. <br />
+          <input ref='startPassiv' type='date' />
+          <input ref='endPassiv' type='date' /> <br />
+          <button onClick={() => this.regPassiv()}>Registrer</button>
+         </div>
        </div>
     );
   }
@@ -112,6 +145,15 @@ export class EventList extends React.Component {
     });
   }
 
+  regPassiv() {
+    userService.setPassiv(this.user.id, this.refs.startPassiv.value, this.refs.endPassiv.value, (result) => {
+      userService.getPassiv(this.user.id, (result) => {
+        this.userPassiv = result;
+        this.forceUpdate();
+      });
+    });
+  }
+
   componentDidMount () {
     eventService.getAllEvents((result) => {
       this.evntList = result;
@@ -119,7 +161,10 @@ export class EventList extends React.Component {
         this.userSkills = result;
         eventService.getUserEventRoller(this.user.id, (result) => {
           this.userRoles = result;
-          this.forceUpdate();
+          userService.getPassiv(this.user.id, (result) => {
+            this.userPassiv = result;
+            this.forceUpdate();
+          });
         });
       })
     });
@@ -153,6 +198,7 @@ export class EventDetails extends React.Component {
     let interestBtn;
     let interessert;
     let fordelRollerBtn;
+    let emptyRolesBtn;
 
     if (this.interest == undefined) {
       interestBtn = <button onClick={() =>
@@ -174,6 +220,19 @@ export class EventDetails extends React.Component {
         })}>Fjern interesse</button>;
     }
 
+    if (this.eventRoller[0] != undefined) {
+      emptyRolesBtn = <button onClick={() =>
+        eventService.emptyEventRoles(this.evnt.eventid, (result) => {
+          eventService.getEventRoller(this.evnt.eventid, (result) => {
+            this.eventRoller = result;
+            eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
+              this.eventRollernoUser = result;
+              this.forceUpdate();
+            })
+          })
+        })}>Tøm roller</button>;
+    }
+
     if (this.interest != undefined) {
       interessert = 'Du er interessert i dette arrangementet';
     }
@@ -192,8 +251,12 @@ export class EventDetails extends React.Component {
       }
     }
 
-    if (this.eventRollernoUser.length == 0) {
+    if (this.eventRoller.length > 0) {
       rolleListHeader = <tr><th>Rolle</th><th>Status</th><th>Tildelt</th><th>Godkjent</th></tr>;
+    }
+
+    else if (this.eventRoller.length == 0 && this.eventRollernoUser.length > 0) {
+      rolleListHeader = <tr><th>Rolle</th><th>Status</th></tr>;
     }
 
     if (this.evnt.start != undefined) {
@@ -241,6 +304,7 @@ export class EventDetails extends React.Component {
           </table>
         </div>
         {rolleBtn}
+        {emptyRolesBtn}
       </div>
     );
   }
@@ -249,6 +313,10 @@ export class EventDetails extends React.Component {
     let stop = false;
     let usedUserids = [];
     let usedEventRoleids = [];
+    let interestedUsersNotUsed = [];
+    this.capableUsers = [];
+    let userPassiv = [];
+
     eventService.getUsedUsers(this.evnt.eventid, (result) => {
       for (let id of result) {
         usedUserids.push(id.userid);
@@ -261,46 +329,276 @@ export class EventDetails extends React.Component {
 
         eventService.getInterestedUsers(this.evnt.eventid, (result) => {
           this.interestedUsers = result;
+          for (let id of this.interestedUsers) {
+            let includes = usedUserids.includes(id.id);
+
+            if (includes == false) {
+              interestedUsersNotUsed.push(id);
+            }
+          }
 
           eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
             this.eventRollernoUser = result;
-          skillService.countRoleReq((result) => {
-            this.roleReq = result;
-            if (this.interestedUsers != undefined) {
-              let countUsers = 0;
-              let countRoles = 0;
-              for (let user of this.interestedUsers) {
-                for (let eventRolle of this.eventRollernoUser) {
-                  eventService.getUsersSkillsofRoles(eventRolle.rolleid, user.userid, (result) => {
-                    let numberOfSkills = result.antall;
+            skillService.countRoleReq((result) => {
+              this.roleReq = result;
+              if (this.interestedUsers != undefined) {
+                for (let user of interestedUsersNotUsed) {
+                  userService.getPassiv(user.userid, (result) => {
+                    userPassiv = result;
+                    let passiv = false;
+                    for (let i = 0; i < userPassiv.length; i++) {
 
-                    if (numberOfSkills != undefined && numberOfSkills == this.roleReq[eventRolle.rolleid - 1].antallskills) {
-                      this.capableUsers.push({userid: user.userid, rolleid: eventRolle.rolleid, points: user.vaktpoeng, eventrolleid: eventRolle.event_rolle_id});
+                      let startPassive = userPassiv[i].passivstart.toLocaleDateString();
+                      let endPassive = userPassiv[i].passivend.toLocaleDateString();
+                      let eventStart = this.evnt.start.toLocaleDateString();
+                      let eventEnd = this.evnt.end.toLocaleDateString();
 
-                      if (countUsers == this.interestedUsers.length && countRoles == this.eventRollernoUser.length * this.interestedUsers.length) {
-                        for (let i = 0; i < this.capableUsers.length; i++) {
-                          let exists = usedUserids.includes(this.capableUsers[i].userid);
-                          let hasUser = usedEventRoleids.includes(this.capableUsers[i].eventrolleid);
-
-                          if (exists == false && hasUser == false) {
-                            usedUserids.push(this.capableUsers[i].userid);
-                            usedEventRoleids.push(this.capableUsers[i].eventrolleid);
-
-                            eventService.setRole(this.capableUsers[i].userid, this.capableUsers[i].eventrolleid, (result) => {
-                              console.log(this.capableUsers[i].userid + ' har blitt tildelt vakt ' + this.capableUsers[i].eventrolleid);
-
-                            });
-                          }
-                        }
+                      if ((startPassive >= eventStart && startPassive <= eventEnd) || (endPassive >= eventStart && endPassive <= eventEnd)) {
+                        passiv = true;
                       }
                     }
-                  })
-                  countRoles++;
+
+                    if (passiv == false && user == interestedUsersNotUsed[interestedUsersNotUsed.length - 1]) {
+                      for (let eventRolle of this.eventRollernoUser) {
+                        eventService.getUsersSkillsofRoles(eventRolle.rolleid, user.userid, (result) => {
+                          let numberOfSkills = result.antall;
+
+                          if (numberOfSkills != undefined && numberOfSkills == this.roleReq[eventRolle.rolleid - 1].antallskills) {
+                            this.capableUsers.push({userid: user.userid, rolleid: eventRolle.rolleid, points: user.vaktpoeng, eventrolleid: eventRolle.event_rolle_id, passivStart: user.passivstart, passivEnd: user.passivEnd});
+                            for (let i = 0; i < this.capableUsers.length; i++) {
+                              let exists = usedUserids.includes(this.capableUsers[i].userid);
+                              let hasUser = usedEventRoleids.includes(this.capableUsers[i].eventrolleid);
+
+                              if (exists == false && hasUser == false) {
+                                usedUserids.push(this.capableUsers[i].userid);
+                                usedEventRoleids.push(this.capableUsers[i].eventrolleid);
+
+                                eventService.setRole(this.capableUsers[i].userid, this.capableUsers[i].eventrolleid, (result) => {
+                                  eventService.getEventRoller(this.evnt.eventid, (result) => {
+                                    this.eventRoller = result;
+                                    eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
+                                      this.eventRollernoUser = result;
+                                      if (this.eventRollernoUser.length != 0 && eventRolle.event_rolle_id == this.eventRollernoUser[this.eventRollernoUser.length - 1].event_rolle_id) {
+                                        stop = true;
+                                        this.giveRolesToNotInterested();
+                                      }
+
+                                      else if (this.eventRollernoUser.length == 0) {
+                                        this.forceUpdate();
+                                      }
+                                    });
+                                  });
+                                });
+                              }
+
+                              else {
+                                eventService.getEventRoller(this.evnt.eventid, (result) => {
+                                  this.eventRoller = result;
+                                  eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
+                                    this.eventRollernoUser = result;
+                                    if (this.eventRollernoUser.length != 0 && eventRolle.event_rolle_id == this.eventRollernoUser[this.eventRollernoUser.length - 1].event_rolle_id && stop == false) {
+                                      stop = true;
+                                      this.giveRolesToNotInterested();
+                                    }
+
+                                    else if (this.eventRollernoUser.length == 0) {
+                                      this.forceUpdate();
+                                    }
+                                  });
+                                });
+                              }
+                            }
+                          }
+
+                          else {
+                            eventService.getEventRoller(this.evnt.eventid, (result) => {
+                              this.eventRoller = result;
+                              eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
+                                this.eventRollernoUser = result;
+                                if (this.eventRollernoUser.length != 0 && eventRolle.event_rolle_id == this.eventRollernoUser[this.eventRollernoUser.length - 1].event_rolle_id) {
+                                  stop = true;
+                                  this.giveRolesToNotInterested();
+                                }
+
+                                else if (this.eventRollernoUser.length == 0){
+                                  this.forceUpdate();
+                                }
+                              });
+                            });
+                          }
+                        });
+                      }
+                    }
+
+
+                    else if (passiv == false && user != interestedUsersNotUsed[interestedUsersNotUsed.length - 1]) {
+                      for (let eventRolle of this.eventRollernoUser) {
+                        eventService.getUsersSkillsofRoles(eventRolle.rolleid, user.userid, (result) => {
+                          let numberOfSkills = result.antall;
+
+                          if (numberOfSkills != undefined && numberOfSkills == this.roleReq[eventRolle.rolleid - 1].antallskills) {
+                            this.capableUsers.push({userid: user.userid, rolleid: eventRolle.rolleid, points: user.vaktpoeng, eventrolleid: eventRolle.event_rolle_id});
+
+                            for (let i = 0; i < this.capableUsers.length; i++) {
+                              let exists = usedUserids.includes(this.capableUsers[i].userid);
+                              let hasUser = usedEventRoleids.includes(this.capableUsers[i].eventrolleid);
+
+                              if (exists == false && hasUser == false) {
+                                usedUserids.push(this.capableUsers[i].userid);
+                                usedEventRoleids.push(this.capableUsers[i].eventrolleid);
+
+                                eventService.setRole(this.capableUsers[i].userid, this.capableUsers[i].eventrolleid, (result) => {
+
+                                });
+                              }
+                            }
+                          }
+                        })
+                      }
+                    }
+                  });
                 }
-                countUsers++;
               }
-            }
+            });
           });
+        });
+      });
+    });
+  }
+
+  giveRolesToNotInterested() {
+    let stop = false;
+    let usedUserids = [];
+    let usedEventRoleids = [];
+    let usersNotUsed = [];
+    this.capableUsers = [];
+    let userPassiv = [];
+
+    eventService.getUsedUsers(this.evnt.eventid, (result) => {
+      for (let id of result) {
+        usedUserids.push(id.userid);
+      }
+
+      eventService.getUsedEventRoles(this.evnt.eventid, (result) => {
+        for (let id of result) {
+          usedEventRoleids.push(id.event_rolle_id);
+        }
+
+        eventService.getAllUsersByVaktpoeng((result) => {
+          this.sortedUsers = result;
+          for (let id of this.sortedUsers) {
+            let includes = usedUserids.includes(id.id);
+
+            if (includes == false) {
+              usersNotUsed.push(id);
+            }
+          }
+
+          eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
+            this.eventRollernoUser = result;
+            skillService.countRoleReq((result) => {
+              this.roleReq = result;
+              if (this.sortedUsers != undefined) {
+                for (let user of usersNotUsed) {
+                  userService.getPassiv(user.userid, (result) => {
+                    userPassiv = result;
+                    let passiv = false;
+                    for (let i = 0; i < userPassiv.length; i++) {
+
+                      let startPassive = userPassiv[i].passivstart.toLocaleDateString();
+                      let endPassive = userPassiv[i].passivend.toLocaleDateString();
+                      let eventStart = this.evnt.start.toLocaleDateString();
+                      let eventEnd = this.evnt.end.toLocaleDateString();
+
+                      if ((startPassive >= eventStart && startPassive <= eventEnd) || (endPassive >= eventStart && endPassive <= eventEnd)) {
+                        passiv = true;
+                      }
+                    }
+
+                    if (passiv == false && user == usersNotUsed[usersNotUsed.length - 1]) {
+
+                      for (let eventRolle of this.eventRollernoUser) {
+                        eventService.getUsersSkillsofRoles(eventRolle.rolleid, user.id, (result) => {
+                          let numberOfSkills = result.antall;
+
+
+                          if (numberOfSkills != undefined && numberOfSkills == this.roleReq[eventRolle.rolleid - 1].antallskills) {
+                            this.capableUsers.push({userid: user.id, rolleid: eventRolle.rolleid, points: user.vaktpoeng, eventrolleid: eventRolle.event_rolle_id, passivStart: user.passivstart, passivEnd: user.passivEnd});
+                            for (let i = 0; i < this.capableUsers.length; i++) {
+                              let exists = usedUserids.includes(this.capableUsers[i].userid);
+                              let hasUser = usedEventRoleids.includes(this.capableUsers[i].eventrolleid);
+
+
+                              if (exists == false && hasUser == false) {
+                                usedUserids.push(this.capableUsers[i].userid);
+                                usedEventRoleids.push(this.capableUsers[i].eventrolleid);
+
+                                eventService.setRole(this.capableUsers[i].userid, this.capableUsers[i].eventrolleid, (result) => {
+                                  eventService.getEventRoller(this.evnt.eventid, (result) => {
+                                    this.eventRoller = result;
+                                    eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
+                                      this.eventRollernoUser = result;
+                                      this.forceUpdate();
+                                    });
+                                  });
+                                });
+                              }
+
+                              else {
+                                eventService.getEventRoller(this.evnt.eventid, (result) => {
+                                  this.eventRoller = result;
+                                  eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
+                                    this.eventRollernoUser = result;
+                                    this.forceUpdate();
+                                  });
+                                });
+                              }
+                            }
+                          }
+
+                          else {
+                            eventService.getEventRoller(this.evnt.eventid, (result) => {
+                              this.eventRoller = result;
+                              eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
+                                this.eventRollernoUser = result;
+                                this.forceUpdate();
+                              });
+                            });
+                          }
+                        });
+                      }
+                    }
+
+
+                    else if (passiv == false && user != usersNotUsed[usersNotUsed.length - 1]) {
+                      for (let eventRolle of this.eventRollernoUser) {
+                        eventService.getUsersSkillsofRoles(eventRolle.rolleid, user.id, (result) => {
+                          let numberOfSkills = result.antall;
+
+                          if (numberOfSkills != undefined && numberOfSkills == this.roleReq[eventRolle.rolleid - 1].antallskills) {
+                            this.capableUsers.push({userid: user.id, rolleid: eventRolle.rolleid, points: user.vaktpoeng, eventrolleid: eventRolle.event_rolle_id});
+
+                            for (let i = 0; i < this.capableUsers.length; i++) {
+                              let exists = usedUserids.includes(this.capableUsers[i].userid);
+                              let hasUser = usedEventRoleids.includes(this.capableUsers[i].eventrolleid);
+
+                              if (exists == false && hasUser == false) {
+                                usedUserids.push(this.capableUsers[i].userid);
+                                usedEventRoleids.push(this.capableUsers[i].eventrolleid);
+
+                                eventService.setRole(this.capableUsers[i].userid, this.capableUsers[i].eventrolleid, (result) => {
+
+                                });
+                              }
+                            }
+                          }
+                        })
+                      }
+                    }
+                  });
+                }
+              }
+            });
           });
         });
       });
