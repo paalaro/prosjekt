@@ -195,7 +195,15 @@ class UserService {
       if(error) throw error;
 
       callback(result);
-    })
+    });
+  }
+
+  getStats(startDate, endDate, callback) {
+    connection.query('SELECT event_rolle_id, Events.eventid, title, start, end, firstName, lastName FROM event_rolle, Events, Users WHERE event_rolle.eventid = Events.eventid AND Events.start >= ? AND Events.start <= ? AND event_rolle.userid = Users.id', [startDate, endDate], (error, result) => {
+      if(error) throw error;
+
+      callback(result);
+    });
   }
 }
 
