@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, HashRouter, Switch, Route } from 'react-router-dom';
 import { eventService, userService, skillService } from './services';
+import { mailService } from './mail';
 import { loggedin } from './outlogged';
 import BigCalendar from 'react-big-calendar'
 import moment from 'moment';
@@ -58,9 +59,9 @@ export class EventList extends React.Component {
 
     for (let passiv of this.userPassiv) {
       if (passiv.passivstart.toLocaleDateString() > today || passiv.passivend.toLocaleDateString() > today) {
-        passivList.push(<tr key={passiv.passivid}><td>{passiv.passivstart.toLocaleDateString()}</td><td>{passiv.passivend.toLocaleDateString()}</td>
+        passivList.push(<tr className='tableRow' key={passiv.passivid}><td className='tableLines'>{passiv.passivstart.toLocaleDateString()}</td><td>{passiv.passivend.toLocaleDateString()}</td>
         <td><button onClick={() => userService.deletePassiv(passiv.passivid, (result) => {
-          this.getPassiv(this.user.id, (result) => {
+          userService.getPassiv(this.user.id, (result) => {
             userService.userPassiv = result;
             this.forceUpdate();
           });
@@ -132,7 +133,6 @@ export class EventList extends React.Component {
           </table>
          </div>
          <div>
-          <h4>Passivperiode:</h4><br />
           Sett deg selv som passiv for en periode. <br />
           <input ref='startPassiv' type='date' />
           <input ref='endPassiv' type='date' /> <br />
@@ -153,7 +153,7 @@ export class EventList extends React.Component {
 
   regPassiv() {
     userService.setPassiv(this.user.id, this.refs.startPassiv.value, this.refs.endPassiv.value, (result) => {
-      userService.getPassiv(this.user.id, (result) => {
+      userService.getPassivNoEvent(this.user.id, (result) => {
         this.userPassiv = result;
         this.forceUpdate();
       });
@@ -167,7 +167,7 @@ export class EventList extends React.Component {
         this.userSkills = result;
         eventService.getUserEventRoller(this.user.id, (result) => {
           this.userRoles = result;
-          userService.getPassiv(this.user.id, (result) => {
+          userService.getPassivNoEvent(this.user.id, (result) => {
             this.userPassiv = result;
             this.forceUpdate();
           });
@@ -192,6 +192,7 @@ export class EventDetails extends React.Component {
     this.capableUsers = [];
     this.usedUsers = [];
     this.usedEventRoles = [];
+    this.emailRecievers = [];
 
     this.id = props.match.params.eventId;
   }
@@ -229,13 +230,15 @@ export class EventDetails extends React.Component {
     if (this.eventRoller[0] != undefined) {
       emptyRolesBtn = <button onClick={() =>
         eventService.emptyEventRoles(this.evnt.eventid, (result) => {
-          eventService.getEventRoller(this.evnt.eventid, (result) => {
-            this.eventRoller = result;
-            eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
-              this.eventRollernoUser = result;
-              this.forceUpdate();
-            })
-          })
+          userService.deleteEventPassiv(this.evnt.start, this.evnt.end, (result) => {
+            eventService.getEventRoller(this.evnt.eventid, (result) => {
+              this.eventRoller = result;
+              eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
+                this.eventRollernoUser = result;
+                this.forceUpdate();
+              });
+            });
+          });
         })}>Tøm roller</button>;
     }
 
@@ -326,6 +329,7 @@ export class EventDetails extends React.Component {
     let interestedUsersNotUsed = [];
     this.capableUsers = [];
     let userPassiv = [];
+    this.emailRecievers = [];
 
     eventService.getUsedUsers(this.evnt.eventid, (result) => {
       for (let id of result) {
@@ -347,63 +351,89 @@ export class EventDetails extends React.Component {
             }
           }
 
-          eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
-            this.eventRollernoUser = result;
-            skillService.countRoleReq((result) => {
-              this.roleReq = result;
-              if (this.interestedUsers != undefined) {
-                for (let user of interestedUsersNotUsed) {
-                  userService.getPassiv(user.userid, (result) => {
-                    userPassiv = result;
-                    let passiv = false;
-                    for (let i = 0; i < userPassiv.length; i++) {
+          if (interestedUsersNotUsed.length != 0) {
+            eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
+              this.eventRollernoUser = result;
+              skillService.countRoleReq((result) => {
+                this.roleReq = result;
+                if (this.interestedUsers != undefined) {
+                  for (let user of interestedUsersNotUsed) {
+                    userService.getPassiv(user.userid, (result) => {
+                      userPassiv = result;
+                      let passiv = false;
+                      for (let i = 0; i < userPassiv.length; i++) {
 
-                      let startPassive = userPassiv[i].passivstart.toLocaleDateString();
-                      let endPassive = userPassiv[i].passivend.toLocaleDateString();
-                      let eventStart = this.evnt.start.toLocaleDateString();
-                      let eventEnd = this.evnt.end.toLocaleDateString();
+                        let startPassive = userPassiv[i].passivstart.toLocaleDateString();
+                        let endPassive = userPassiv[i].passivend.toLocaleDateString();
+                        let eventStart = this.evnt.start.toLocaleDateString();
+                        let eventEnd = this.evnt.end.toLocaleDateString();
 
-                      if (startPassive <= eventStart && endPassive >= eventStart) {
-                        passiv = true;
-                      }
-                    }
-
-                    if (user == interestedUsersNotUsed[interestedUsersNotUsed.length - 1]) {
-                      for (let eventRolle of this.eventRollernoUser) {
-                        if (passiv == true) {
-                          eventService.getEventRoller(this.evnt.eventid, (result) => {
-                            this.eventRoller = result;
-                            eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
-                              this.eventRollernoUser = result;
-                              if (this.eventRollernoUser.length != 0 && eventRolle.event_rolle_id == this.eventRollernoUser[this.eventRollernoUser.length - 1].event_rolle_id) {
-                                stop = true;
-                                this.giveRolesToNotInterested();
-                              }
-
-                              else if (this.eventRollernoUser.length == 0) {
-                                this.refs.fordelRollerDiv.textContent = '';
-                                this.forceUpdate();
-                              }
-                            });
-                          });
+                        if (startPassive <= eventStart && endPassive >= eventStart) {
+                          passiv = true;
                         }
+                      }
 
-                        else {
-                        eventService.getUsersSkillsofRoles(eventRolle.rolleid, user.userid, (result) => {
-                          let numberOfSkills = result.antall;
+                      if (user == interestedUsersNotUsed[interestedUsersNotUsed.length - 1]) {
+                        for (let eventRolle of this.eventRollernoUser) {
+                          if (passiv == true) {
+                            eventService.getEventRoller(this.evnt.eventid, (result) => {
+                              this.eventRoller = result;
+                              eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
+                                this.eventRollernoUser = result;
+                                if (this.eventRollernoUser.length != 0 && eventRolle.event_rolle_id == this.eventRollernoUser[this.eventRollernoUser.length - 1].event_rolle_id) {
+                                  stop = true;
+                                  this.giveRolesToNotInterested();
+                                }
 
-                          if (numberOfSkills != undefined && numberOfSkills == this.roleReq[eventRolle.rolleid - 1].antallskills) {
-                            this.capableUsers.push({userid: user.userid, rolleid: eventRolle.rolleid, points: user.vaktpoeng, eventrolleid: eventRolle.event_rolle_id, passivStart: user.passivstart, passivEnd: user.passivEnd});
-                            for (let i = 0; i < this.capableUsers.length; i++) {
-                              let exists = usedUserids.includes(this.capableUsers[i].userid);
-                              let hasUser = usedEventRoleids.includes(this.capableUsers[i].eventrolleid);
+                                else if (this.eventRollernoUser.length == 0) {
+                                  this.refs.fordelRollerDiv.textContent = '';
+                                  console.log('Test1');
+                                  this.forceUpdate();
+                                }
+                              });
+                            });
+                          }
 
-                              if (exists == false && hasUser == false) {
-                                usedUserids.push(this.capableUsers[i].userid);
-                                usedEventRoleids.push(this.capableUsers[i].eventrolleid);
+                          else {
+                          eventService.getUsersSkillsofRoles(eventRolle.rolleid, user.userid, (result) => {
+                            let numberOfSkills = result.antall;
 
-                                eventService.setRole(this.capableUsers[i].userid, this.capableUsers[i].eventrolleid, (result) => {
-                                  console.log(this.capableUsers[i].userid + ' har fått vakt');
+                            if (numberOfSkills != undefined && numberOfSkills == this.roleReq[eventRolle.rolleid - 1].antallskills) {
+                              this.capableUsers.push({userid: user.userid, rolleid: eventRolle.rolleid, points: user.vaktpoeng, eventrolleid: eventRolle.event_rolle_id, passivStart: user.passivstart, passivEnd: user.passivEnd});
+                              for (let i = 0; i < this.capableUsers.length; i++) {
+                                let exists = usedUserids.includes(this.capableUsers[i].userid);
+                                let hasUser = usedEventRoleids.includes(this.capableUsers[i].eventrolleid);
+
+                                if (exists == false && hasUser == false) {
+                                  usedUserids.push(this.capableUsers[i].userid);
+                                  usedEventRoleids.push(this.capableUsers[i].eventrolleid);
+                                  this.emailRecievers.push(this.capableUsers[i].userid);
+
+                                  eventService.setRole(this.capableUsers[i].userid, this.capableUsers[i].eventrolleid, this.evnt.start, this.evnt.end, (result) => {
+                                      eventService.getEventRoller(this.evnt.eventid, (result) => {
+                                        this.eventRoller = result;
+                                        eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
+                                          this.eventRollernoUser = result;
+                                          if (this.eventRollernoUser.length != 0 && eventRolle.event_rolle_id == this.eventRollernoUser[this.eventRollernoUser.length - 1].event_rolle_id && stop == false) {
+                                            stop = true;
+                                            this.giveRolesToNotInterested();
+                                          }
+
+                                          else if (this.eventRollernoUser.length == 0) {
+                                            this.forceUpdate();
+                                            this.refs.fordelRollerDiv.textContent = '';
+                                            console.log(stop);
+                                            if (stop == false) {
+                                              this.sendMail(this.emailRecievers);
+                                              stop = true;
+                                            }
+                                          }
+                                        });
+                                      });
+                                  });
+                                }
+
+                                else {
                                   eventService.getEventRoller(this.evnt.eventid, (result) => {
                                     this.eventRoller = result;
                                     eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
@@ -415,87 +445,81 @@ export class EventDetails extends React.Component {
 
                                       else if (this.eventRollernoUser.length == 0) {
                                         this.refs.fordelRollerDiv.textContent = '';
-                                        this.forceUpdate();
+                                        if (stop == false) {
+                                          this.sendMail(this.emailRecievers);
+                                          this.forceUpdate();
+                                          stop = true;
+                                        }
                                       }
                                     });
                                   });
-                                });
-                              }
-
-                              else {
-                                eventService.getEventRoller(this.evnt.eventid, (result) => {
-                                  this.eventRoller = result;
-                                  eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
-                                    this.eventRollernoUser = result;
-                                    if (this.eventRollernoUser.length != 0 && eventRolle.event_rolle_id == this.eventRollernoUser[this.eventRollernoUser.length - 1].event_rolle_id && stop == false) {
-                                      stop = true;
-                                      this.giveRolesToNotInterested();
-                                    }
-
-                                    else if (this.eventRollernoUser.length == 0) {
-                                      this.refs.fordelRollerDiv.textContent = '';
-                                      this.forceUpdate();
-                                    }
-                                  });
-                                });
+                                }
                               }
                             }
-                          }
 
-                          else {
-                            eventService.getEventRoller(this.evnt.eventid, (result) => {
-                              this.eventRoller = result;
-                              eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
-                                this.eventRollernoUser = result;
-                                if (this.eventRollernoUser.length != 0 && eventRolle.event_rolle_id == this.eventRollernoUser[this.eventRollernoUser.length - 1].event_rolle_id && stop == false) {
-                                  stop = true;
-                                  this.giveRolesToNotInterested();
-                                }
+                            else {
+                              eventService.getEventRoller(this.evnt.eventid, (result) => {
+                                this.eventRoller = result;
+                                eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
+                                  this.eventRollernoUser = result;
+                                  if (this.eventRollernoUser.length != 0 && eventRolle.event_rolle_id == this.eventRollernoUser[this.eventRollernoUser.length - 1].event_rolle_id && stop == false) {
+                                    stop = true;
+                                    this.giveRolesToNotInterested();
+                                  }
 
-                                else if (this.eventRollernoUser.length == 0){
-                                  this.refs.fordelRollerDiv.textContent = '';
-                                  this.forceUpdate();
-                                }
+                                  else if (this.eventRollernoUser.length == 0){
+                                    this.refs.fordelRollerDiv.textContent = '';
+                                    if (stop == false) {
+                                      this.sendMail(this.emailRecievers);
+                                      this.forceUpdate();
+                                      stop = true;
+                                    }
+                                  }
+                                });
                               });
-                            });
+                            }
+                          });
                           }
-                        });
                         }
                       }
-                    }
 
 
-                    else if (passiv == false && user != interestedUsersNotUsed[interestedUsersNotUsed.length - 1]) {
-                      for (let eventRolle of this.eventRollernoUser) {
-                        eventService.getUsersSkillsofRoles(eventRolle.rolleid, user.userid, (result) => {
-                          let numberOfSkills = result.antall;
+                      else if (passiv == false && user != interestedUsersNotUsed[interestedUsersNotUsed.length - 1]) {
+                        for (let eventRolle of this.eventRollernoUser) {
+                          eventService.getUsersSkillsofRoles(eventRolle.rolleid, user.userid, (result) => {
+                            let numberOfSkills = result.antall;
 
-                          if (numberOfSkills != undefined && numberOfSkills == this.roleReq[eventRolle.rolleid - 1].antallskills) {
-                            this.capableUsers.push({userid: user.userid, rolleid: eventRolle.rolleid, points: user.vaktpoeng, eventrolleid: eventRolle.event_rolle_id});
+                            if (numberOfSkills != undefined && numberOfSkills == this.roleReq[eventRolle.rolleid - 1].antallskills) {
+                              this.capableUsers.push({userid: user.userid, rolleid: eventRolle.rolleid, points: user.vaktpoeng, eventrolleid: eventRolle.event_rolle_id});
 
-                            for (let i = 0; i < this.capableUsers.length; i++) {
-                              let exists = usedUserids.includes(this.capableUsers[i].userid);
-                              let hasUser = usedEventRoleids.includes(this.capableUsers[i].eventrolleid);
+                              for (let i = 0; i < this.capableUsers.length; i++) {
+                                let exists = usedUserids.includes(this.capableUsers[i].userid);
+                                let hasUser = usedEventRoleids.includes(this.capableUsers[i].eventrolleid);
 
-                              if (exists == false && hasUser == false) {
-                                usedUserids.push(this.capableUsers[i].userid);
-                                usedEventRoleids.push(this.capableUsers[i].eventrolleid);
+                                if (exists == false && hasUser == false) {
+                                  usedUserids.push(this.capableUsers[i].userid);
+                                  usedEventRoleids.push(this.capableUsers[i].eventrolleid);
+                                  this.emailRecievers.push(this.capableUsers[i].userid);
 
-                                eventService.setRole(this.capableUsers[i].userid, this.capableUsers[i].eventrolleid, (result) => {
-                                  console.log(this.capableUsers[i].userid + ' har fått vakt');
+                                  eventService.setRole(this.capableUsers[i].userid, this.capableUsers[i].eventrolleid, this.evnt.start, this.evnt.end, (result) => {
 
-                                });
+                                  });
+                                }
                               }
                             }
-                          }
-                        })
+                          })
+                        }
                       }
-                    }
-                  });
+                    });
+                  }
                 }
-              }
+              });
             });
-          });
+          }
+
+          else {
+            this.giveRolesToNotInterested();
+          }
         });
       });
     });
@@ -508,6 +532,8 @@ export class EventDetails extends React.Component {
     let usersNotUsed = [];
     this.capableUsers = [];
     let userPassiv = [];
+    let stop = false;
+    console.log('Notinterested');
 
     eventService.getUsedUsers(this.evnt.eventid, (result) => {
       for (let id of result) {
@@ -567,15 +593,19 @@ export class EventDetails extends React.Component {
                               if (exists == false && hasUser == false) {
                                 usedUserids.push(this.capableUsers[i].userid);
                                 usedEventRoleids.push(this.capableUsers[i].eventrolleid);
+                                this.emailRecievers.push(this.capableUsers[i].userid);
 
-                                eventService.setRole(this.capableUsers[i].userid, this.capableUsers[i].eventrolleid, (result) => {
-                                  console.log(this.capableUsers[i].userid + ' har fått vakt');
+                                eventService.setRole(this.capableUsers[i].userid, this.capableUsers[i].eventrolleid, this.evnt.start, this.evnt.end, (result) => {
                                   eventService.getEventRoller(this.evnt.eventid, (result) => {
                                     this.eventRoller = result;
                                     eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
                                       this.eventRollernoUser = result;
                                       this.refs.fordelRollerDiv.textContent = '';
-                                      this.forceUpdate();
+                                      if (stop == false) {
+                                        this.sendMail(this.emailRecievers);
+                                        this.forceUpdate();
+                                        stop = true;
+                                      }
                                     });
                                   });
                                 });
@@ -587,7 +617,11 @@ export class EventDetails extends React.Component {
                                   eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
                                     this.eventRollernoUser = result;
                                     this.refs.fordelRollerDiv.textContent = '';
-                                    this.forceUpdate();
+                                    if (stop == false) {
+                                      this.sendMail(this.emailRecievers);
+                                      this.forceUpdate();
+                                      stop = true;
+                                    }
                                   });
                                 });
                               }
@@ -600,7 +634,11 @@ export class EventDetails extends React.Component {
                               eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
                                 this.eventRollernoUser = result;
                                 this.refs.fordelRollerDiv.textContent = '';
-                                this.forceUpdate();
+                                if (stop == false) {
+                                  this.sendMail(this.emailRecievers);
+                                  this.forceUpdate();
+                                  stop = true;
+                                }
                               });
                             });
                           }
@@ -624,9 +662,10 @@ export class EventDetails extends React.Component {
                               if (exists == false && hasUser == false) {
                                 usedUserids.push(this.capableUsers[i].userid);
                                 usedEventRoleids.push(this.capableUsers[i].eventrolleid);
+                                console.log(this.capableUsers[i].userid + ' 4');
+                                this.emailRecievers.push(this.capableUsers[i].userid);
 
-                                eventService.setRole(this.capableUsers[i].userid, this.capableUsers[i].eventrolleid, (result) => {
-                                  console.log(this.capableUsers[i].userid + ' har fått vakt');
+                                eventService.setRole(this.capableUsers[i].userid, this.capableUsers[i].eventrolleid, this.evnt.start, this.evnt.end, (result) => {
 
                                 });
                               }
@@ -643,6 +682,22 @@ export class EventDetails extends React.Component {
         });
       });
     });
+  }
+
+  sendMail(userList) {
+    for (let user of userList) {
+      console.log(user);
+      userService.getUserEventInfo(user, this.evnt.eventid, (result) => {
+        this.userEvent = result;
+        console.log(result);
+
+        let recieverAdress = this.userEvent.email;
+        let mailSubject = 'Utkalling til arrangement';
+        let text = 'Hei ' + this.userEvent.firstName + '. Du har blitt kalt ut til arrangement ' + this.userEvent.title + ' som ' + this.userEvent.rollenavn + '. Logg inn på appen for mer info og for å godkjenne vakten.';
+
+        // mailService.sendMail(recieverAdress, mailSubject, text);
+      });
+    }
   }
 
   componentDidMount() {
@@ -948,7 +1003,6 @@ export class EditEvent extends React.Component {
     }
 
     let dateTime = year + '-' + month + '-' + day + 'T' + hours + ':' + mins;
-    // day + '/' + month + '/' + year + ' ' + hours + ':' + mins;
     return(dateTime);
   }
 
