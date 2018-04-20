@@ -2,6 +2,7 @@ import mysql from 'mysql';
 import { mailService } from './mail';
 import crypto from 'crypto';
 crypto.DEFAULT_ENCODING = 'hex';
+import moment from 'moment';
 
 // Setup database server reconnection when server timeouts connection:
 let connection;
@@ -105,7 +106,7 @@ class UserService {
 
         mailService.sendMail(email, subject, text);
 
-        callback(result, subject, text, email);
+        callback(result);
       });
     });
   }
@@ -214,12 +215,75 @@ class UserService {
     });
   }
 
+  setEventPassiv(userid, start, end, callback) {
+    connection.query('INSERT INTO passiv (userid, passivstart, passivend, event) values (?, ?, ?, ?)', [userid, start, end, false], (error, result) => {
+      if (error) throw error;
+
+      callback();
+    });
+  }
+
   getPassiv(userid, callback) {
     connection.query('SELECT * FROM passiv WHERE userid = ?', [userid], (error, result) => {
       if (error) throw error;
 
       callback(result);
     });
+  }
+
+  getPassivNoEvent(userid, callback) {
+    connection.query('SELECT * FROM passiv WHERE event = ? AND userid = ?', [false, userid], (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
+
+  deletePassiv(passivid, callback) {
+    connection.query('DELETE FROM passiv WHERE passivid = ?', [passivid], (error, result) => {
+      if (error) throw error;
+
+      callback();
+    });
+  }
+
+  deleteEventPassiv(start, end, callback) {
+    let startDate = this.fixDate(start);
+    let endDate = this.fixDate(end);
+
+    console.log(startDate);
+    console.log(endDate);
+
+    connection.query('DELETE FROM passiv WHERE passivstart = ? AND passivend = ? AND event = ?', [startDate, endDate, true], (error, result) => {
+      if (error) throw error;
+
+      callback();
+    });
+  }
+
+  getUserEventInfo(userid, eventid, callback) {
+    connection.query('SELECT * FROM Users, Events, event_rolle, Roller WHERE event_rolle.userid = Users.id AND event_rolle.rolleid = Roller.rolleid AND event_rolle.eventid = Events.eventid AND userid = ? AND event_rolle.eventid = ?', [userid, eventid], (error, result) => {
+      if (error) throw error;
+      console.log(result);
+
+      callback(result[0]);
+    });
+  }
+
+  fixDate(d) {
+    let day = d.getDate();
+    if (day < 10) {
+      day = '0' + day;
+    }
+    let month = d.getMonth() + 1;
+    if (month < 10) {
+      month = '0' + month;
+    }
+    let year = d.getFullYear();
+
+    let date = year + '-' + month + '-' + day;
+    // day + '/' + month + '/' + year + ' ' + hours + ':' + mins;
+    return(date);
   }
 }
 
@@ -261,7 +325,7 @@ class EventService {
   }
 
   getVaktbytte(id, callback) {
-    connection.query('SELECT * FROM foresporsel WHERE id = ?', [id], (error, result) => {
+    connection.query('SELECT * FROM vaktbytte WHERE id = ?', [id], (error, result) => {
       if (error) throw error;
 
       callback(result[0]);
@@ -412,13 +476,17 @@ class EventService {
     });
   }
 
-  setRole(userid, eventrolleid, callback) {
+  setRole(userid, eventrolleid, start, end, callback) {
     let timedate = new Date();
     connection.query('UPDATE event_rolle SET userid = ?, timecalled = ? WHERE event_rolle_id = ?', [userid, timedate, eventrolleid], (error, result) => {
       if (error) throw error;
 
       callback();
-    })
+    });
+
+    connection.query('INSERT INTO passiv (userid, passivstart, passivend, event) values (?, ?, ?, ?)', [userid, start, end, true], (error, result) => {
+      if (error) throw error;
+    });
   }
 
   emptyEventRoles(eventid, callback) {

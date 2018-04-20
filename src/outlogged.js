@@ -192,7 +192,7 @@ export class ForgotPassword extends React.Component {
           alert('Ingen brukere med denne epostadressen');
         }
         else {
-          userService.resetPassword(result.email, result.username, (result, subject, text, email) => {
+          userService.resetPassword(result.email, result.username, (result) => {
             this.refs.resetContent.textContent = 'Nytt passord er sendt.'
           });
         }

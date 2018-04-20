@@ -1,3 +1,5 @@
+import { userService, eventService } from './services';
+
 class MailService {
   sendMail(recieverAdress, mailSubject, mailText) {
     let nodemailer = require('nodemailer');
@@ -17,15 +19,15 @@ class MailService {
         text: mailText
     };
 
-      transporter.sendMail(mailOptions, function(error,info) {
-        if (error) {
-          return console.log(error);
-        }
-        else {
-          console.log('Message sent: %s', info.messageId);
-        }
-      })
-    };
+    transporter.sendMail(mailOptions, function(error,info) {
+      if (error) {
+        return console.log(error);
+      }
+      else {
+        console.log('Message sent: %s', info.messageId);
+      }
+    });
+  }
 }
 
 let mailService = new MailService();
