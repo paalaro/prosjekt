@@ -8,6 +8,7 @@ import { Login, Registration, Registered, ForgotPassword, PasswordSent, loggedin
 import { Profile, MyProfile, EditProfile, checkOldSkills } from './profile';
 import { Requests, UserListAdmin, UserList, UserDetails } from './users';
 import { EventList, EventDetails, CreateEvent, EditEvent, Roles } from './events'
+import { Stats } from './stats'
 import crypto from 'crypto';
 
 crypto.DEFAULT_ENCODING = 'hex';
@@ -150,8 +151,9 @@ export function renderAdminLogin(user) {
           <Route exact path='/eventdetails/:eventId' component={EventDetails} />
           <Route exact path='/createevent' component={CreateEvent} />
           <Route exact path='/changepassword' component={ChangePassword} />
-          <Route exact path='/editevent/:eventId' component={EditEvent} />
+          <Route exact path='/editevent' component={EditEvent} />
           <Route exact path='/roles/:eventId' component={Roles} />
+          <Route exact path='/stats' component={Stats} />
           <Requests />
         </Switch>
       </div>

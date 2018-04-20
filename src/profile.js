@@ -278,12 +278,30 @@ export class MyProfile extends React.Component {
 
     for (let skill of this.userSkills) {
       if (skill.validto === null) {
-        userSkillList.push(<tr key={skill.skillid} ><td> { skill.skilltitle } </td><td>Varer evig</td></tr>);
+        userSkillList.push(
+          <tr key={skill.skillid} >
+          <td> { skill.skilltitle } </td>
+          <td>Varer evig</td>
+          <td><button onClick={() => skillService.deleteSkill(this.id, skill.skillid, (result) => {
+            skillService.getUserSkills(this.user.id, (result) => {
+              this.userSkills = result;
+              this.forceUpdate();
+            });
+          })}>Slett</button></td></tr>);
       }
 
       else {
         this.date = this.fixDate(skill.validto);
-        userSkillList.push(<tr key={skill.skillid} ><td> { skill.skilltitle } </td><td>{this.date}</td></tr>);
+        userSkillList.push(
+          <tr key={skill.skillid} >
+          <td> { skill.skilltitle } </td>
+          <td>{this.date}</td>
+          <td><button onClick={() => skillService.deleteSkill(this.id, skill.skillid, (result) => {
+            skillService.getUserSkills(this.user.id, (result) => {
+              this.userSkills = result;
+              this.forceUpdate();
+            });
+          })}>Slett</button></td></tr>);
       }
     }
 
@@ -471,7 +489,7 @@ constructor() {
     this.props.history.push(path);
   }
 
-  onFieldChange(fieldName) {
+  changeHandler(fieldName) {
         return function (event) {
             this.setState({[fieldName]: event.target.value});
         }
@@ -480,14 +498,14 @@ constructor() {
   render() {
     return(
       <div>
-        <input name='firstName' ref='firstName' value={this.state.firstName} onChange={this.onFieldChange('firstName').bind(this)} />
-        <input name='lastName' ref='lastName' value={this.state.lastName} onChange={this.onFieldChange('lastName').bind(this)} />
+        <input name='firstName' ref='firstName' value={this.state.firstName} onChange={this.changeHandler('firstName').bind(this)} />
+        <input name='lastName' ref='lastName' value={this.state.lastName} onChange={this.changeHandler('lastName').bind(this)} />
         <br />
-        <input name='phonenumber' ref='phonenumber' value={this.state.phonenumber} onChange={this.onFieldChange('phonenumber').bind(this)} />
-        <input name='email' ref='email' value={this.state.email} onChange={this.onFieldChange('email').bind(this)} />
+        <input name='phonenumber' ref='phonenumber' value={this.state.phonenumber} onChange={this.changeHandler('phonenumber').bind(this)} />
+        <input name='email' ref='email' value={this.state.email} onChange={this.changeHandler('email').bind(this)} />
         <br />
-        <input name='adress' ref='adress' value={this.state.adress} onChange={this.onFieldChange('adress').bind(this)} />
-        <input name='postalnumber' ref='postalnumber' maxLength='4' value={this.state.postalnumber} onChange={this.onFieldChange('postalnumber').bind(this)} />
+        <input name='adress' ref='adress' value={this.state.adress} onChange={this.changeHandler('adress').bind(this)} />
+        <input name='postalnumber' ref='postalnumber' maxLength='4' value={this.state.postalnumber} onChange={this.changeHandler('postalnumber').bind(this)} />
         <br />
         <button ref='editUserBtn'>Confirm</button>
       </div>
