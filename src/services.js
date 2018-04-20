@@ -190,6 +190,22 @@ class UserService {
     });
   }
 
+  getConfirmedUsers(callback) {
+    connection.query('SELECT * FROM Users WHERE aktivert = 1 ORDER BY vaktpoeng DESC', (error, result) => {
+      if(error) throw error;
+
+      callback(result);
+    });
+  }
+
+  getStats(startDate, endDate, callback) {
+    connection.query('SELECT event_rolle_id, Events.eventid, title, start, end, firstName, lastName FROM event_rolle, Events, Users WHERE event_rolle.eventid = Events.eventid AND Events.start >= ? AND Events.start <= ? AND event_rolle.userid = Users.id', [startDate, endDate], (error, result) => {
+      if(error) throw error;
+      
+      callback(result);
+    });
+  }
+  
   setPassiv(userid, start, end, callback) {
     connection.query('INSERT INTO passiv (userid, passivstart, passivend) values (?, ?, ?)', [userid, start, end], (error, result) => {
       if (error) throw error;
