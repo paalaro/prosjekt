@@ -61,8 +61,8 @@ export class EventList extends React.Component {
       if (passiv.passivstart.toLocaleDateString() > today || passiv.passivend.toLocaleDateString() > today) {
         passivList.push(<tr className='tableRow' key={passiv.passivid}><td className='tableLines'>{passiv.passivstart.toLocaleDateString()}</td><td>{passiv.passivend.toLocaleDateString()}</td>
         <td><button onClick={() => userService.deletePassiv(passiv.passivid, (result) => {
-          userService.getPassiv(this.user.id, (result) => {
-            userService.userPassiv = result;
+          userService.getPassivNoEvent(this.user.id, (result) => {
+            this.userPassiv = result;
             this.forceUpdate();
           });
         })}>Slett</button></td></tr>)
@@ -351,6 +351,8 @@ export class EventDetails extends React.Component {
             }
           }
 
+          console.log(interestedUsersNotUsed);
+
           if (interestedUsersNotUsed.length != 0) {
             eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
               this.eventRollernoUser = result;
@@ -362,13 +364,12 @@ export class EventDetails extends React.Component {
                       userPassiv = result;
                       let passiv = false;
                       for (let i = 0; i < userPassiv.length; i++) {
+                        let startPassive = userPassiv[i].passivstart;
+                        let endPassive = userPassiv[i].passivend;
+                        let eventStart = this.evnt.start;
+                        let eventEnd = this.evnt.end;
 
-                        let startPassive = userPassiv[i].passivstart.toLocaleDateString();
-                        let endPassive = userPassiv[i].passivend.toLocaleDateString();
-                        let eventStart = this.evnt.start.toLocaleDateString();
-                        let eventEnd = this.evnt.end.toLocaleDateString();
-
-                        if (startPassive <= eventStart && endPassive >= eventStart) {
+                        if (startPassive <= eventEnd && endPassive >= eventStart) {
                           passiv = true;
                         }
                       }
