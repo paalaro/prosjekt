@@ -12,18 +12,16 @@ export class Stats extends React.Component {
   }
 
   render() {
-    console.log(this.stats);
     let statistikk = '';
     for (let stat of this.stats) {
       statistikk += stat.navn + ': ' + stat.vaktpoeng + '\r\n';
     }
 
-    console.log(this.periodStats);
     let periode = '';
     for (let stat of this.periodStats) {
       let navn = stat.firstName + ' ' + stat.lastName;
-      let startDate = new Date(stat.start).toDateString();
-      let endDate = new Date(stat.end).toDateString();
+      let startDate = new Date(stat.start).toLocaleDateString();
+      let endDate = new Date(stat.end).toLocaleDateString();
       periode += navn + ', ' + stat.title + ', Start: ' + startDate + ', Slutt: ' + endDate + '\r\n';
     }
 

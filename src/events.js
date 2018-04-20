@@ -99,19 +99,6 @@ export class EventList extends React.Component {
              {evntsList}
              </tbody>
            </table>
-           <h4>Tilgjengelisge arrangementer</h4>
-           <table className='eventTable'>
-             <thead>
-               <tr>
-                 <th className='tableLines'>Navn</th>
-                 <th className='tableLines'>Start</th>
-                 <th className='tableLines'>Slutt</th>
-               </tr>
-             </thead>
-             <tbody>
-             {availableEvents}
-             </tbody>
-           </table>
            <br />
          </div>
          <div>
@@ -134,8 +121,15 @@ export class EventList extends React.Component {
          </div>
          <div>
           Sett deg selv som passiv for en periode. <br />
-          <input ref='startPassiv' type='date' />
-          <input ref='endPassiv' type='date' /> <br />
+          <div>
+            <div className="statsDiv col-5">
+              <input ref='startPassiv' type='date' />
+            </div>
+            <div className="statsDiv col-5">
+              <input ref='endPassiv' type='date' />
+            </div>
+          </div>
+          <br />
           <button onClick={() => this.regPassiv()}>Registrer</button>
          </div>
        </div>
@@ -250,15 +244,53 @@ export class EventDetails extends React.Component {
       rolleList.push(<tr key={ rolle.event_rolle_id } ><td> { rolle.rollenavn } </td><td> LEDIG </td></tr>);
     }
 
+        let byttvaktBtn = {
+          valueOf: function() {
+            return <button onClick={() => this.byttVakt()}>Bytt vakeet</button>;
+          }
+        }
+
     for (let rolle of this.eventRoller) {
       if (rolle.confirmed == true) {
-        rolleList.push(<tr key={ rolle.event_rolle_id} ><td> { rolle.rollenavn } </td><td> { rolle.firstName } </td><td> {rolle.timecalled.toLocaleString().slice(0, -3) }</td><td>{ rolle.timeconfirmed.toLocaleString().slice(0, -3) }</td></tr>);
+        if (rolle.userid == this.user.id) {
+          rolleList.push(<tr key={ rolle.event_rolle_id} >
+            <td> { rolle.rollenavn } </td>
+            <td> { rolle.firstName } {rolle.lastName}</td>
+            <td> {rolle.timecalled.toLocaleString().slice(0, -3) }</td>
+            <td>{ rolle.timeconfirmed.toLocaleString().slice(0, -3) }</td>
+            <td><button onClick={() => this.goToRoleChange(rolle)}>Bytt vakt</button></td></tr>);
+        }
+
+        else {
+          rolleList.push(<tr key={ rolle.event_rolle_id} >
+            <td> { rolle.rollenavn } </td>
+            <td> { rolle.firstName } {rolle.lastName}</td>
+            <td> {rolle.timecalled.toLocaleString().slice(0, -3) }</td>
+            <td>{ rolle.timeconfirmed.toLocaleString().slice(0, -3) }</td></tr>);
+        }
       }
 
       else {
-        rolleList.push(<tr key={ rolle.event_rolle_id } ><td> { rolle.rollenavn } </td><td> { rolle.firstName } </td><td> { rolle.timecalled.toLocaleString().slice(0, -3) } </td><td>Ikke godkjent</td></tr>);
+        if (rolle.userid == this.user.id) {
+          rolleList.push(<tr key={ rolle.event_rolle_id } >
+            <td> { rolle.rollenavn } </td>
+            <td> { rolle.firstName } {rolle.lastName}</td>
+            <td> { rolle.timecalled.toLocaleString().slice(0, -3) } </td>
+            <td>Ikke godkjent</td>
+            <td><button onClick={() => this.goToRoleChange(rolle)}>Bytt vakt</button></td></tr>);
+        }
+
+        else {
+          rolleList.push(<tr key={ rolle.event_rolle_id } >
+            <td> { rolle.rollenavn } </td>
+            <td> { rolle.firstName } {rolle.lastName}</td>
+            <td> { rolle.timecalled.toLocaleString().slice(0, -3) } </td>
+            <td>Ikke godkjent</td></tr>);
+        }
       }
     }
+
+
 
     if (this.eventRoller.length > 0) {
       rolleListHeader = <tr><th>Rolle</th><th>Status</th><th>Tildelt</th><th>Godkjent</th></tr>;
@@ -319,6 +351,11 @@ export class EventDetails extends React.Component {
         {emptyRolesBtn}
       </div>
     );
+  }
+
+  goToRoleChange(rolle) {
+    localStorage.setItem('rollebytte', JSON.stringify(rolle));
+    this.props.history.push('/changerole')
   }
 
   giveRoles() {
@@ -1037,5 +1074,26 @@ export class EditEvent extends React.Component {
         this.props.history.push('/eventdetails/' + this.evnt.eventid);
       });
     }
+  }
+}
+
+export class ChangeRole extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.user = userService.getSignedInUser();
+    
+    this.rolle = JSON.parse(localStorage.getItem('rollebytte'));
+  }
+
+  render() {
+    return(
+      <div>
+      </div>
+    );
+  }
+
+  componentDidMount() {
+
   }
 }

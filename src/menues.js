@@ -34,7 +34,17 @@ export class AdminLoggedinMenu extends React.Component {
       <div>
       <ul className="navbar-ul">
         <li className="navbar-li"><Link to='/eventlist' className="navbar-link">Arrangement</Link></li>
-        <li className="navbar-li"><Link to='/userlistadmin' className="navbar-link">Brukere</Link></li>
+
+        <div className="dropdownknapp">
+        <li className="dropdown-li"><Link to='/stats' className="navbar-link">Brukere</Link></li>
+          <div className="dropdowncontent">
+          <ul className="navbar-ul">
+            <li className="dropdown-li"><Link to='/userlistadmin' className="dropdown-link">Brukerkatalog</Link></li>
+            <li className="dropdown-li"><Link to='/stats' className='dropdown-link' >Statistikk</Link></li>
+          </ul>
+          </div>
+        </div>
+
         <li className="navbar-li"><Link to='/requests' className="navbar-link">Forespørsler</Link></li>
 
         <div className="dropdownknapp">
