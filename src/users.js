@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, NavLink, HashRouter, Switch, Route } from 'react-router-dom';
-import { userService } from './services';
+import { userService, eventService } from './services';
 
 export class Requests extends React.Component {
   constructor(props) {
@@ -30,6 +30,28 @@ export class Requests extends React.Component {
     }
   }
 
+  confirmVaktbytte(vaktbytte) {
+    eventService.confirmVaktbytte(vaktbytte.newUserid, vaktbytte.eventrolleid, vaktbytte.start, vaktbytte.end, (result) => {
+      eventService.setVaktbytteConfirmed(vaktbytte.vaktbytteid, (result) => {
+        userService.deleteEventPassiv(vaktbytte.start, vaktbytte.end, vaktbytte.oldUserid, (result) => {
+          eventService.getAllVaktbytter((result) => {
+            this.vaktbytter = result;
+            this.forceUpdate();
+          });
+        });
+      });
+    });
+  }
+
+  denyVaktbytte(vaktbytte) {
+    eventService.deleteVaktbytte(vaktbytte.vaktbytteid, (result) => {
+      eventService.getAllVaktbytter((result) => {
+        this.vaktbytter = result;
+        this.forceUpdate();
+      });
+    });
+  }
+
   render() {
     let vaktbytter;
     let users;
@@ -42,6 +64,37 @@ export class Requests extends React.Component {
       </div>
     }
 
+    else {
+      let vaktbytteList = [];
+      let vaktbytteTbl = [];
+
+
+      for(let vaktbytte of this.vaktbytter) {
+        vaktbytteTbl.push(<tr key={vaktbytte.eventrolleid}>
+          <td><b>Arrangement:</b> {vaktbytte.title} </td>
+          <td><b>Byttes fra:</b> {vaktbytte.oldfirstName} {vaktbytte.oldlastName}</td>
+          <td><b>Byttes til:</b> {vaktbytte.newfirstName} {vaktbytte.newlastName}</td>
+          <td><button onClick={() => {
+            this.confirmVaktbytte(vaktbytte)
+          }}>Godkjenn</button></td>
+          <td><button onClick={() => {
+            this.denyVaktbytte(vaktbytte)
+          }}>Avvis</button></td>
+          </tr>);
+      }
+
+      vaktbytter = <div className='centeredDiv'>
+        <h3>Vaktbytter</h3>
+        <table>
+          <tbody>
+            {vaktbytteTbl}
+          </tbody>
+        </table>
+        <br />
+
+      </div>;
+    }
+
     if (this.unconfirmedUsers.length == 0) {
       users = <div className='centeredDiv'>
         <div className='alert'>
@@ -52,28 +105,10 @@ export class Requests extends React.Component {
 
     else {
       let unconfirmedList = [];
-      let vaktbytteList = [];
+
       for(let unconfirmedUser of this.unconfirmedUsers) {
         unconfirmedList.push(<li key={unconfirmedUser.id} className=''>{unconfirmedUser.firstName + ' ' + unconfirmedUser.lastName}<button onClick={() => this.confirm(unconfirmedUser.id)}>Confirm</button></li>);
       }
-
-      for(let vaktbytte of this.vaktbytter) {
-        eventService.getEvent(vaktbytte.eventid, (result) => {
-          this.eventName = result.title;
-          userService.getUser(vaktbytte.olduserid, (result) => {
-            this.oldUser = result.firstName + ' ' + result.lastName;
-            userService.getUser(vaktbytte.newuserid, (result) => {
-              this.newUser = result.firstName + ' ' + result.lastName;
-              adminList.push(<tr key={user.id} className='tableRow'><td onClick={() => this.nextPath('/profile/' + user.id)} style={{width: 40+'%'}} className='tableLines'>{user.firstName} {user.lastName}</td></tr>);
-              vaktbytteList.push(<tr key={vaktbytte.id} className='tableRow'><td>{this.eventName}</td><td>{this.oldUser}</td><td>{this.newUser}</td><td><button>Godkjenn</button></td></tr>)
-            });
-          });
-        });
-
-
-
-      }
-
 
       users = <div className='centeredDiv'>
         <h3>Deaktiverte brukere</h3>
@@ -95,7 +130,10 @@ export class Requests extends React.Component {
   componentDidMount() {
     userService.getUnconfirmedUsers((result) => {
       this.unconfirmedUsers = result;
-      this.forceUpdate();
+      eventService.getAllVaktbytter((result) => {
+        this.vaktbytter = result;
+        this.forceUpdate();
+      });
     });
   }
 }

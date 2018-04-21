@@ -19,8 +19,8 @@ moment.locale('ko', {
 BigCalendar.setLocalizer(BigCalendar.momentLocalizer(moment))
 
 export class EventList extends React.Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
 
     this.evntList = [];
     this.userRoles = [];
@@ -39,19 +39,33 @@ export class EventList extends React.Component {
     let userRoles = [];
     let passivList = [];
     let passivHeader;
+    let createEventBtn;
 
     for (let evnt of this.evntList) {
-      evntsList.push(<tr key={evnt.eventid} className='tableRow' onClick={() => this.nextPath('/eventdetails/' + evnt.eventid)}><td className='tableLines'>{evnt.title}</td><td className='tableLines'>{evnt.start.toLocaleString().slice(0, -3)}</td><td className='tableLines'>{evnt.end.toLocaleString().slice(0, -3)}</td></tr>)
+      evntsList.push(<tr key={evnt.eventid} className='tableRow' onClick={() => this.props.history.push('/eventdetails/' + evnt.eventid)}><td className='tableLines'>{evnt.title}</td><td className='tableLines'>{evnt.start.toLocaleString().slice(0, -3)}</td><td className='tableLines'>{evnt.end.toLocaleString().slice(0, -3)}</td></tr>)
     }
 
     for (let rolle of this.userRoles) {
       if (rolle.confirmed == false) {
-        userRoles.push(<tr key={rolle.event_rolle_id}><td>{rolle.title}</td><td>{rolle.rollenavn}</td><td><button onClick={() => this.confirmRole(rolle.event_rolle_id)}>Godkjenn</button></td></tr>)
-
+        userRoles.push(<tr key={rolle.event_rolle_id}>
+          <td>{rolle.title}</td>
+          <td>{rolle.rollenavn}</td>
+          <td><button onClick={() =>
+            this.confirmRole(rolle.event_rolle_id)
+          }>Godkjenn</button></td>
+          <td><button onClick={() =>
+          this.goToRoleChange(rolle)}>Bytt vakt</button></td>
+          </tr>);
       }
 
       else {
-        userRoles.push(<tr key={rolle.event_rolle_id}><td>{rolle.title}</td><td>{rolle.rollenavn}</td><td>Godkjent</td></tr>)
+        userRoles.push(<tr key={rolle.event_rolle_id}>
+          <td>{rolle.title}</td>
+          <td>{rolle.rollenavn}</td>
+          <td>Godkjent</td>
+          <td><button onClick={() =>
+          this.goToRoleChange(rolle)}>Bytt vakt</button></td>
+          </tr>);
       }
     }
 
@@ -73,6 +87,10 @@ export class EventList extends React.Component {
       passivHeader = <tr><th>Start</th><th>Slutt</th></tr>;
     }
 
+    if (this.user.admin == true) {
+      createEventBtn = <button onClick={() => this.nextPath('/createevent')}>Lag arrangement</button>;
+    }
+
     return(
       <div>
         <div style={{height: 400}}>
@@ -85,7 +103,7 @@ export class EventList extends React.Component {
          }
              />
          </div>
-         <button onClick={() => this.nextPath('/createevent')}>Lag arrangement</button>
+         {createEventBtn}
          <div className='tableList'>
            <table className='eventTable'>
              <thead>
@@ -134,6 +152,11 @@ export class EventList extends React.Component {
          </div>
        </div>
     );
+  }
+
+  goToRoleChange(rolle) {
+    localStorage.setItem('rollebytte', JSON.stringify(rolle));
+    this.props.history.push('/changerole/' + rolle.userid);
   }
 
   confirmRole(eventrolleid) {
@@ -221,21 +244,6 @@ export class EventDetails extends React.Component {
         })}>Fjern interesse</button>;
     }
 
-    if (this.eventRoller[0] != undefined) {
-      emptyRolesBtn = <button onClick={() =>
-        eventService.emptyEventRoles(this.evnt.eventid, (result) => {
-          userService.deleteEventPassiv(this.evnt.start, this.evnt.end, (result) => {
-            eventService.getEventRoller(this.evnt.eventid, (result) => {
-              this.eventRoller = result;
-              eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
-                this.eventRollernoUser = result;
-                this.forceUpdate();
-              });
-            });
-          });
-        })}>Tøm roller</button>;
-    }
-
     if (this.interest != undefined) {
       interessert = 'Du er interessert i dette arrangementet';
     }
@@ -244,48 +252,110 @@ export class EventDetails extends React.Component {
       rolleList.push(<tr key={ rolle.event_rolle_id } ><td> { rolle.rollenavn } </td><td> LEDIG </td></tr>);
     }
 
-        let byttvaktBtn = {
-          valueOf: function() {
-            return <button onClick={() => this.byttVakt()}>Bytt vakeet</button>;
+    if (this.user.admin == true) {
+      rolleBtn = <button onClick={() => this.props.history.push('/roles/' + this.evnt.eventid)}>Roller</button>;
+      editBtn = <button onClick={() => this.props.history.push('/editevent')}>Endre detaljer</button>;
+      if (this.eventRollernoUser.length != 0) {
+        fordelRollerBtn = <button onClick={() => this.giveRoles()}>Fordel roller</button>;
+      }
+
+      if (this.eventRoller[0] != undefined) {
+        emptyRolesBtn = <button onClick={() =>
+          eventService.emptyEventRoles(this.evnt.eventid, (result) => {
+            userService.deleteAllEventPassiv(this.evnt.start, this.evnt.end, (result) => {
+              eventService.getEventRoller(this.evnt.eventid, (result) => {
+                this.eventRoller = result;
+                eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
+                  this.eventRollernoUser = result;
+                  this.forceUpdate();
+                });
+              });
+            });
+          })}>Tøm roller</button>;
+      }
+
+
+      for (let rolle of this.eventRoller) {
+        if (rolle.confirmed == true) {
+          if (rolle.userid == this.user.id) {
+            rolleList.push(<tr key={ rolle.event_rolle_id} >
+              <td> { rolle.rollenavn } </td>
+              <td> { rolle.firstName } {rolle.lastName}</td>
+              <td> {rolle.timecalled.toLocaleString().slice(0, -3) }</td>
+              <td>{ rolle.timeconfirmed.toLocaleString().slice(0, -3) }</td>
+              <td><button onClick={() => this.goToRoleChange(rolle)}>Bytt vakt</button></td></tr>);
+          }
+
+          else {
+            rolleList.push(<tr key={ rolle.event_rolle_id} >
+              <td> { rolle.rollenavn } </td>
+              <td> { rolle.firstName } {rolle.lastName}</td>
+              <td> {rolle.timecalled.toLocaleString().slice(0, -3) }</td>
+              <td>{ rolle.timeconfirmed.toLocaleString().slice(0, -3) }</td>
+              </tr>);
           }
         }
 
-    for (let rolle of this.eventRoller) {
-      if (rolle.confirmed == true) {
-        if (rolle.userid == this.user.id) {
-          rolleList.push(<tr key={ rolle.event_rolle_id} >
-            <td> { rolle.rollenavn } </td>
-            <td> { rolle.firstName } {rolle.lastName}</td>
-            <td> {rolle.timecalled.toLocaleString().slice(0, -3) }</td>
-            <td>{ rolle.timeconfirmed.toLocaleString().slice(0, -3) }</td>
-            <td><button onClick={() => this.goToRoleChange(rolle)}>Bytt vakt</button></td></tr>);
-        }
-
         else {
-          rolleList.push(<tr key={ rolle.event_rolle_id} >
-            <td> { rolle.rollenavn } </td>
-            <td> { rolle.firstName } {rolle.lastName}</td>
-            <td> {rolle.timecalled.toLocaleString().slice(0, -3) }</td>
-            <td>{ rolle.timeconfirmed.toLocaleString().slice(0, -3) }</td></tr>);
+          if (rolle.userid == this.user.id) {
+            rolleList.push(<tr key={ rolle.event_rolle_id } >
+              <td> { rolle.rollenavn } </td>
+              <td> { rolle.firstName } {rolle.lastName}</td>
+              <td> { rolle.timecalled.toLocaleString().slice(0, -3) } </td>
+              <td>Ikke godkjent</td>
+              <td><button onClick={() => this.goToRoleChange(rolle)}>Bytt vakt</button></td></tr>);
+          }
+
+          else {
+            rolleList.push(<tr key={ rolle.event_rolle_id } >
+              <td> { rolle.rollenavn } </td>
+              <td> { rolle.firstName } {rolle.lastName}</td>
+              <td> { rolle.timecalled.toLocaleString().slice(0, -3) } </td>
+              <td>Ikke godkjent</td>
+              </tr>);
+          }
         }
       }
+    }
 
-      else {
-        if (rolle.userid == this.user.id) {
-          rolleList.push(<tr key={ rolle.event_rolle_id } >
-            <td> { rolle.rollenavn } </td>
-            <td> { rolle.firstName } {rolle.lastName}</td>
-            <td> { rolle.timecalled.toLocaleString().slice(0, -3) } </td>
-            <td>Ikke godkjent</td>
-            <td><button onClick={() => this.goToRoleChange(rolle)}>Bytt vakt</button></td></tr>);
+    else {
+      for (let rolle of this.eventRoller) {
+        if (rolle.confirmed == true) {
+          if (rolle.userid == this.user.id) {
+            rolleList.push(<tr key={ rolle.event_rolle_id} >
+              <td> { rolle.rollenavn } </td>
+              <td> { rolle.firstName } {rolle.lastName}</td>
+              <td> { rolle.timecalled.toLocaleString().slice(0, -3) }</td>
+              <td>{ rolle.timeconfirmed.toLocaleString().slice(0, -3) }</td>
+              <td><button onClick={() => this.goToRoleChange(rolle)}>Bytt vakt</button></td></tr>);
+          }
+
+          else {
+            rolleList.push(<tr key={ rolle.event_rolle_id} >
+              <td> { rolle.rollenavn } </td>
+              <td> { rolle.firstName } {rolle.lastName}</td>
+              </tr>);
+          }
         }
 
         else {
-          rolleList.push(<tr key={ rolle.event_rolle_id } >
-            <td> { rolle.rollenavn } </td>
-            <td> { rolle.firstName } {rolle.lastName}</td>
-            <td> { rolle.timecalled.toLocaleString().slice(0, -3) } </td>
-            <td>Ikke godkjent</td></tr>);
+          if (rolle.userid == this.user.id) {
+            rolleList.push(<tr key={ rolle.event_rolle_id } >
+              <td> { rolle.rollenavn } </td>
+              <td> { rolle.firstName } {rolle.lastName}</td>
+              <td> { rolle.timecalled.toLocaleString().slice(0, -3) } </td>
+              <td>Ikke godkjent</td>
+              <td><button onClick={() => this.goToRoleChange(rolle)}>Bytt vakt</button></td></tr>);
+          }
+
+          else {
+            rolleList.push(<tr key={ rolle.event_rolle_id } >
+              <td> { rolle.rollenavn } </td>
+              <td>
+              Venter på godkjenning
+              </td>
+              </tr>);
+          }
         }
       }
     }
@@ -311,14 +381,6 @@ export class EventDetails extends React.Component {
     }
 
     let loggedinUser = userService.getSignedInUser();
-
-    if (loggedinUser.admin == true) {
-      rolleBtn = <button onClick={() => this.props.history.push('/roles/' + this.evnt.eventid)}>Roller</button>;
-      editBtn = <button onClick={() => this.props.history.push('/editevent')}>Endre detaljer</button>;
-      if (this.eventRollernoUser.length != 0) {
-        fordelRollerBtn = <button onClick={() => this.giveRoles()}>Fordel roller</button>;
-      }
-    }
 
     return(
       <div>
@@ -355,7 +417,7 @@ export class EventDetails extends React.Component {
 
   goToRoleChange(rolle) {
     localStorage.setItem('rollebytte', JSON.stringify(rolle));
-    this.props.history.push('/changerole')
+    this.props.history.push('/changerole/' + rolle.userid)
   }
 
   giveRoles() {
@@ -388,8 +450,6 @@ export class EventDetails extends React.Component {
             }
           }
 
-          console.log(interestedUsersNotUsed);
-
           if (interestedUsersNotUsed.length != 0) {
             eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
               this.eventRollernoUser = result;
@@ -400,11 +460,12 @@ export class EventDetails extends React.Component {
                     userService.getPassiv(user.userid, (result) => {
                       userPassiv = result;
                       let passiv = false;
+                      let eventStart = this.evnt.start;
+                      let eventEnd = this.evnt.end;
+
                       for (let i = 0; i < userPassiv.length; i++) {
                         let startPassive = userPassiv[i].passivstart;
                         let endPassive = userPassiv[i].passivend;
-                        let eventStart = this.evnt.start;
-                        let eventEnd = this.evnt.end;
 
                         if (startPassive <= eventEnd && endPassive >= eventStart) {
                           passiv = true;
@@ -425,7 +486,6 @@ export class EventDetails extends React.Component {
 
                                 else if (this.eventRollernoUser.length == 0) {
                                   this.refs.fordelRollerDiv.textContent = '';
-                                  console.log('Test1');
                                   this.forceUpdate();
                                 }
                               });
@@ -460,7 +520,6 @@ export class EventDetails extends React.Component {
                                           else if (this.eventRollernoUser.length == 0) {
                                             this.forceUpdate();
                                             this.refs.fordelRollerDiv.textContent = '';
-                                            console.log(stop);
                                             if (stop == false) {
                                               this.sendMail(this.emailRecievers);
                                               stop = true;
@@ -571,7 +630,6 @@ export class EventDetails extends React.Component {
     this.capableUsers = [];
     let userPassiv = [];
     let stop = false;
-    console.log('Notinterested');
 
     eventService.getUsedUsers(this.evnt.eventid, (result) => {
       for (let id of result) {
@@ -700,7 +758,6 @@ export class EventDetails extends React.Component {
                               if (exists == false && hasUser == false) {
                                 usedUserids.push(this.capableUsers[i].userid);
                                 usedEventRoleids.push(this.capableUsers[i].eventrolleid);
-                                console.log(this.capableUsers[i].userid + ' 4');
                                 this.emailRecievers.push(this.capableUsers[i].userid);
 
                                 eventService.setRole(this.capableUsers[i].userid, this.capableUsers[i].eventrolleid, this.evnt.start, this.evnt.end, (result) => {
@@ -724,10 +781,8 @@ export class EventDetails extends React.Component {
 
   sendMail(userList) {
     for (let user of userList) {
-      console.log(user);
       userService.getUserEventInfo(user, this.evnt.eventid, (result) => {
         this.userEvent = result;
-        console.log(result);
 
         let recieverAdress = this.userEvent.email;
         let mailSubject = 'Utkalling til arrangement';
@@ -952,6 +1007,7 @@ export class CreateEvent extends React.Component {
         <input ref='end' type='datetime-local' placeholder='Sluttdato'/> <br />
         <input ref='adresse' type='text' placeholder='Adresse'/> <br />
         <input ref='postalnumber' type='text' maxLength='4' placeholder='Postnr'/> <br />
+        <input type='time' />
         <div>
           <h4>Vaktmal</h4> <br />
           <VirtualizedSelect
@@ -1081,19 +1137,95 @@ export class ChangeRole extends React.Component {
   constructor(props) {
     super(props);
 
-    this.user = userService.getSignedInUser();
-    
-    this.rolle = JSON.parse(localStorage.getItem('rollebytte'));
+    this.userid = this.props.match.params.userId;
+    this.user = {};
+    this.loggedinUser = userService.getSignedInUser();
+    this.toUser = {};
+
+    this.eventRolle = JSON.parse(localStorage.getItem('rollebytte'));
   }
 
   render() {
     return(
       <div>
+        <h4>Bytte bort vakt</h4>
+        <div ref='infoDiv'>
+          Skriv inn mailadresse til personen du har avtalt å bytte vakt med her. Administrator må godkjenne vaktbyttet.
+        </div>
+        <div ref='inputDiv'>
+          <input type='text' ref='vaktbyttemail'/><button ref='vaktbytteBtn'>Bytt vakt</button>
+        </div>
+        <div ref='alertDiv'></div>
       </div>
     );
   }
 
   componentDidMount() {
+    userService.getUser(this.userid, (result) => {
+      this.user = result;
+      eventService.getEvent(this.eventRolle.eventid, (result) => {
+        this.evnt = result;
+        this.forceUpdate();
+      });
+    });
 
+    this.refs.vaktbytteBtn.onclick = () => {
+      userService.getUserbyMail(this.refs.vaktbyttemail.value, (result) => {
+        this.toUser = result;
+        if (result != undefined) {
+          userService.getPassiv(this.toUser.id, (result) => {
+            this.userPassiv = result;
+            let passiv = false;
+            let eventStart = this.evnt.start;
+            let eventEnd = this.evnt.end;
+
+            for (let p of this.userPassiv) {
+              let startPassive = p.passivstart;
+              let endPassive = p.passivend;
+
+              if (startPassive <= eventEnd && endPassive >= eventStart) {
+                passiv = true;
+              }
+            }
+
+            if (passiv == false) {
+              skillService.countRoleReq((result) => {
+                this.roleReq = result;
+                eventService.getUsersSkillsofRoles(this.eventRolle.rolleid, this.toUser.id, (result) => {
+                  let numberOfSkills = result.antall;
+                  if (this.roleReq[this.eventRolle.rolleid - 1].antallskills == numberOfSkills) {
+                    eventService.setVaktbytte(this.eventRolle.event_rolle_id, this.user.id, this.toUser.id, (result) => {
+                      this.refs.inputDiv.textContent = 'Vaktbytte venter på godkjenning av administrator.';
+                      this.refs.infoDiv.textContent = '';
+                    });
+                  }
+
+                  else {
+                    this.refs.alertDiv.textContent = 'Denne brukeren har ikke kompetansen som kreves for denne rollen.';
+                    setTimeout(() => {
+                      this.refs.alertDiv.textContent = '';
+                    },5000);
+                  }
+                });
+              });
+            }
+
+            else {
+              this.refs.alertDiv.textContent = 'Denne brukeren har ikke mulighet til å stille opp i denne tidsperioden.';
+              setTimeout(() => {
+                this.refs.alertDiv.textContent = '';
+              },5000);
+            }
+          });
+        }
+
+        else {
+          this.refs.alertDiv.textContent = 'Ingen treff på denne epostadressen.';
+          setTimeout(() => {
+            this.refs.alertDiv.textContent = '';
+          },5000);
+        }
+      });
+    }
   }
 }

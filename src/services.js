@@ -202,11 +202,11 @@ class UserService {
   getStats(startDate, endDate, callback) {
     connection.query('SELECT event_rolle_id, Events.eventid, title, start, end, firstName, lastName FROM event_rolle, Events, Users WHERE event_rolle.eventid = Events.eventid AND Events.start >= ? AND Events.start <= ? AND event_rolle.userid = Users.id', [startDate, endDate], (error, result) => {
       if(error) throw error;
-      
+
       callback(result);
     });
   }
-  
+
   setPassiv(userid, start, end, callback) {
     connection.query('INSERT INTO passiv (userid, passivstart, passivend) values (?, ?, ?)', [userid, start, end], (error, result) => {
       if (error) throw error;
@@ -247,12 +247,20 @@ class UserService {
     });
   }
 
-  deleteEventPassiv(start, end, callback) {
+  deleteEventPassiv(start, end, userid, callback) {
     let startDate = this.fixDate(start);
     let endDate = this.fixDate(end);
 
-    console.log(startDate);
-    console.log(endDate);
+    connection.query('DELETE FROM passiv WHERE passivstart = ? AND passivend = ? AND event = ? AND userid = ?', [startDate, endDate, true, userid], (error, result) => {
+      if (error) throw error;
+
+      callback();
+    });
+  }
+
+  deleteAllEventPassiv(start, end, callback) {
+    let startDate = this.fixDate(start);
+    let endDate = this.fixDate(end);
 
     connection.query('DELETE FROM passiv WHERE passivstart = ? AND passivend = ? AND event = ?', [startDate, endDate, true], (error, result) => {
       if (error) throw error;
@@ -264,9 +272,16 @@ class UserService {
   getUserEventInfo(userid, eventid, callback) {
     connection.query('SELECT * FROM Users, Events, event_rolle, Roller WHERE event_rolle.userid = Users.id AND event_rolle.rolleid = Roller.rolleid AND event_rolle.eventid = Events.eventid AND userid = ? AND event_rolle.eventid = ?', [userid, eventid], (error, result) => {
       if (error) throw error;
-      console.log(result);
 
       callback(result[0]);
+    });
+  }
+
+  giveVaktpoeng(userid, dager, callback) {
+    connection.query('UPDATE Users SET vaktpoeng = vaktpoeng + ? WHERE id = ?', [dager, userid], (error, result) => {
+      if (error) throw error;
+
+      callback();
     });
   }
 
@@ -282,7 +297,6 @@ class UserService {
     let year = d.getFullYear();
 
     let date = year + '-' + month + '-' + day;
-    // day + '/' + month + '/' + year + ' ' + hours + ':' + mins;
     return(date);
   }
 }
@@ -308,6 +322,14 @@ class EventService {
     });
   }
 
+  getEventByEventRolleid(eventrolleid, callback) {
+    connection.query('SELECT * FROM Events, event_rolle WHERE event_rolle.eventid = Events.eventid AND event_rolle_id = ?', [eventrolleid], (error, result) => {
+      if (error) throw error;
+
+      callback(result[0]);
+    });
+  }
+
   createEvent(title, text, start, end, adress, postalnumber, callback) {
     connection.query('INSERT INTO Events (title, text, start, end, adress, postalnumber) values (?, ?, ?, ?, ?, ?)', [title, text, start, end, adress, postalnumber], (error, result) => {
       if (error) throw error;
@@ -321,14 +343,6 @@ class EventService {
       if (error) throw error;
 
       callback();
-    });
-  }
-
-  getVaktbytte(id, callback) {
-    connection.query('SELECT * FROM vaktbytte WHERE id = ?', [id], (error, result) => {
-      if (error) throw error;
-
-      callback(result[0]);
     });
   }
 
@@ -487,6 +501,19 @@ class EventService {
     connection.query('INSERT INTO passiv (userid, passivstart, passivend, event) values (?, ?, ?, ?)', [userid, start, end, true], (error, result) => {
       if (error) throw error;
     });
+
+    let startDate = start;
+    let endDate = end;
+
+    let seconds = (endDate.getTime() - startDate.getTime()) / 1000;
+    let mins = seconds / 60;
+    let hours = mins / 60;
+    let days = hours / 24;
+    console.log(Math.floor(days));
+
+    // let dager = start.getDate();
+    //
+    // userService.giveVaktpoeng(userid)
   }
 
   emptyEventRoles(eventid, callback) {
@@ -551,6 +578,83 @@ class EventService {
       if (error) throw error;
 
       callback(result);
+    });
+  }
+
+  getVaktbytte(id, callback) {
+    connection.query('SELECT * FROM vaktbytte WHERE id = ?', [id], (error, result) => {
+      if (error) throw error;
+
+      callback(result[0]);
+    });
+  }
+
+  getAllVaktbytter(callback) {
+    connection.query('SELECT vaktbytteid, Events.start, Events.end, event_rolle.eventid, a.id AS newUserid, b.id AS oldUserid, a.firstName AS newfirstName, a.lastName AS newlastName, b.firstName AS oldfirstName, b.lastName AS oldlastName, title, eventrolleid FROM Users a, Users b, event_rolle, vaktbytte, Events WHERE vaktbytte.newuserid = a.id AND vaktbytte.olduserid = b.id AND event_rolle.event_rolle_id = vaktbytte.eventrolleid AND event_rolle.eventid = Events.eventid AND adminOK = ?', [false], (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
+
+  setVaktbytte(eventrolleid, olduserid, newuserid, callback) {
+    connection.query('INSERT INTO vaktbytte (eventrolleid, olduserid, newuserid) values (?, ?, ?)', [eventrolleid, olduserid, newuserid], (error, result) => {
+      if (error) throw error;
+
+      callback();
+    });
+  }
+
+  confirmVaktbytte(userid, eventrolleid, start, end, callback) {
+    let timedate = new Date();
+    console.log(timedate);
+    connection.query('UPDATE event_rolle SET userid = ?, timecalled = ?, timeconfirmed = ?, confirmed = ? WHERE event_rolle_id = ?', [userid, timedate, null, false, eventrolleid], (error, result) => {
+      if (error) throw error;
+
+      callback();
+    });
+
+    connection.query('INSERT INTO passiv (userid, passivstart, passivend, event) values (?, ?, ?, ?)', [userid, start, end, true], (error, result) => {
+      if (error) throw error;
+    });
+  }
+
+  deleteVaktbytte(vaktbyttid, callback) {
+    connection.query('DELETE FROM vaktbytte WHERE vaktbytteid = ?', [vaktbytteid], (error, result) => {
+      if (error) throw error;
+
+      callback();
+    });
+  }
+
+  setVaktbytteConfirmed(vaktbytteid, callback) {
+    connection.query('UPDATE vaktbytte SET adminOK = ? WHERE vaktbytteid = ?', [true, vaktbytteid], (error, result) =>  {
+      if (error) throw error;
+
+      callback();
+    });
+  }
+
+  getPoints(callback) {
+    let today = new Date();
+    connection.query('SELECT * FROM event_rolle, Events WHERE event_rolle.eventid = Events.eventid AND Events.end < ? AND userid IS NOT NULL AND pointsgiven = ?', [today, false], (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
+
+  givePoints(userid, hours, eventrolleid, callback) {
+    connection.query('UPDATE Users SET vaktpoeng = vaktpoeng + ? WHERE id = ?', [hours, userid], (error, result) => {
+      if (error) throw error;
+
+      callback();
+    });
+
+    console.log(eventrolleid);
+
+    connection.query('UPDATE event_rolle SET pointsgiven = ? WHERE event_rolle_id = ?', [true, eventrolleid], (error, result) => {
+      if (error) throw error;
     });
   }
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Link, HashRouter, Switch, Route } from 'react-router-dom';
-import { userService } from './services';
+import { userService, eventService } from './services';
 import { mailService } from './mail';
 import { Menu, LoggedinMenu, AdminLoggedinMenu } from './menues';
 import { Login, Registration, Registered, ForgotPassword, PasswordSent, loggedin, updateUserDetails, selectUser } from './outlogged';
@@ -12,6 +12,18 @@ import { Stats } from './stats'
 import crypto from 'crypto';
 
 crypto.DEFAULT_ENCODING = 'hex';
+
+function checkPoints() {
+  eventService.getPoints((result) => {
+    let eventroller = result;
+    for (let eventrolle of eventroller) {
+      let hours = Math.floor((eventrolle.end.getTime() - eventrolle.start.getTime()) / 3600000);
+      eventService.givePoints(eventrolle.userid, hours, eventrolle.event_rolle_id, (result) => {
+
+      });
+    }
+  });
+}
 
 class ChangePassword extends React.Component {
   constructor(props) {
@@ -114,6 +126,7 @@ export function renderOutlogged() {
 }
 
 renderOutlogged();
+checkPoints();
 
 export function renderLogin(user) {
   ReactDOM.render((
@@ -129,6 +142,7 @@ export function renderLogin(user) {
           <Route exact path='/userdetails/:userId' component={UserDetails} />
           <Route exact path='/eventlist' component={EventList} />
           <Route exact path='/eventdetails/:eventId' component={EventDetails} />
+          <Route exact path='/changerole/:userId' component={ChangeRole} />
           <EventList />
         </Switch>
       </div>
@@ -154,7 +168,7 @@ export function renderAdminLogin(user) {
           <Route exact path='/editevent' component={EditEvent} />
           <Route exact path='/roles/:eventId' component={Roles} />
           <Route exact path='/stats' component={Stats} />
-          <Route exact path='/changerole' component={ChangeRole} />
+          <Route exact path='/changerole/:userId' component={ChangeRole} />
           <Requests />
         </Switch>
       </div>
