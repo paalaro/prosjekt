@@ -7,7 +7,8 @@ import { Menu, LoggedinMenu, AdminLoggedinMenu } from './menues';
 import { Login, Registration, Registered, ForgotPassword, PasswordSent, loggedin, updateUserDetails, selectUser } from './outlogged';
 import { Profile, MyProfile, EditProfile, checkOldSkills, ChangePassword } from './profile';
 import { Requests, UserListAdmin, UserList, UserDetails } from './users';
-import { EventList, EventDetails, CreateEvent, EditEvent, Roles, ChangeRole } from './events'
+import { EventList, CreateEvent, EditEvent, Roles, ChangeRole } from './events';
+import { EventDetails } from './eventdetails';
 import { Stats } from './stats'
 import crypto from 'crypto';
 

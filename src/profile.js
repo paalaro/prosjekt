@@ -99,7 +99,9 @@ export class Profile extends React.Component {
           Adress: {this.user.adress + ', ' + this.user.postalnumber + ' ' + this.city} <br />
           <br />
           Status: {status} <br />
-          <Link to='/editprofile'><button ref='editUser'>Endre</button></Link>
+          <button onClick={() =>
+            this.selectUser()
+          }>Endre opplysninger</button>
           <button ref='newpassword'>Send nytt passord på mail</button>
           {activateBtn}
         </div>
@@ -148,6 +150,11 @@ export class Profile extends React.Component {
 
     let dateTime = day + '/' + month + '/' + year;
     return(dateTime);
+  }
+
+  selectUser() {
+    localStorage.setItem('edituser', JSON.stringify(this.user));
+    this.props.history.push('/editprofile');
   }
 
   changeHandler(selectValue) {
@@ -346,7 +353,9 @@ export class MyProfile extends React.Component {
             </tbody>
           </table>
           <br />
-          <Link to='/editprofile'><button ref='editUser' className='editBtn'>Endre detaljer</button></Link>
+          <button onClick={() =>
+            this.selectUser()
+          }>Endre detaljer</button>
           <Link to='/changepassword'><button ref='changePassword' className='editBtn'>Bytt passord</button></Link>
         </div>
         <div>
@@ -393,6 +402,11 @@ export class MyProfile extends React.Component {
 
     let dateTime = day + '/' + month + '/' + year;
     return(dateTime);
+  }
+
+  selectUser() {
+    localStorage.setItem('edituser', JSON.stringify(this.user));
+    this.props.history.push('/editprofile');
   }
 
   changeHandler(selectValue) {
@@ -482,10 +496,10 @@ export class MyProfile extends React.Component {
 }
 
 export class EditProfile extends React.Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
 
-    this.user = selectedUser;
+    this.user = JSON.parse(localStorage.getItem('edituser'));
 
     this.state = {
       firstName: this.user.firstName,
@@ -509,17 +523,22 @@ export class EditProfile extends React.Component {
 
   render() {
     return(
-      <div>
-        <input name='firstName' ref='firstName' value={this.state.firstName} onChange={this.changeHandler('firstName').bind(this)} />
-        <input name='lastName' ref='lastName' value={this.state.lastName} onChange={this.changeHandler('lastName').bind(this)} />
-        <br />
-        <input name='phonenumber' ref='phonenumber' value={this.state.phonenumber} onChange={this.changeHandler('phonenumber').bind(this)} />
-        <input name='email' ref='email' value={this.state.email} onChange={this.changeHandler('email').bind(this)} />
-        <br />
-        <input name='adress' ref='adress' value={this.state.adress} onChange={this.changeHandler('adress').bind(this)} />
-        <input name='postalnumber' ref='postalnumber' maxLength='4' value={this.state.postalnumber} onChange={this.changeHandler('postalnumber').bind(this)} />
-        <br />
-        <button ref='editUserBtn'>Confirm</button>
+      <div className='centeredDiv'>
+        <div className='editProfileDiv'>
+          <h3>Endre opplysninger</h3>
+          <input name='firstName' ref='fname' value={this.state.firstName} onChange={this.changeHandler('firstName').bind(this)} />
+          <input name='lastName' ref='lname' value={this.state.lastName} onChange={this.changeHandler('lastName').bind(this)} />
+          <br />
+          <input name='phonenumber' ref='phonenumber' value={this.state.phonenumber} onChange={this.changeHandler('phonenumber').bind(this)} />
+          <input name='email' ref='email' value={this.state.email} onChange={this.changeHandler('email').bind(this)} />
+          <br />
+          <input name='adress' ref='adress' value={this.state.adress} onChange={this.changeHandler('adress').bind(this)} /> <br />
+          <input name='postalnumber' ref='postalnumber' className='regPostal' maxLength='4' value={this.state.postalnumber} onChange={this.changeHandler('postalnumber').bind(this)} />
+          <input ref="city" className='regCity' readOnly></input>
+          <br />
+          <button className='submitBtn' ref='editUserBtn'>Confirm</button>
+          <div style={{color: 'red'}} ref='alertDiv'></div>
+        </div>
       </div>
     );
   }
@@ -527,27 +546,63 @@ export class EditProfile extends React.Component {
   componentDidMount() {
     userService.getUser(loggedin.id, (result) => {
       this.user = result;
-      this.forceUpdate();
+      userService.getCity(this.refs.postalnumber.value, (result) => {
+        this.refs.city.value = result.poststed;
+        this.forceUpdate();
+      });
     });
 
     this.refs.postalnumber.oninput = () => {
-      userService.getCity(this.refs.postalnumber.value, (result) => {
-        if (result != undefined) {
-          this.city = result.poststed;
-        }
-      });
+      if (this.refs.postalnumber.value.length < 4) {
+        this.refs.city.value = '';
+      }
+
+      else {
+        userService.getCity(this.refs.postalnumber.value, (result) => {
+          if (result != undefined) {
+            this.refs.city.value = result.poststed;
+          }
+
+          else {
+            this.refs.city.value = 'IKKE GYLDIG POSTNUMMER';
+          }
+        });
+      }
     }
 
     this.refs.editUserBtn.onclick = () => {
-      userService.editProfile(selectedUser.id, this.refs.firstName.value, this.refs.lastName.value,
-                              Number(this.refs.phonenumber.value),
-                              this.refs.email.value, this.refs.adress.value, Number(this.refs.postalnumber.value),
-                              (result) => {
-        userService.getUser(selectedUser.id, (result) => {
-          updateUserDetails();
-          this.nextPath('/profile/' + selectedUser.id);
+      if (this.refs.fname.value == '' || this.refs.lname.value == '' || this.refs.adress.value == '' || this.refs.postalnumber.value == '' ||
+      this.refs.email.value == '' || this.refs.phonenumber.value == '') {
+        this.refs.alertDiv.textContent = 'Vennligst fyll ut alle feltene';
+      }
+
+      else if (this.refs.phonenumber.value.length != 8) {
+        this.refs.alertDiv.textContent = 'Telefonnummer må bestå av 8 siffer';
+      }
+
+      else if (this.refs.postalnumber.value.length != 4) {
+        this.refs.alertDiv.textContent = 'Postnummer må bestå av 4 siffer';
+      }
+
+      else {
+        let user = JSON.parse(localStorage.getItem('edituser'));
+
+        userService.getOtherUserbyMail(this.refs.email.value, user.id, (result) => {
+          if (result != undefined) {
+            this.refs.alertDiv.textContent = 'Det finnes allerede en annen bruker med denne epostadressen';
+          }
+
+          else {
+            userService.editProfile(user.id, this.refs.fname.value, this.refs.lname.value, Number(this.refs.phonenumber.value),
+                                    this.refs.email.value, this.refs.adress.value, Number(this.refs.postalnumber.value), (result) => {
+              userService.getUser(user.id, (result) => {
+                updateUserDetails();
+                this.nextPath('/profile/' + user.id);
+              });
+            });
+          }
         });
-      });
+      }
     }
   }
 }

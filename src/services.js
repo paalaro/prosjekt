@@ -31,6 +31,8 @@ function connect() {
 }
 connect();
 
+export { connection };
+
 // Class that performs database queries related to customers
 class UserService {
   getUsers(callback) {
@@ -74,6 +76,22 @@ class UserService {
 
   getUserbyMail(mail, callback) {
     connection.query('SELECT * FROM Users WHERE email=?', [mail], (error, result) => {
+      if (error) throw error;
+
+      callback(result[0]);
+    });
+  }
+
+  getOtherUserbyMail(mail, userid, callback) {
+    connection.query('SELECT * FROM Users WHERE email=? AND id <> ?', [mail, userid], (error, result) => {
+      if (error) throw error;
+
+      callback(result[0]);
+    });
+  }
+
+  getUserbyUsername(username, callback) {
+    connection.query('SELECT * FROM Users WHERE username=?', [username], (error, result) => {
       if (error) throw error;
 
       callback(result[0]);
@@ -340,8 +358,8 @@ class EventService {
     });
   }
 
-  createEvent(title, text, start, end, oppmote, adress, postalnumber, equipment, callback) {
-    connection.query('INSERT INTO Events (title, text, start, end, oppmote, adress, postalnumber, equipment) values (?, ?, ?, ?, ?, ?, ?, ?)', [title, text, start, end, oppmote, adress, postalnumber, equipment], (error, result) => {
+  createEvent(title, text, start, end, oppmote, adress, postalnumber, equipment, contactperson, contactphone, callback) {
+    connection.query('INSERT INTO Events (title, text, start, end, oppmote, adress, postalnumber, equipment, contact, phone) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [title, text, start, end, oppmote, adress, postalnumber, equipment, contactperson, contactphone], (error, result) => {
       if (error) throw error;
 
       callback(result);
@@ -404,6 +422,15 @@ class EventService {
     });
   }
 
+  getUpcomingUserEventRoller(userid, callback) {
+    let today = new Date();
+    connection.query('SELECT * FROM event_rolle, Roller, Events WHERE event_rolle.rolleid = Roller.rolleid AND event_rolle.eventid = Events.eventid AND userid = ? AND end >= ?', [userid, today], (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
+
   getOldUserEventRoller(userid, callback) {
     let today = new Date();
     connection.query('SELECT * FROM event_rolle, Roller, Events WHERE event_rolle.rolleid = Roller.rolleid AND event_rolle.eventid = Events.eventid AND userid = ? AND Events.end <= ?', [userid, today], (error, result) => {
@@ -414,7 +441,15 @@ class EventService {
   }
 
   getEventRollernoUser(eventid, callback) {
-    connection.query('SELECT event_rolle_id, userid, eventid, rollenavn, event_rolle.rolleid, COUNT(skillid) as antall FROM event_rolle, Roller, roller_skills WHERE event_rolle.rolleid = Roller.rolleid AND event_rolle.rolleid = roller_skills.rolleid AND event_rolle.userid IS NULL AND event_rolle.eventid = ? GROUP BY event_rolle_id ORDER BY `antall` DESC', [eventid], (error, result) => {
+    connection.query('SELECT event_rolle_id, userid, eventid, rollenavn, event_rolle.rolleid, COUNT(skillid) as antall FROM ((Roller LEFT JOIN event_rolle ON event_rolle.rolleid = Roller.rolleid) LEFT JOIN roller_skills ON roller_skills.rolleid = event_rolle.rolleid) WHERE event_rolle.userid IS NULL AND event_rolle.eventid = ? GROUP BY event_rolle_id ORDER BY `antall` DESC', [eventid], (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
+
+  getEventRollerwithnoUser(eventid, callback) {
+    connection.query('SELECT * FROM event_rolle, Roller WHERE event_rolle.rolleid = Roller.rolleid AND eventid = ?', [eventid], (error, result) => {
       if (error) throw error;
 
       callback(result);
@@ -501,8 +536,8 @@ class EventService {
     });
   }
 
-  getUsersSkillsofRoles(rolleid, userid, callback) {
-    connection.query('SELECT COUNT(*) AS antall, userid FROM user_skills, roller_skills WHERE user_skills.skillid = roller_skills.skillid and rolleid = ? AND userid = ?', [rolleid, userid], (error, result) => {
+  getUsersSkillsofRoles(rolleid, userid, date, callback) {
+    connection.query('SELECT COUNT(*) AS antall, userid FROM user_skills, roller_skills WHERE user_skills.skillid = roller_skills.skillid and rolleid = ? AND userid = ? AND validto > ?', [rolleid, userid, date], (error, result) => {
       if (error) throw error;
 
       callback(result[0]);
@@ -520,19 +555,6 @@ class EventService {
     connection.query('INSERT INTO passiv (userid, passivstart, passivend, event) values (?, ?, ?, ?)', [userid, start, end, true], (error, result) => {
       if (error) throw error;
     });
-
-    let startDate = start;
-    let endDate = end;
-
-    let seconds = (endDate.getTime() - startDate.getTime()) / 1000;
-    let mins = seconds / 60;
-    let hours = mins / 60;
-    let days = hours / 24;
-    console.log(Math.floor(days));
-
-    // let dager = start.getDate();
-    //
-    // userService.giveVaktpoeng(userid)
   }
 
   emptyEventRoles(eventid, callback) {

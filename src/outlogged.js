@@ -27,6 +27,7 @@ export class Login extends React.Component {
     return (
         <div className='centeredDiv'>
           <div className='loginDiv'>
+
             <h3>Login</h3> <br /> <br /> <br /> <br /> <br /> <br />
             <input ref='username' className='loginInput' type='text' placeholder='Brukernavn' /> <br />
             <input ref='password' className='loginInput' type='password' placeholder='Passord' /> <br />
@@ -79,10 +80,6 @@ export class Registration extends React.Component {
   constructor() {
     super();
 
-    this.state = {
-      city: ''
-    }
-
     this.password = '';
   }
 
@@ -95,13 +92,14 @@ export class Registration extends React.Component {
         <input ref="lname" className='regLastName' placeholder="Etternavn"></input><br/>
         <input ref="adress" placeholder="Gateadresse"></input><br/>
         <input ref="postalnumber" className='regPostal' placeholder="Postnummer" maxLength='4'></input>
-        <input ref="city" name="city" className='regCity' placeholder='Poststed' value={this.state.city} type='text' readOnly></input><br/>
+        <input ref="city" name="city" className='regCity' placeholder='Poststed' type='text' readOnly></input><br/>
         <input ref="tlf" placeholder="Telefon"></input><br/>
         <input ref="email" placeholder="Email"></input><br/>
         <input ref="username" placeholder="Brukernavn"></input><br/>
         <input ref="password1" placeholder="Passord" type='password'></input><br/>
         <input ref="password2" placeholder="Bekreft passord" type='password'></input><br/>
         <button ref="newUserButton" className='submitBtn'>Registrer</button>
+        <div style={{color: 'red'}}ref="alertDiv"></div>
       </div>
      </div>
    );
@@ -130,26 +128,54 @@ export class Registration extends React.Component {
      }
    }
 
-   this.refs.newUserButton.onclick = () => {
-     if(this.refs.password1.value != this.refs.password2.value) {
-       console.log('The passwords must match');
-     }
+    this.refs.newUserButton.onclick = () => {
+      this.refs.alertDiv.textContent = '';
+      
+      if (this.refs.fname.value == '' || this.refs.lname.value == '' || this.refs.adress.value == '' || this.refs.postalnumber.value == '' ||
+      this.refs.email.value == '' || this.refs.username.value == '' || this.refs.password1.value == '' || this.refs.password2.value == '') {
+        this.refs.alertDiv.textContent = 'Vennligst fyll ut alle feltene';
+      }
 
-     else {
-       crypto.pbkdf2(this.refs.password1.value, 'RødeKors', 100, 64, 'sha512', (err, derivedKey) => {
-         if (err) throw err;
+      else if (this.refs.tlf.value.length != 8) {
+        this.refs.alertDiv.textContent = 'Telefonnummer må bestå av 8 siffer';
+      }
 
-         this.password = derivedKey;
+      else if(this.refs.password1.value != this.refs.password2.value) {
+        this.refs.alertDiv.textContent = 'Passordene er ikke like';
+      }
 
-         userService.addUser(this.refs.fname.value, this.refs.lname.value,
-           this.refs.adress.value, Number(this.refs.postalnumber.value), Number(this.refs.tlf.value), this.refs.email.value, this.refs.username.value,
-           this.password, (result) => {
-             this.nextPath('/registered');
-         });
-       });
-     }
-   }
- }
+      else {
+        userService.getUserbyMail(this.refs.email.value, (result) => {
+          if (result != undefined) {
+            this.refs.alertDiv.textContent = 'Det finnes allerede en bruker med denne epostadressen';
+          }
+
+          else {
+            userService.getUserbyUsername(this.refs.username.value, (result) => {
+              if (result != undefined) {
+                this.refs.alertDiv.textContent = 'Det finnes allerede en bruker med dette brukernavnet';
+              }
+
+              else {
+                crypto.pbkdf2(this.refs.password1.value, 'RødeKors', 100, 64, 'sha512', (err, derivedKey) => {
+                  if (err) throw err;
+
+                  this.password = derivedKey;
+
+                  userService.addUser(this.refs.fname.value, this.refs.lname.value,
+                    this.refs.adress.value, Number(this.refs.postalnumber.value), Number(this.refs.tlf.value), this.refs.email.value, this.refs.username.value,
+                    this.password, (result) => {
+                      this.nextPath('/registered');
+                    });
+                  });
+              }
+            });
+
+          }
+        });
+      }
+    }
+  }
 }
 
 export class Registered extends React.Component {
