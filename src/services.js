@@ -314,6 +314,16 @@ class EventService {
     });
   }
 
+  getUpcomingEvents(callback) {
+    let today = new Date();
+
+    connection.query('SELECT * FROM Events WHERE end >= ? ORDER BY start', [today], (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
+
   getEvent(id, callback) {
     connection.query('SELECT * FROM Events WHERE eventid = ?', [id], (error, result) => {
       if (error) throw error;
@@ -330,8 +340,8 @@ class EventService {
     });
   }
 
-  createEvent(title, text, start, end, adress, postalnumber, callback) {
-    connection.query('INSERT INTO Events (title, text, start, end, adress, postalnumber) values (?, ?, ?, ?, ?, ?)', [title, text, start, end, adress, postalnumber], (error, result) => {
+  createEvent(title, text, start, end, oppmote, adress, postalnumber, equipment, callback) {
+    connection.query('INSERT INTO Events (title, text, start, end, oppmote, adress, postalnumber, equipment) values (?, ?, ?, ?, ?, ?, ?, ?)', [title, text, start, end, oppmote, adress, postalnumber, equipment], (error, result) => {
       if (error) throw error;
 
       callback(result);
@@ -388,6 +398,15 @@ class EventService {
 
   getUserEventRoller(userid, callback) {
     connection.query('SELECT * FROM event_rolle, Roller, Events WHERE event_rolle.rolleid = Roller.rolleid AND event_rolle.eventid = Events.eventid AND userid = ?', [userid], (error, result) => {
+      if (error) throw error;
+
+      callback(result);
+    });
+  }
+
+  getOldUserEventRoller(userid, callback) {
+    let today = new Date();
+    connection.query('SELECT * FROM event_rolle, Roller, Events WHERE event_rolle.rolleid = Roller.rolleid AND event_rolle.eventid = Events.eventid AND userid = ? AND Events.end <= ?', [userid, today], (error, result) => {
       if (error) throw error;
 
       callback(result);

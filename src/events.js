@@ -88,21 +88,31 @@ export class EventList extends React.Component {
     }
 
     if (this.user.admin == true) {
-      createEventBtn = <button onClick={() => this.nextPath('/createevent')}>Lag arrangement</button>;
+      createEventBtn = <button className='editBtn' onClick={() => this.nextPath('/createevent')}>Lag arrangement</button>;
     }
 
     return(
       <div>
-        <div style={{height: 400}}>
-           <BigCalendar
-             events={this.evntList}
-             showMultiDayTimes
-             defaultDate={new Date()}
-             selectAble ={true}
-             onSelectEvent={event => this.props.history.push('/eventdetails/' + event.eventid)
-         }
-             />
+        <div className='columns'>
+          <div className='calendar'>
+             <BigCalendar
+               events={this.evntList}
+               showMultiDayTimes
+               defaultDate={new Date()}
+               selectAble ={true}
+               onSelectEvent={event => this.props.history.push('/eventdetails/' + event.eventid)
+           }
+               />
+          </div>
+         <div className='userRoles'>
+         <h3>Dine kommende vakter</h3>
+          <table>
+            <tbody>
+              {userRoles}
+            </tbody>
+          </table>
          </div>
+        </div>
          {createEventBtn}
          <div className='tableList'>
            <table className='eventTable'>
@@ -119,13 +129,7 @@ export class EventList extends React.Component {
            </table>
            <br />
          </div>
-         <div>
-          <table>
-            <tbody>
-              {userRoles}
-            </tbody>
-          </table>
-         </div>
+
          <div>
           <h4>Dine passivperioder</h4>
           <table>
@@ -178,15 +182,18 @@ export class EventList extends React.Component {
   }
 
   componentDidMount () {
-    eventService.getAllEvents((result) => {
+    eventService.getUpcomingEvents((result) => {
       this.evntList = result;
       userService.getUserSkills(this.user.id, (result) => {
         this.userSkills = result;
         eventService.getUserEventRoller(this.user.id, (result) => {
           this.userRoles = result;
-          userService.getPassivNoEvent(this.user.id, (result) => {
-            this.userPassiv = result;
-            this.forceUpdate();
+          eventService.getOldUserEventRoller(this.user.id, (result) => {
+            this.oldUserRoles = result;
+            userService.getPassivNoEvent(this.user.id, (result) => {
+              this.userPassiv = result;
+              this.forceUpdate();
+            });
           });
         });
       })
@@ -210,6 +217,8 @@ export class EventDetails extends React.Component {
     this.usedUsers = [];
     this.usedEventRoles = [];
     this.emailRecievers = [];
+    this.contactPerson = {};
+    this.contactPhone = {};
 
     this.id = props.match.params.eventId;
   }
@@ -391,7 +400,9 @@ export class EventDetails extends React.Component {
           Oppmøtetidspunkt: {this.oppmote} <br />
           Bekrivelse: {this.evnt.text} <br />
           Adresse: {this.evnt.adress}, {this.evnt.postalnumber} {this.city} <br />
+          Utstyr: {this.evnt.equipment} <br />
           <br />
+          Kontaktperson: {this.evnt.contact}, {this.evnt.phone} <br /> <br />
           {interessert} <br />
         </div>
         {editBtn}
@@ -957,36 +968,12 @@ export class Roles extends React.Component {
   }
 }
 
-export class EventDetailsAdmin extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.arrangement = {};
-
-    this.id = props.match.params.eventId;
-  }
-
-  render() {
-    return(
-      <div>
-        {this.arrangement.title}
-      </div>
-    );
-  }
-
-  componentDidMount() {
-    eventService.getEvent(this.id, (result) => {
-      this.arrangement = result;
-      this.forceUpdate();
-    });
-  }
-}
-
 export class CreateEvent extends React.Component {
   constructor(props) {
     super(props);
 
     this.vaktmaler = [];
+    this.equipment = {};
 
     this.state = {};
   }
@@ -1000,38 +987,48 @@ export class CreateEvent extends React.Component {
     }
 
     return(
-      <div>
-        <input ref='title' type='text' placeholder='Tittel'/> <br />
-        <input ref='text' type='text' placeholder='Beskrivelse'/> <br />
-        <input ref='start' type='datetime-local' placeholder='Startdato'/> <br />
-        <input ref='end' type='datetime-local' placeholder='Sluttdato'/> <br />
-        <input ref='adresse' type='text' placeholder='Adresse'/> <br />
-        <input ref='postalnumber' type='text' maxLength='4' placeholder='Postnr'/> <br />
-        <input type='time' />
-        <div>
-          <h4>Vaktmal</h4> <br />
+      <div className='centeredDiv'>
+        <div className='createEventDiv'>
+          <h3>Opprett arrangement</h3>
+          Tittel: <input ref='title' type='text' /> <br />
+          Bekskrivelse: <input ref='text' type='text' /> <br />
+          Arrangementstart: <input ref='start' type='datetime-local' placeholder='Startdato' /> <br />
+          Arrangementslutt: <input ref='end' type='datetime-local' placeholder='Sluttdato' /> <br />
+          Oppmøtetidspunkt: <input ref='oppmote' type='time' /> <br />
+          Adresse: <input ref='adresse' type='text' /> <br />
+          Postnr: <input ref='postalnumber' type='text' maxLength='4' /> <br />
+          Utstyrsliste: <input ref='equipment' type='text' />
           <VirtualizedSelect
             autoFocus
+            placeholder='Velg en vaktmal'
             clearable={true}
             removeSelected={true}
             options={vaktmalOptions}
             onChange={(selectValue) => this.setState({ selectValue })}
             value={selectValue}
+            className='createEventSelect'
           />
+          <button onClick={() => this.registerEvent(selectValue)}>Registrer arrangement</button>
         </div>
-        <button onClick={() => this.registerEvent(selectValue)}>Registrer arrangement</button>
       </div>
     );
   }
 
   registerEvent(selectValue) {
-      eventService.createEvent(this.refs.title.value, this.refs.text.value, this.refs.start.value, this.refs.end.value, this.refs.adresse.value, this.refs.postalnumber.value, (result) => {
-        this.nextId = result.insertId;
-        eventService.getRoller(selectValue.value, (result) => {
-          this.registerRoller(result, this.nextId);
-          this.props.history.push('/roles/' + this.nextId);
-        });
+    if (this.refs.equipment.value == '') {
+      this.equipment = 'Ingenting';
+    }
+    else {
+      this.equipment = this.refs.equipment.value;
+    }
+
+    eventService.createEvent(this.refs.title.value, this.refs.text.value, this.refs.start.value, this.refs.end.value, this.refs.oppmote.value, this.refs.adresse.value, this.refs.postalnumber.value, this.equipment, (result) => {
+      this.nextId = result.insertId;
+      eventService.getRoller(selectValue.value, (result) => {
+        this.registerRoller(result, this.nextId);
+        this.props.history.push('/roles/' + this.nextId);
       });
+    });
   }
 
   registerRoller(roller, eventid) {
@@ -1058,16 +1055,20 @@ export class EditEvent extends React.Component {
 
     let startTime = this.evnt.start;
     let endTime = this.evnt.end;
+    let oppmoteTime = this.evnt.oppmote;
     this.startTime = startTime.slice(0, -1);
     this.endTime = endTime.slice(0, -1);
+    this.oppmote = oppmoteTime.slice(0, -3);
 
     this.state = {
       title: this.evnt.title,
       text: this.evnt.text,
       start: this.startTime,
       end: this.endTime,
+      oppmote: this.oppmote,
       adress: this.evnt.adress,
       postalnumber: this.evnt.postalnumber,
+      equipment: this.evnt.equipment
     };
   }
 
@@ -1109,17 +1110,19 @@ export class EditEvent extends React.Component {
 
   render() {
     return(
-      <div>
-        <input name='title' ref='title' value={this.state.title} onChange={this.onFieldChange('title').bind(this)} />
-        <input name='text' ref='text' value={this.state.text} onChange={this.onFieldChange('text').bind(this)} />
-        <br />
-        <input name='start' ref='start' type='datetime-local' value={this.state.start} onChange={this.onFieldChange('start').bind(this)} />
-        <input name='end' ref='end' type='datetime-local' value={this.state.end} onChange={this.onFieldChange('end').bind(this)} />
-        <br />
-        <input name='adress' ref='adress' value={this.state.adress} onChange={this.onFieldChange('adress').bind(this)} />
-        <input name='postalnumber' ref='postalnumber' maxLength='4' value={this.state.postalnumber} onChange={this.onFieldChange('postalnumber').bind(this)} />
-        <br />
-        <button ref='editEventBtn'>Confirm</button>
+      <div className='centeredDiv'>
+        <div className='registrationDiv'>
+          <h3>Endre arrangementinfo</h3>
+          Tittel: <input name='title' ref='title' value={this.state.title} onChange={this.onFieldChange('title').bind(this)} /> <br />
+          Beskrivelse: <input name='text' ref='text' value={this.state.text} onChange={this.onFieldChange('text').bind(this)} /> <br />
+          Start: <input name='start' ref='start' type='datetime-local' value={this.state.start} onChange={this.onFieldChange('start').bind(this)} /> <br />
+          Slutt: <input name='end' ref='end' type='datetime-local' value={this.state.end} onChange={this.onFieldChange('end').bind(this)} /> <br />
+          Oppmøte: <input name='oppmote' ref='oppmote' type='time' value={this.oppmote} onChange={this.onFieldChange('oppmote').bind(this)} /> <br />
+          Adresse: <input name='adress' ref='adress' value={this.state.adress} onChange={this.onFieldChange('adress').bind(this)} /> <br />
+          Postnr: <input name='postalnumber' ref='postalnumber' maxLength='4' value={this.state.postalnumber} onChange={this.onFieldChange('postalnumber').bind(this)} /> <br />
+          Utstyr: <input name='equipment' ref='equipment' value={this.state.equipment} onChange={this.onFieldChange('equipment').bind(this)} />
+          <button className='submitBtn' ref='editEventBtn'>Confirm</button>
+        </div>
       </div>
     );
   }

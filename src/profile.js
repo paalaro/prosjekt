@@ -482,7 +482,7 @@ export class MyProfile extends React.Component {
 }
 
 export class EditProfile extends React.Component {
-constructor() {
+  constructor() {
     super();
 
     this.user = selectedUser;
@@ -547,6 +547,65 @@ constructor() {
           updateUserDetails();
           this.nextPath('/profile/' + selectedUser.id);
         });
+      });
+    }
+  }
+}
+
+export class ChangePassword extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.user = loggedin;
+  }
+  render() {
+    return(
+      <div>
+        Change password: <br/>
+        <input ref='oldpw' placeholder='Current password' type='password'></input> <br/>
+        <input ref='newpw' placeholder='New password' type='password'></input> <br/>
+        <input ref='confirmnewpw' placeholder='Confirm new password' type='password'></input> <br/>
+        <button ref='submitnewpw'>Change password</button>
+      </div>
+    )
+  }
+
+  nextPath(path) {
+    this.props.history.push(path);
+  }
+
+  componentDidMount() {
+    this.refs.submitnewpw.onclick = () => {
+
+      crypto.pbkdf2(this.refs.oldpw.value, 'RødeKors', 100, 64, 'sha512', (err, derivedKey) => {
+        if (err) throw err;
+
+        this.oldpw = derivedKey;
+
+        if (this.user.passw != this.oldpw) {
+          console.log('Det gamle passordet stemmer ikke');
+        }
+
+        else {
+          if(this.refs.newpw.value != this.refs.confirmnewpw.value) {
+            console.log('De nye passordene stemmer ikke');
+          }
+
+          else {
+            crypto.pbkdf2(this.refs.newpw.value, 'RødeKors', 100, 64, 'sha512', (err, derivedKey) => {
+              if (err) throw err;
+
+              this.newpw = derivedKey;
+
+              userService.changePassword(this.user.id, this.newpw, (result) => {
+                userService.getUser(this.user.id, (result) => {
+                  updateUserDetails();
+                  this.nextPath('/profile/' + this.user.id);
+                });
+              });
+            });
+          }
+        }
       });
     }
   }

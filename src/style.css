@@ -224,6 +224,16 @@ h3 {
   padding: 10px;
 }
 
+.createEventDiv {
+  margin: 0 auto;
+  text-align: center;
+  width: 60%;
+  height: 700px;
+  border-radius: 25px;
+  border: 2px solid gray;
+  padding: 10px;
+}
+
 .submitBtn:hover {
   background-color: #45a049;
 }
@@ -324,6 +334,34 @@ h3 {
 
 .row{
  clear: left;
+}
+
+.createEventSelect {
+  width: 75%;
+  text-align: left;
+  margin: auto;
+}
+
+.columns:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.calendar {
+  margin-left: 30px;
+  margin-right: 25px;
+  margin-bottom: 25px;
+  width:500px;
+  height: 400px;
+  float:left;
+}
+
+.userRoles {
+  float:left;
+  width: 40%;
+  padding: 15px;
+  margin-left: 10%;
 }
 
 .col-1 {width: 8.33%}
