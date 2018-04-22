@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link, NavLink, HashRouter, Switch, Route } from 'react-router-dom';
-import { userService } from './services';
+import { userService } from './services/userservice';
+import { eventService } from './services/eventservice';
+import { skillService } from './services/skillservice';
 
 export class Stats extends React.Component {
   constructor(props) {

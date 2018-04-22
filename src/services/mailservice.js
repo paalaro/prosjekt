@@ -1,4 +1,6 @@
-import { userService, eventService } from './services';
+import { userService } from './userservice';
+import { eventService } from './eventservice';
+import { skillService } from './skillservice';
 
 class MailService {
   sendMail(recieverAdress, mailSubject, mailText) {

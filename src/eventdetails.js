@@ -1,7 +1,9 @@
 import React from 'react';
 import { Link, HashRouter, Switch, Route } from 'react-router-dom';
-import { eventService, userService, skillService } from './services';
-import { mailService } from './mail';
+import { userService } from './services/userservice';
+import { eventService } from './services/eventservice';
+import { skillService } from './services/skillservice';
+import { mailService } from './services/mailservice';
 import { loggedin } from './outlogged';
 import BigCalendar from 'react-big-calendar'
 import moment from 'moment';

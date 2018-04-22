@@ -1,9 +1,14 @@
 import React from 'react';
 import { Link, HashRouter, Switch, Route } from 'react-router-dom';
-import { userService, skillService } from './services';
+import { userService } from './services/userservice';
+import { eventService } from './services/eventservice';
+import { skillService } from './services/skillservice';
 import { loggedin, updateUserDetails } from './outlogged';
 import { history } from './app';
 import VirtualizedSelect from 'react-virtualized-select';
+import crypto from 'crypto';
+
+crypto.DEFAULT_ENCODING = 'hex';
 
 let selectedUser = {};
 let refNr = 0;

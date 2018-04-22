@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link, HashRouter, Switch, Route } from 'react-router-dom';
-import { userService } from './services';
+import { userService } from './services/userservice';
+import { eventService } from './services/eventservice';
+import { skillService } from './services/skillservice';
 import { renderLogin, renderAdminLogin } from './app';
 import crypto from 'crypto';
 
@@ -130,7 +132,7 @@ export class Registration extends React.Component {
 
     this.refs.newUserButton.onclick = () => {
       this.refs.alertDiv.textContent = '';
-      
+
       if (this.refs.fname.value == '' || this.refs.lname.value == '' || this.refs.adress.value == '' || this.refs.postalnumber.value == '' ||
       this.refs.email.value == '' || this.refs.username.value == '' || this.refs.password1.value == '' || this.refs.password2.value == '') {
         this.refs.alertDiv.textContent = 'Vennligst fyll ut alle feltene';

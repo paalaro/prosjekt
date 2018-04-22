@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link, HashRouter, Switch, Route } from 'react-router-dom';
-import { userService } from './services';
+import { userService } from './services/userservice';
+import { eventService } from './services/eventservice';
+import { skillService } from './services/skillservice';
 import loggedinUser from './app';
 import { deselectUser } from './outlogged';
 import { renderOutlogged } from './app';

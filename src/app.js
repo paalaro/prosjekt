@@ -1,8 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Link, HashRouter, Switch, Route } from 'react-router-dom';
-import { userService, eventService } from './services';
-import { mailService } from './mail';
+import { userService } from './services/userservice';
+import { eventService } from './services/eventservice';
+import { skillService } from './services/skillservice';
+import { mailService } from './services/mailservice';
 import { Menu, LoggedinMenu, AdminLoggedinMenu } from './menues';
 import { Login, Registration, Registered, ForgotPassword, PasswordSent, loggedin, updateUserDetails, selectUser } from './outlogged';
 import { Profile, MyProfile, EditProfile, checkOldSkills, ChangePassword } from './profile';
@@ -11,6 +13,8 @@ import { EventList, CreateEvent, EditEvent, Roles, ChangeRole } from './events';
 import { EventDetails } from './eventdetails';
 import { Stats } from './stats'
 import crypto from 'crypto';
+
+
 
 crypto.DEFAULT_ENCODING = 'hex';
 
