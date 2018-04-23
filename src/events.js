@@ -53,10 +53,10 @@ export class EventList extends React.Component { // Arrangementframside med kale
           <td onClick={() => this.props.history.push('/eventdetails/' + rolle.eventid)} className='tableLines'>{rolle.title}</td>
           <td className='tableLines' onClick={() => this.props.history.push('/eventdetails/' + rolle.eventid)}>{rolle.rollenavn}</td>
           <td className='tableLines' onClick={() => this.props.history.push('/eventdetails/' + rolle.eventid)}>{rolle.start.toLocaleString()}</td>
-          <td className='tableLines'><button onClick={() =>
+          <td className='tableLines'><button className='editBtn' onClick={() =>
             this.confirmRole(rolle.event_rolle_id)
           }>Godkjenn</button></td>
-          <td className='tableLines'><button onClick={() =>
+          <td className='tableLines'><button className='editBtn' onClick={() =>
           this.goToRoleChange(rolle)}>Bytt vakt</button></td>
           </tr>);
       }
@@ -67,7 +67,7 @@ export class EventList extends React.Component { // Arrangementframside med kale
           <td className='tableLines' onClick={() => this.props.history.push('/eventdetails/' + rolle.eventid)}>{rolle.rollenavn}</td>
           <td className='tableLines'>{rolle.start.toLocaleString()}</td>
           <td className='tableLines'>Godkjent</td>
-          <td className='tableLines'><button onClick={() =>
+          <td className='tableLines'><button className='editBtn' onClick={() =>
           this.goToRoleChange(rolle)}>Bytt vakt</button></td>
           </tr>);
       }
@@ -635,13 +635,13 @@ export class ChangeRole extends React.Component { // Vaktbytte
 
   render() {
     return(
-      <div>
+      <div className='wrapper3'>
         <h4>Bytte bort vakt</h4>
         <div ref='infoDiv'>
           Skriv inn mailadresse til personen du har avtalt å bytte vakt med her. Administrator må godkjenne vaktbyttet.
         </div>
         <div ref='inputDiv'>
-          <input type='text' ref='vaktbyttemail'/><button ref='vaktbytteBtn'>Bytt vakt</button>
+          <input type='text' ref='vaktbyttemail'/><button className='editBtn' ref='vaktbytteBtn'>Bytt vakt</button>
         </div>
         <div ref='alertDiv'></div>
       </div>

@@ -187,7 +187,7 @@ class EventService {
   }
 
   getInterestedUsers(eventid, callback) {
-    connection.query('SELECT * FROM interesse, Users WHERE interesse.userid = Users.id AND eventid = ? ORDER BY vaktpoeng DESC', [eventid], (error, result) => {
+    connection.query('SELECT * FROM interesse, Users WHERE interesse.userid = Users.id AND eventid = ? AND Users.aktivert = ? ORDER BY vaktpoeng DESC', [eventid, true], (error, result) => {
       if (error) throw error;
 
       callback(result);
@@ -195,7 +195,7 @@ class EventService {
   }
 
   getAllUsersByVaktpoeng(callback) {
-    connection.query('SELECT * FROM Users ORDER BY vaktpoeng', (error, result) => {
+    connection.query('SELECT * FROM Users WHERE aktivert = ? ORDER BY vaktpoeng', [true], (error, result) => {
       if (error) throw error;
 
       callback(result);
@@ -359,7 +359,7 @@ class EventService {
 
   getPoints(callback) {
     let today = new Date();
-    
+
     connection.query('SELECT * FROM event_rolle, Events WHERE event_rolle.eventid = Events.eventid AND Events.end < ? AND userid IS NOT NULL AND pointsgiven = ?', [today, false], (error, result) => {
       if (error) throw error;
 

@@ -81,8 +81,10 @@ export class EventDetails extends React.Component { //Side for å vise frem og e
         fordelRollerBtn = <button className='editBtn' onClick={() => this.giveRoles()}>Fordel roller</button>;
       }
 
+      // Mulighet for knapp til å fjerne personer fra rollene på dette arrangementet
+
       // if (this.eventRoller[0] != undefined) {
-      //   emptyRolesBtn = <button onClick={() => // Mulighet for knapp til å fjerne personer fra rollene på dette arrangementet
+      //   emptyRolesBtn = <button className='editBtn' onClick={() =>
       //     eventService.emptyEventRoles(this.evnt.eventid, (result) => {
       //       userService.deleteAllEventPassiv(this.evnt.start, this.evnt.end, (result) => {
       //         eventService.getEventRoller(this.evnt.eventid, (result) => {  // Oppdateres rollene for arrangementet
@@ -125,8 +127,8 @@ export class EventDetails extends React.Component { //Side for å vise frem og e
               <td> { rolle.firstName } {rolle.lastName}</td>
               <td> { rolle.timecalled.toLocaleString().slice(0, -3) } </td>
               <td>Ikke godkjent</td>
-              <td><button onClick={() => this.confirmRole(rolle.event_rolle_id)}>Godkjenn</button></td>
-              <td><button onClick={() => this.goToRoleChange(rolle)}>Bytt vakt</button></td></tr>);
+              <td><button className='editBtn' onClick={() => this.confirmRole(rolle.event_rolle_id)}>Godkjenn</button></td>
+              <td><button className='editBtn' onClick={() => this.goToRoleChange(rolle)}>Bytt vakt</button></td></tr>);
           }
 
           else {
@@ -150,7 +152,7 @@ export class EventDetails extends React.Component { //Side for å vise frem og e
               <td> { rolle.firstName } {rolle.lastName}</td>
               <td> { rolle.timecalled.toLocaleString().slice(0, -3) }</td>
               <td>{ rolle.timeconfirmed.toLocaleString().slice(0, -3) }</td>
-              <td><button onClick={() => this.goToRoleChange(rolle)}>Bytt vakt</button></td></tr>);
+              <td><button className='editBtn' onClick={() => this.goToRoleChange(rolle)}>Bytt vakt</button></td></tr>);
           }
 
           else {
@@ -168,8 +170,8 @@ export class EventDetails extends React.Component { //Side for å vise frem og e
               <td> { rolle.firstName } {rolle.lastName}</td>
               <td> { rolle.timecalled.toLocaleString().slice(0, -3) } </td>
               <td>Ikke godkjent</td>
-              <td><button onClick={() => this.confirmRole(rolle.event_rolle_id)}>Godkjenn</button></td>
-              <td><button onClick={() => this.goToRoleChange(rolle)}>Bytt vakt</button></td></tr>);
+              <td><button className='editBtn' onClick={() => this.confirmRole(rolle.event_rolle_id)}>Godkjenn</button></td>
+              <td><button className='editBtn' onClick={() => this.goToRoleChange(rolle)}>Bytt vakt</button></td></tr>);
           }
 
           else {
