@@ -72,8 +72,10 @@ export class EventDetails extends React.Component { //Side for å vise frem og e
     }
 
     if (this.user.admin == true) { // Knapper som skal skrives til siden dersom innlogget bruker er administrator
-      rolleBtn = <button onClick={() => this.props.history.push('/roles/' + this.evnt.eventid)}>Roller</button>;
-      editBtn = <button onClick={() => this.props.history.push('/editevent')}>Endre detaljer</button>;
+      if (this.evnt.end >= today) {
+        rolleBtn = <button onClick={() => this.props.history.push('/roles/' + this.evnt.eventid)}>Roller</button>;
+        editBtn = <button onClick={() => this.props.history.push('/editevent')}>Endre detaljer</button>;
+      }
 
       if (this.eventRollernoUser.length != 0) { // Knapp for å fordele roller vises dersom det fortsatt finnes roller som ikke har blitt tildelt en person
         fordelRollerBtn = <button onClick={() => this.giveRoles()}>Fordel roller</button>;
@@ -123,6 +125,7 @@ export class EventDetails extends React.Component { //Side for å vise frem og e
               <td> { rolle.firstName } {rolle.lastName}</td>
               <td> { rolle.timecalled.toLocaleString().slice(0, -3) } </td>
               <td>Ikke godkjent</td>
+              <td><button onClick={() => this.confirmRole(rolle.event_rolle_id)}>Godkjenn</button></td>
               <td><button onClick={() => this.goToRoleChange(rolle)}>Bytt vakt</button></td></tr>);
           }
 
@@ -165,6 +168,7 @@ export class EventDetails extends React.Component { //Side for å vise frem og e
               <td> { rolle.firstName } {rolle.lastName}</td>
               <td> { rolle.timecalled.toLocaleString().slice(0, -3) } </td>
               <td>Ikke godkjent</td>
+              <td><button onClick={() => this.confirmRole(rolle.event_rolle_id)}>Godkjenn</button></td>
               <td><button onClick={() => this.goToRoleChange(rolle)}>Bytt vakt</button></td></tr>);
           }
 
@@ -621,7 +625,7 @@ export class EventDetails extends React.Component { //Side for å vise frem og e
                                 this.emailRecievers.push(this.capableUsers[i].userid);
 
                                 eventService.setRole(this.capableUsers[i].userid, this.capableUsers[i].eventrolleid, this.evnt.start, this.evnt.end, (result) => {
-                                  console.log('Her');
+
                                 });
                               }
                             }
@@ -648,10 +652,18 @@ export class EventDetails extends React.Component { //Side for å vise frem og e
         let mailSubject = 'Utkalling til arrangement';
         let text = 'Hei ' + this.userEvent.firstName + '. Du har blitt kalt ut til arrangement ' + this.userEvent.title + ' som ' + this.userEvent.rollenavn + '. Logg inn på appen for mer info og for å godkjenne vakten.';
 
-        console.log(this.userEvent.firstName);
         // mailService.sendMail(recieverAdress, mailSubject, text);
       });
     }
+  }
+
+  confirmRole(eventrolleid) { // Funksjon for å godkjenne en rolle
+    eventService.confirmRoleEvent(eventrolleid, (result) => {
+      eventService.getEventRoller(this.evnt.eventid, (result) => {
+        this.eventRoller = result;
+        this.forceUpdate();
+      });
+    });
   }
 
   componentDidMount() {

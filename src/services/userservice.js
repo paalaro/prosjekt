@@ -110,9 +110,6 @@ class UserService {
     let newPassword = Math.random().toString(36).slice(-8);
     let cryptopw;
 
-    console.log(newPassword);
-
-
     crypto.pbkdf2(newPassword, 'RødeKors', 100, 64, 'sha512', (err, derivedKey) => {
       if (err) throw err;
 

@@ -330,7 +330,6 @@ class EventService {
 
   confirmVaktbytte(userid, eventrolleid, start, end, callback) {
     let timedate = new Date();
-    console.log(timedate);
     connection.query('UPDATE event_rolle SET userid = ?, timecalled = ?, timeconfirmed = ?, confirmed = ? WHERE event_rolle_id = ?', [userid, timedate, null, false, eventrolleid], (error, result) => {
       if (error) throw error;
 
@@ -360,6 +359,7 @@ class EventService {
 
   getPoints(callback) {
     let today = new Date();
+    
     connection.query('SELECT * FROM event_rolle, Events WHERE event_rolle.eventid = Events.eventid AND Events.end < ? AND userid IS NOT NULL AND pointsgiven = ?', [today, false], (error, result) => {
       if (error) throw error;
 
@@ -373,8 +373,6 @@ class EventService {
 
       callback();
     });
-
-    console.log(eventrolleid);
 
     connection.query('UPDATE event_rolle SET pointsgiven = ? WHERE event_rolle_id = ?', [true, eventrolleid], (error, result) => {
       if (error) throw error;
