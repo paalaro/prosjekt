@@ -125,7 +125,7 @@ export class EventList extends React.Component { // Arrangementframside med kale
           </div>
         </div>
         </div>
-          <h3>Kommende arrangementer</h3>
+        <div style={{textAlign: 'center'}}><h3>Kommende arrangementer</h3></div>
          <div className='tableList'>
            <table className='eventTable'>
              <thead>
@@ -143,7 +143,7 @@ export class EventList extends React.Component { // Arrangementframside med kale
          </div>
 
          <div>
-          <h4>Dine passivperioder</h4>
+         <div style={{textAlign: 'center'}}><h4>Dine passivperioder</h4></div>
           <table>
             <thead>
               {passivHeader}
@@ -154,7 +154,8 @@ export class EventList extends React.Component { // Arrangementframside med kale
           </table>
          </div>
          <div>
-          Sett deg selv som passiv for en periode. <br />
+         <div style={{textAlign: 'center'}}>Sett deg selv som passiv for en periode</div>
+          <br />
           <div className='row'>
           <div>
             <div className="statsDiv col-5">
@@ -165,8 +166,11 @@ export class EventList extends React.Component { // Arrangementframside med kale
             </div>
           </div>
           <br />
-          <button className='regpassivBtn' onClick={() => this.regPassiv()}>Registrer</button></div>
+          <button className='regpassivBtn' onClick={() => this.regPassiv()}>Registrer</button>
+          </div>
+          <div className='row'>
           <div style={{color: 'red'}} ref='passivalertDiv'></div>
+          </div>
          </div>
        </div>
     );
@@ -746,16 +750,22 @@ export class OldEventRoles extends React.Component {  // Gamle vakter
 
     if (this.oldUserRoles.length != 0) {  // Skriver ut gamle vakter dersom det finnes
       header = <h3>Dine tidligere vakter</h3>;
+      tableHeader = <tr>
+        <th className='tableLines'>Arrangement</th>
+        <th className='tableLines'>Rolle</th>
+        <th className='tableLines'>Start</th>
+        <th className='tableLines'>Slutt</th>
+        </tr>;
 
       for (let userRole of this.oldUserRoles) {
-        roleList.push(<tr key={userRole.event_rolle_id} onClick={() =>
+        roleList.push(<tr className='tableRow' key={userRole.event_rolle_id} onClick={() =>
             this.props.history.push('/eventdetails/' + userRole.eventid)
           }>
-          <td>{userRole.title}</td>
-          <td>{userRole.rollenavn}</td>
-          <td>{userRole.start.toLocaleString()}</td>
-          <td>{userRole.end.toLocaleString()}</td>
-          <td></td></tr>);
+          <td className='tableLines'>{userRole.title}</td>
+          <td className='tableLines'>{userRole.rollenavn}</td>
+          <td className='tableLines'>{userRole.start.toLocaleString()}</td>
+          <td className='tableLines'>{userRole.end.toLocaleString()}</td>
+          </tr>);
       }
     }
 
@@ -765,9 +775,9 @@ export class OldEventRoles extends React.Component {  // Gamle vakter
 
     return(
       <div>
-        {header}
-        <div>
-          <table>
+        <div style={{textAlign: 'center'}}>{header}</div>
+        <div className='tableList'>
+          <table className='eventTable'>
             <thead>
               {tableHeader}
             </thead>

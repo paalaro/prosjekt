@@ -6,7 +6,7 @@ import { eventService } from './services/eventservice';
 import { skillService } from './services/skillservice';
 import { mailService } from './services/mailservice';
 import { Menu, LoggedinMenu, AdminLoggedinMenu } from './menues';
-import { Login, Registration, Registered, ForgotPassword, PasswordSent, loggedin, updateUserDetails, selectUser } from './outlogged';
+import { Login, Registration, Registered, ForgotPassword, loggedin, updateUserDetails, selectUser } from './outlogged';
 import { Profile, MyProfile, EditProfile, ChangePassword } from './profile';
 import { Requests, UserListAdmin, UserList, UserDetails } from './users';
 import { EventList, CreateEvent, EditEvent, Roles, ChangeRole, OldEventRoles } from './events';
@@ -57,7 +57,6 @@ export function renderOutlogged() { // Kjører når man logger inn
             <Route exact path='/registration' component={Registration} />
             <Route exact path='/login' component={Login} />
             <Route exact path='/forgotpassword' component={ForgotPassword} />
-            <Route exact path='/passwordsent/:mail' component={PasswordSent} />
             <Route exact path='/registered' component={Registered} />
             <Login />
           </Switch>

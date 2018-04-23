@@ -215,7 +215,7 @@ export class ForgotPassword extends React.Component {
           <div ref='resetContent'>
             <input ref="fpemail" placeholder="Type your email"></input><br/>
             <button className="requestNewPWBtn" ref="fpsubmit">Request</button> <br />
-            <Link to='/login'>Back to login</Link>
+            <Link to='/login' className='forgotPasswordLink'>Tilbake til login</Link>
           </div>
         </div>
       </div>
@@ -239,23 +239,6 @@ export class ForgotPassword extends React.Component {
         }
       });
     }
-  }
-}
-
-export class PasswordSent extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.mail = props.match.params.mail;
-  }
-
-  render() {
-    return(
-      <div>
-        A new password has been sent to {this.mail} <br />
-        <Link to='/login'>Back to login</Link>
-      </div>
-    );
   }
 }
 
