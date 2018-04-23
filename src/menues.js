@@ -88,6 +88,7 @@ export class LoggedinMenu extends React.Component { // Innlogget-meny for vanlig
       <ul className="navbar-ul">
         <li className='navbar-li-left'><img className='logo' src="src/img/Rodekors.jpg"/></li>
         <li className="navbar-li"><Link to='/eventlist' className="navbar-link">Events</Link></li>
+        <li className="navbar-li"><Link to='/oldeventroles' className="navbar-link">Tidligere vakter</Link></li>
         <li className="navbar-li"><Link to='/userlist' className="navbar-link">Brukere</Link></li>
         <div className="dropdownknapp">
           <li className="dropdown-li"><Link to={'/myprofile/' + this.id} className="navbar-link">Profil</Link></li>

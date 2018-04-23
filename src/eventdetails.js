@@ -44,7 +44,7 @@ export class EventDetails extends React.Component { //Side for å vise frem og e
     let today = new Date();
 
     if (this.interest == undefined && this.evnt.start > today) { // Knapp for å melde interesse dersom man ikke har gjort det fra før
-      interestBtn = <button onClick={() =>
+      interestBtn = <button className='editBtn' onClick={() =>
         eventService.setInterest(this.evnt.eventid, this.user.id, (result) => { // Oppdaterer brukeren sin interesse for arrangementet
           eventService.getInterest(this.evnt.eventid, this.user.id, (result) => {
             this.interest = result;
@@ -54,7 +54,7 @@ export class EventDetails extends React.Component { //Side for å vise frem og e
     }
 
     else if (this.evnt.start > today) { // Knapp for å fjerne interesse
-      interestBtn = <button onClick={() =>
+      interestBtn = <button className='editBtn' onClick={() =>
         eventService.removeInterest(this.evnt.eventid, this.user.id, (result) => {
           eventService.getInterest(this.evnt.eventid, this.user.id, (result) => {
             this.interest = result;
@@ -73,28 +73,28 @@ export class EventDetails extends React.Component { //Side for å vise frem og e
 
     if (this.user.admin == true) { // Knapper som skal skrives til siden dersom innlogget bruker er administrator
       if (this.evnt.end >= today) {
-        rolleBtn = <button onClick={() => this.props.history.push('/roles/' + this.evnt.eventid)}>Roller</button>;
-        editBtn = <button onClick={() => this.props.history.push('/editevent')}>Endre detaljer</button>;
+        rolleBtn = <button className='editBtn' onClick={() => this.props.history.push('/roles/' + this.evnt.eventid)}>Roller</button>;
+        editBtn = <button className='editBtn' onClick={() => this.props.history.push('/editevent')}>Endre detaljer</button>;
       }
 
       if (this.eventRollernoUser.length != 0) { // Knapp for å fordele roller vises dersom det fortsatt finnes roller som ikke har blitt tildelt en person
-        fordelRollerBtn = <button onClick={() => this.giveRoles()}>Fordel roller</button>;
+        fordelRollerBtn = <button className='editBtn' onClick={() => this.giveRoles()}>Fordel roller</button>;
       }
 
-      if (this.eventRoller[0] != undefined) {
-        emptyRolesBtn = <button onClick={() => // Mulighet for knapp til å fjerne personer fra rollene på dette arrangementet
-          eventService.emptyEventRoles(this.evnt.eventid, (result) => {
-            userService.deleteAllEventPassiv(this.evnt.start, this.evnt.end, (result) => {
-              eventService.getEventRoller(this.evnt.eventid, (result) => {  // Oppdateres rollene for arrangementet
-                this.eventRoller = result;
-                eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
-                  this.eventRollernoUser = result;
-                  this.forceUpdate();
-                });
-              });
-            });
-          })}>Tøm roller</button>;
-      }
+      // if (this.eventRoller[0] != undefined) {
+      //   emptyRolesBtn = <button onClick={() => // Mulighet for knapp til å fjerne personer fra rollene på dette arrangementet
+      //     eventService.emptyEventRoles(this.evnt.eventid, (result) => {
+      //       userService.deleteAllEventPassiv(this.evnt.start, this.evnt.end, (result) => {
+      //         eventService.getEventRoller(this.evnt.eventid, (result) => {  // Oppdateres rollene for arrangementet
+      //           this.eventRoller = result;
+      //           eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
+      //             this.eventRollernoUser = result;
+      //             this.forceUpdate();
+      //           });
+      //         });
+      //       });
+      //     })}>Tøm roller</button>;
+      // }
 
 
       for (let rolle of this.eventRoller) {   // Skriver ut rollene til liste ettersom om rollene er godkjent eller ikke
@@ -201,7 +201,7 @@ export class EventDetails extends React.Component { //Side for å vise frem og e
     let loggedinUser = userService.getSignedInUser();
 
     return(
-      <div>
+      <div className='wrapper3'>
         <div>
           <h3>{this.evnt.title}</h3> <br />
           Start: {this.start} <br />

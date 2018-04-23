@@ -7,9 +7,6 @@ let mainWindow;
 app.on('ready', () => {
   mainWindow = new BrowserWindow({width: 800, height: 600});
 
-  // Open Development Tools
-  mainWindow.openDevTools();
-
   mainWindow.loadURL('file://' + __dirname + '/index.html');
 });
 

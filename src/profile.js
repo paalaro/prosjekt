@@ -232,6 +232,7 @@ export class Profile extends React.Component {  // Brukes kun av admins, inne p√
     this.inputList = [];
     this.dateInputList = [];
     this.refs.alertDiv.textContent = '';
+
     let ref = 0;
     for (let skill of selectValue) {
       skillService.getSkillInfo(skill.value, (result) => {  // Kj√∏rer gjennom alle kompetanser som er valgt i multiselect
@@ -245,7 +246,7 @@ export class Profile extends React.Component {  // Brukes kun av admins, inne p√
         }
 
         else {
-          this.dateInputList.push(<tr key={skill.value}><td> { skill.label } </td><td><input type='date' ref={(ref) => this.refNr = ref} /></td></tr>);
+          this.dateInputList.push(<tr key={skill.value}><td> { skill.label } </td><td><b>Utl√∏psdato: </b></td><td><input type='date' ref={(ref) => this.refNr = ref} /></td></tr>);
           this.selectedSkillWithDate = skill.label;
         }
         this.forceUpdate();
@@ -493,7 +494,7 @@ export class MyProfile extends React.Component {  // Samme som Profile, men dett
         }
 
         else {
-          this.dateInputList.push(<tr key={skill.value}><td> { skill.label } </td><td><input type='date' ref={(ref) => this.refNr = ref} /></td></tr>);
+          this.dateInputList.push(<tr key={skill.value}><td> { skill.label } </td><td><b>Utl√∏psdato: </b></td><td><input type='date' ref={(ref) => this.refNr = ref} /></td></tr>);
           this.selectedSkillWithDate = skill.label;
         }
         this.forceUpdate();
