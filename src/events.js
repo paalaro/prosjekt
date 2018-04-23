@@ -41,6 +41,7 @@ export class EventList extends React.Component { // Arrangementframside med kale
     let userRoles = [];
     let passivList = [];
     let passivHeader;
+    let roleHeader;
 
     for (let evnt of this.evntList) {   // Pusher kommende arrangementer inn i en liste/tabell
       evntsList.push(<tr key={evnt.eventid} className='tableRow' onClick={() => this.props.history.push('/eventdetails/' + evnt.eventid)}><td className='tableLines'>{evnt.title}</td><td className='tableLines'>{evnt.start.toLocaleString().slice(0, -3)}</td><td className='tableLines'>{evnt.end.toLocaleString().slice(0, -3)}</td></tr>)
@@ -70,6 +71,15 @@ export class EventList extends React.Component { // Arrangementframside med kale
           this.goToRoleChange(rolle)}>Bytt vakt</button></td>
           </tr>);
       }
+    }
+
+    if (this.userRoles.length != 0) {
+      roleHeader = <tr>
+      <th className='tableLines'>Arrangement</th>
+      <th className='tableLines'>Rolle</th>
+      <th className='tableLines'>Start</th>
+      <th className='tableLines'></th>
+      <th className='tableLines'></th></tr>;
     }
 
     let today = new Date().toLocaleDateString();
@@ -107,6 +117,9 @@ export class EventList extends React.Component { // Arrangementframside med kale
          <h3 className='eventRolesTitle'>Dine pågående og kommende vakter</h3>
          <div>
           <table className='userTable'>
+            <thead>
+              {roleHeader}
+            </thead>
             <tbody>
               {userRoles}
             </tbody>
@@ -114,8 +127,8 @@ export class EventList extends React.Component { // Arrangementframside med kale
           </div>
         </div>
         </div>
+          <h3>Kommende arrangementer</h3>
          <div className='tableList'>
-
            <table className='eventTable'>
              <thead>
                <tr>
@@ -144,6 +157,7 @@ export class EventList extends React.Component { // Arrangementframside med kale
          </div>
          <div>
           Sett deg selv som passiv for en periode. <br />
+          <div className='row'>
           <div>
             <div className="statsDiv col-5">
               <input ref='startPassiv' type='date' />
@@ -153,7 +167,7 @@ export class EventList extends React.Component { // Arrangementframside med kale
             </div>
           </div>
           <br />
-          <button className='regpassivBtn'onClick={() => this.regPassiv()}>Registrer</button>
+          <button className='regpassivBtn' onClick={() => this.regPassiv()}>Registrer</button>
           <div style={{color: 'red'}} ref='passivalertDiv'></div>
          </div>
        </div>
@@ -469,8 +483,9 @@ export class EditEvent extends React.Component {  // Endring av arrangementinfo
     let startTime = this.evnt.start;
     let endTime = this.evnt.end;
     let oppmoteTime = this.evnt.oppmote;
-    this.startTime = this.evnt.start.slice(0, -1);  // Setter datoer og tidspunkt til riktig format i forhold til input-bokser
-    this.endTime = this.evnt.end.slice(0, -1);
+
+    this.startTime = this.fixDate(new Date(startTime));  // Setter datoer og tidspunkt til riktig format i forhold til input-bokser
+    this.endTime = this.fixDate(new Date(endTime));
     this.oppmote = this.evnt.oppmote.slice(0, -3);
 
     this.state = {
@@ -521,6 +536,33 @@ export class EditEvent extends React.Component {  // Endring av arrangementinfo
         </div>
       </div>
     );
+  }
+
+  fixDate(date) { // Funksjon for å sette datoen til riktig format
+    let day = date.getDate();
+    if (day < 10) {
+      day = '0' + day;
+    }
+
+    let month = date.getMonth() + 1;
+    if (month < 10) {
+      month = '0' + month;
+    }
+
+    let year = date.getFullYear();
+    let hours = date.getHours();
+    if (hours < 10) {
+      hours = '0' + hours;
+    }
+
+    let mins = date.getMinutes();
+    if (mins < 10) {
+      mins = '0' + mins;
+    }
+
+    let dateTime = year + '-' + month + '-' + day + 'T' + hours + ':' + mins;
+    // let dateTime = day + '/' + month + '/' + year;
+    return(dateTime);
   }
 
   componentDidMount() {
@@ -615,7 +657,6 @@ export class ChangeRole extends React.Component { // Vaktbytte
 
     this.refs.vaktbytteBtn.onclick = () => {
       userService.getUserbyMail(this.refs.vaktbyttemail.value, (result) => { // Sjekker om det finnes en bruker med oppgitt epostadresse
-        console.log(result);
         this.toUser = result;
         if (result != undefined) {
           userService.getPassiv(this.toUser.id, (result) => { // Sjekker om brukeren er passiv i perioden arrangementet pågår
@@ -728,7 +769,6 @@ export class OldEventRoles extends React.Component {  // Gamle vakter
   componentDidMount() {
     eventService.getOldUserEventRoller(this.user.id, (result) => {
       this.oldUserRoles = result;
-      console.log(result);
       this.forceUpdate();
     });
   }

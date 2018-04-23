@@ -24,6 +24,7 @@ export class Stats extends React.Component {
       let navn = stat.firstName + ' ' + stat.lastName;
       let startDate = new Date(stat.start).toLocaleDateString();
       let endDate = new Date(stat.end).toLocaleDateString();
+      console.log(endDate);
       periode += navn + ', ' + stat.title + ', Start: ' + startDate + ', Slutt: ' + endDate + '\r\n';
     }
 
