@@ -35,9 +35,9 @@ export class AdminLoggedinMenu extends React.Component {  // Innlogget-meny for 
     return(
       <div>
       <ul className="navbar-ul">
-
-        <div className="dropdownknapp">
-        <li className="dropdown-li"><Link to="/eventlist" className="navbar-link">Arrangement</Link></li>
+          <li className='navbar-li-left'><img className='logo' src="src/img/Rodekors.jpg"/></li>
+          <div className="dropdownknapp">
+          <li className="dropdown-li"><Link to="/eventlist" className="navbar-link">Arrangement</Link></li>
           <div className="dropdowncontent">
           <ul className="navbar-ul">
             <li className="dropdown-li"><Link to='/createevent' className="dropdown-link">Opprett arrangement</Link></li>
@@ -86,6 +86,7 @@ export class LoggedinMenu extends React.Component { // Innlogget-meny for vanlig
     return (
       <div>
       <ul className="navbar-ul">
+        <li className='navbar-li-left'><img className='logo' src="src/img/Rodekors.jpg"/></li>
         <li className="navbar-li"><Link to='/eventlist' className="navbar-link">Events</Link></li>
         <li className="navbar-li"><Link to='/userlist' className="navbar-link">Brukere</Link></li>
         <li className="navbar-li"><Link to='/skills' className="navbar-link">Skills</Link></li>

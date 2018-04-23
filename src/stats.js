@@ -28,7 +28,7 @@ export class Stats extends React.Component {
     }
 
     return(
-      <div>
+      <div className="wrapper3">
         <div className="row">
         <h4>Periode Oversikt</h4>
           <div className="statsDiv col-5">
