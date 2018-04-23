@@ -166,13 +166,9 @@ export class EventList extends React.Component { // Arrangementframside med kale
             </div>
           </div>
           <br />
-<<<<<<< HEAD
           <button className='regpassivBtn' onClick={() => this.regPassiv()}>Registrer</button>
           </div>
           <div className='row'>
-=======
-          <button className='regpassivBtn' onClick={() => this.regPassiv()}>Registrer</button></div>
->>>>>>> 1a17b7ad2431d3a2e146d11a0e560c2cba848a3e
           <div style={{color: 'red'}} ref='passivalertDiv'></div>
           </div>
          </div>
