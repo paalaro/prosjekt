@@ -92,7 +92,7 @@ export class EventList extends React.Component { // Arrangementframside med kale
             this.userPassiv = result;
             this.forceUpdate();
           });
-        })}>Slett</button></td></tr>)
+        })}>Slett</button></td></tr>);
       }
     }
 
@@ -109,9 +109,7 @@ export class EventList extends React.Component { // Arrangementframside med kale
                showMultiDayTimes
                defaultDate={new Date()}
                selectAble ={true}
-               onSelectEvent={event => this.props.history.push('/eventdetails/' + event.eventid)
-           }
-               />
+               onSelectEvent={event => this.props.history.push('/eventdetails/' + event.eventid)}/>
           </div>
          <div className='userRoles'>
          <h3 className='eventRolesTitle'>Dine pågående og kommende vakter</h3>
@@ -167,7 +165,7 @@ export class EventList extends React.Component { // Arrangementframside med kale
             </div>
           </div>
           <br />
-          <button className='regpassivBtn' onClick={() => this.regPassiv()}>Registrer</button>
+          <button className='regpassivBtn' onClick={() => this.regPassiv()}>Registrer</button></div>
           <div style={{color: 'red'}} ref='passivalertDiv'></div>
          </div>
        </div>
