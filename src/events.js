@@ -157,6 +157,7 @@ export class EventList extends React.Component { // Arrangementframside med kale
          </div>
          <div>
           Sett deg selv som passiv for en periode. <br />
+          <div className='row'>
           <div>
             <div className="statsDiv col-5">
               <input ref='startPassiv' type='date' />
@@ -167,7 +168,10 @@ export class EventList extends React.Component { // Arrangementframside med kale
           </div>
           <br />
           <button onClick={() => this.regPassiv()}>Registrer</button>
-          <div style={{color: 'red'}} ref='passivalertDiv'></div>
+          </div>
+          <div className='row'>
+            <div style={{color: 'red', marginLeft: 5 + '%'}} ref='passivalertDiv'></div>
+          </div>
          </div>
        </div>
     );
