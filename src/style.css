@@ -343,7 +343,7 @@ h5 {
   margin: 0 auto;
   text-align: left;
   width: 60%;
-  height: 850px;
+  height: 750px;
   border-radius: 25px;
   border: 2px solid gray;
   padding: 15px;
@@ -478,6 +478,7 @@ h5 {
   margin-left: 25%;
   margin-right: 25%;
   width: 50%;
+  font-size: 0.8em;
 }
 
 .statsBtn {

@@ -371,7 +371,7 @@ export class CreateEvent extends React.Component {  // Oppretting av arrangement
     return(
       <div className='centeredDiv'>
         <div className='createEventDiv'>
-          <h4>Opprett arrangement</h4>
+          <h3 style={{textAlign: 'center'}}>Opprett arrangement</h3>
           <div className='row'>
             <div className='col-12'>
               Tittel: <input className='col-11' ref='title' type='text' /> <br />
