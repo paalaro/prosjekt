@@ -29,7 +29,7 @@ export class Stats extends React.Component {
     }
 
     return(
-      <div className="wrapper3">
+      <div>
         <div className="row">
         <h4>Periode Oversikt</h4>
           <div className="statsDiv col-5">

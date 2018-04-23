@@ -219,7 +219,7 @@ export class EventDetails extends React.Component { //Side for å vise frem og e
         {fordelRollerBtn}
         <div ref='fordelRollerDiv'></div>
         <div>
-          <h5>Roller til dette arrangementet</h5>
+          <h4>Roller til dette arrangementet</h4>
           <table>
             <thead>
               {rolleListHeader}
