@@ -616,6 +616,7 @@ export class ChangeRole extends React.Component { // Vaktbytte
 
     this.refs.vaktbytteBtn.onclick = () => {
       userService.getUserbyMail(this.refs.vaktbyttemail.value, (result) => { // Sjekker om det finnes en bruker med oppgitt epostadresse
+        console.log(result);
         this.toUser = result;
         if (result != undefined) {
           userService.getPassiv(this.toUser.id, (result) => { // Sjekker om brukeren er passiv i perioden arrangementet pågår
@@ -636,7 +637,7 @@ export class ChangeRole extends React.Component { // Vaktbytte
             if (passiv == false) {
               skillService.countRoleReq((result) => { // Sjekker om personen det ønskes å bytte til har kompetansen som kreves for denne rollen
                 this.roleReq = result;
-                eventService.getUsersSkillsofRoles(this.eventRolle.rolleid, this.toUser.id, (result) => {
+                eventService.getUsersSkillsofRoles(this.eventRolle.rolleid, this.toUser.id, this.evnt.end, (result) => {
                   let numberOfSkills = result.antall;
                   if (this.roleReq[this.eventRolle.rolleid - 1].antallskills == numberOfSkills) {
                     eventService.setVaktbytte(this.eventRolle.event_rolle_id, this.user.id, this.toUser.id, (result) => {

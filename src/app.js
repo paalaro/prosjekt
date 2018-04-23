@@ -7,7 +7,7 @@ import { skillService } from './services/skillservice';
 import { mailService } from './services/mailservice';
 import { Menu, LoggedinMenu, AdminLoggedinMenu } from './menues';
 import { Login, Registration, Registered, ForgotPassword, PasswordSent, loggedin, updateUserDetails, selectUser } from './outlogged';
-import { Profile, MyProfile, EditProfile, checkOldSkills, ChangePassword } from './profile';
+import { Profile, MyProfile, EditProfile, ChangePassword } from './profile';
 import { Requests, UserListAdmin, UserList, UserDetails } from './users';
 import { EventList, CreateEvent, EditEvent, Roles, ChangeRole, OldEventRoles } from './events';
 import { EventDetails } from './eventdetails';
@@ -30,17 +30,13 @@ function checkPoints() { // Funksjon som kjører hver gang noen logger inn for �
   });
 }
 
+function checkSkills() { // Funksjon som sletter utgåtte kompetanser fra databasen
+  skillService.deleteOldSkills((result) => {
 
-// The Route-elements define the different pages of the application
-// through a path and which component should be used for the path.
-// The path can include a variable, for instance
-// path='/customer/:customerId' component={CustomerDetails}
-// means that the path /customer/5 will show the CustomerDetails
-// with props.match.params.customerId set to 5.
-
+  });
+}
 
 export function renderOutlogged() { // Kjører når man logger inn
-  checkOldSkills();
   let loggedinUser = userService.getSignedInUser(); // Sjekker om det ligger lagret en bruker i localStorage som ikke har logget ut
   if (loggedinUser != undefined) {  // Dersom det ligger en bruker her blir brukeren sendt videre til ReactDOM render for admin eller vanlig bruker.
     if (loggedinUser.admin == true) {
@@ -73,6 +69,7 @@ export function renderOutlogged() { // Kjører når man logger inn
 
 renderOutlogged();
 checkPoints();
+checkSkills();
 
 export function renderLogin(user) { //ReactDOM.render for standard brukere
   ReactDOM.render((

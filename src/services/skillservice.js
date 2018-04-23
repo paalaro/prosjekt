@@ -62,19 +62,21 @@ class SkillService {
     });
   }
 
-  checkOldSkills(date, callback) {
-    connection.query('DELETE FROM user_skills WHERE validto < ?', [date], (error, result) => {
-      if (error) throw error;
-
-      callback();
-    });
-  }
-
   countRoleReq(callback) {
     connection.query('SELECT COUNT(*) AS antallskills, rolleid FROM roller_skills GROUP BY rolleid', (error, result) => {
       if (error) throw error;
 
       callback(result);
+    });
+  }
+
+  deleteOldSkills(callback) {
+    let today = new Date();
+
+    connection.query('DELETE FROM user_skills WHERE validto < ?', [today], (error, result) => {
+      if (error) throw error;
+
+      callback();
     });
   }
 }

@@ -110,6 +110,8 @@ class UserService {
     let newPassword = Math.random().toString(36).slice(-8);
     let cryptopw;
 
+    console.log(newPassword);
+
 
     crypto.pbkdf2(newPassword, 'RødeKors', 100, 64, 'sha512', (err, derivedKey) => {
       if (err) throw err;
@@ -297,6 +299,22 @@ class UserService {
 
   giveVaktpoeng(userid, dager, callback) {
     connection.query('UPDATE Users SET vaktpoeng = vaktpoeng + ? WHERE id = ?', [dager, userid], (error, result) => {
+      if (error) throw error;
+
+      callback();
+    });
+  }
+
+  makeAdmin(userid, callback) {
+    connection.query('UPDATE Users SET admin = ? WHERE id = ?', [true, userid], (error, result) => {
+      if (error) throw error;
+
+      callback();
+    });
+  }
+
+  removeAdmin(userid, callback) {
+    connection.query('UPDATE Users SET admin = ? WHERE id = ?', [false, userid], (error, result) => {
       if (error) throw error;
 
       callback();

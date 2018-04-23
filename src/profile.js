@@ -17,14 +17,6 @@ export function deselectUser() {
   selectedUser = {};
 }
 
-export function checkOldSkills() {
-  let today = new Date();
-
-  skillService.checkOldSkills(today, (result) => {
-
-  });
-}
-
 export class Profile extends React.Component {  // Brukes kun av admins, inne p√• andre sin profil
   constructor(props) {
     super(props);
@@ -52,14 +44,34 @@ export class Profile extends React.Component {  // Brukes kun av admins, inne p√
     const { selectValue } = this.state;
     let skillOptions = [];
     let userSkillList = [];
+    let adminBtn;
+    let adminMsg;
 
-    if (this.user.aktivert == true) {
-      activateBtn = <button ref="activateBtn">Deaktiver</button>;
+    if (this.user.aktivert == true && this.user.admin == false) {
+      adminMsg = 'Nei';
       status = "Aktiv";
+      activateBtn = <button onClick={() =>
+        this.activate(this.user.id)
+      }>Deaktiver</button>;
+      adminBtn = <button onClick={() =>
+        this.admin(this.user.id)
+      }>Gj√∏r til admin</button>;
     }
 
-    else {
-      activateBtn = <button ref="activateBtn">Aktiver</button>;
+    else if (this.user.aktivert == true && this.user.admin == true) {
+      adminMsg = 'Ja';
+      status = "Aktiv";
+      adminBtn = <button onClick={() =>
+        this.admin(this.user.id)
+      }>Fjern admin</button>;
+    }
+
+    else if (this.user.aktivert == false) {
+      adminMsg = 'Nei';
+      status = "Deaktivert";
+      activateBtn = <button onClick={() =>
+        this.activate(this.user.id)
+      }>Aktiver</button>;
       status = "Deaktivert";
     }
 
@@ -104,11 +116,13 @@ export class Profile extends React.Component {  // Brukes kun av admins, inne p√
           Adress: {this.user.adress + ', ' + this.user.postalnumber + ' ' + this.city} <br />
           <br />
           Status: {status} <br />
+          Admin: {adminMsg} <br />
           <button onClick={() =>
             this.selectUser()
           }>Endre opplysninger</button>
           <button ref='newpassword'>Send nytt passord p√• mail</button>
           {activateBtn}
+          {adminBtn}
         </div>
         <div style={{color: 'red'}} ref='alertDiv2' />
         <div>
@@ -164,6 +178,56 @@ export class Profile extends React.Component {  // Brukes kun av admins, inne p√
     this.props.history.push('/editprofile');
   }
 
+  admin() {
+    if (this.user.admin == false) {
+      userService.makeAdmin(this.user.id, (resul) => {
+        userService.getUser(this.user.id, (result) => {
+          this.user = result;
+          this.forceUpdate();
+        });
+      });
+    }
+
+    else {
+      userService.removeAdmin(this.user.id, (resul) => {
+        userService.getUser(this.user.id, (result) => {
+          this.user = result;
+          this.forceUpdate();
+        });
+      });
+    }
+  }
+
+  activate() {
+    if (this.user.aktivert == true) {
+      userService.deactivate(this.user.id, (result) => {
+        userService.getUser(this.user.id, (result) => {
+          this.user = result;
+          this.forceUpdate();
+        });
+      });
+    }
+
+    else {
+      userService.confirm(this.user.id, (result) => {
+        userService.getUser(this.user.id, (result) => {
+          this.user = result;
+          this.forceUpdate();
+        });
+      });
+    }
+  }
+
+  removeAdmin(userid) {
+    userService.removeAdmin(userid, (resul) => {
+      userService.getUser(userid, (result) => {
+        this.user = result;
+        this.forceUpdate();
+      });
+    });
+  }
+
+
   changeHandler(selectValue) {  // Kj√∏rer ved forandringer i nedtrekksmenyen
     this.inputList = [];
     this.dateInputList = [];
@@ -191,6 +255,7 @@ export class Profile extends React.Component {  // Brukes kun av admins, inne p√
 
   registerSkills(selectValue) {
     this.refs.alertDiv.textContent = '';
+    let today = new Date();
 
     if (this.refNr == null) {
       this.skillDate = null;
@@ -262,20 +327,6 @@ export class Profile extends React.Component {  // Brukes kun av admins, inne p√
           this.refs.alertDiv2.textContent = '';
         }, 5000);
       });
-    }
-
-    this.refs.activateBtn.onclick = () => { // Aktiverer eller deaktiverer brukeren avhengig om den er aktiv fra f√∏r eller ikke
-      if (this.user.aktivert == true) {
-        userService.deactivate(this.user.id, (result) => {
-          this.nextPath('/userlistadmin');
-        });
-      }
-
-      else {
-        userService.confirm(this.user.id, (result) => {
-          this.nextPath('/userlistadmin');
-        });
-      }
     }
   }
 }
@@ -452,6 +503,7 @@ export class MyProfile extends React.Component {  // Samme som Profile, men dett
 
   registerSkills(selectValue) {
     this.refs.alertDiv.textContent = '';
+    let today = new Date();
 
     if (this.refNr == null) {
       this.skillDate = null;
@@ -464,9 +516,10 @@ export class MyProfile extends React.Component {  // Samme som Profile, men dett
     for (let skill of selectValue) {
       skillService.getSkillInfo(skill.value, (result) => {
         this.skill = result;
+
+        // VALIDERING
         if (this.skillDate == '') {
           this.refs.alertDiv.textContent = 'Vennligst velg en dato';
-
         }
 
         else if (this.skill.duration != 0 && this.skillDate != undefined) {
