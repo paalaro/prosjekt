@@ -368,16 +368,32 @@ export class CreateEvent extends React.Component {  // Oppretting av arrangement
       <div className='centeredDiv'>
         <div className='createEventDiv'>
           <h4>Opprett arrangement</h4>
-          Tittel: <input className='createEventTitle' ref='title' type='text' /> <br />
-          Bekskrivelse: <input className='createEventDescription' ref='text' type='text' /> <br />
-          Arrangementstart: <input className='createEventStart' ref='start' type='datetime-local' placeholder='Startdato' /> <br />
-          Arrangementslutt: <input className='createEventEnd' ref='end' type='datetime-local' placeholder='Sluttdato' /> <br />
-          Oppmøtetidspunkt: <input className='createEventMeet' ref='oppmote' type='time' /> <br />  <br />
+          <div className='row'>
+            <div className='col-12'>
+              Tittel: <input className='col-11' ref='title' type='text' /> <br />
+            </div>
+          </div>
+          <div className="row">
+            <div className='col-12'>
+              Bekskrivelse: <input className='col-9' ref='text' type='text' /> <br />
+            </div>
+          </div>
+          <div className='row'>
+            <div className='col-6 createEventText'>
+              Arrangementstart: <input className='createEventStart' ref='start' type='datetime-local' placeholder='Startdato' /> <br />
+            </div>
+            <div className='col-6 createEventText'>
+              Arrangementslutt: <input className='createEventEnd' ref='end' type='datetime-local' placeholder='Sluttdato' /> <br />
+            </div>
+          </div>
+          <div className='row'>
+            Oppmøtetidspunkt: <input className='col-9' ref='oppmote' type='time' /> <br />  <br />
+          </div>
           Adresse: <br />
           <input className="createEventAdress" ref='adresse' type='text' placeholder='Gateadresse'/> <br />
-          <input ref='postalnumber' type='text' maxLength='4' className='regPostal' placeholder='Postnr'/>
-          <input ref='city' className='regCity1' placeholder='Poststed' value={this.state.city} type='text' readOnly /><br /> <br />
-          Utstyrsliste: <br /> <input className="createEventItemList" ref='equipment' type='text' /> <br />
+          <input ref='postalnumber' type='text' maxLength='4' className='col-4' placeholder='Postnr'/>
+          <input ref='city' className='col-8' placeholder='Poststed' value={this.state.city} type='text' readOnly /><br /> <br />
+          Utstyrsliste: <br /><input className="col-12" ref='equipment' type='text' /><br />
           <VirtualizedSelect
             placeholder='Velg en vaktmal'
             clearable={true}
@@ -385,10 +401,10 @@ export class CreateEvent extends React.Component {  // Oppretting av arrangement
             options={vaktmalOptions}
             onChange={(selectValue) => this.setState({ selectValue })}
             value={selectValue}
-            className='createEventSelect'
+            className='col-12'
           />
-        <br />  Kontaktperson: <br />
-          <input className="createEventContactName"ref='contactperson' type='text' placeholder='Navn' /> <br /><input className="createEventContactPhone" ref='contactphone' type='number' placeholder='Telefonnummer' />
+        <br />Kontaktperson:<br />
+          <input className="col-12"ref='contactperson' type='text' placeholder='Navn' /><br /><input className="col-12" ref='contactphone' type='number' placeholder='Telefonnummer' />
           <button className='newEventBtn' onClick={() => this.registerEvent(selectValue)}>Registrer arrangement</button>
           <div ref='alertDiv'></div>
         </div>

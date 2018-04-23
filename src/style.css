@@ -342,6 +342,13 @@ h5 {
   width: 64%;
 }
 
+.createEventText {
+  float: left;
+}
+.createEventFloat {
+  float: right;
+}
+
 .createEventDescription{
   width: 55%;
 }
@@ -363,7 +370,7 @@ h5 {
 }
 
 .createEventAdress {
-  width:  71%;
+  width:  100%;
 }
 .regCity1 {
   width: 49%;
@@ -561,7 +568,7 @@ h5 {
 /*--------Slutt på knapper-------*/
 
 .row{
- clear: left;
+ clear: both;
 }
 
 .columns:after {
