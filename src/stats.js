@@ -42,6 +42,9 @@ export class Stats extends React.Component {
           </div>
         </div>
         <div className="row">
+          <div style={{color: 'red'}} ref='alertDiv' />
+        </div>
+        <div className="row">
           {periode}
         </div>
 
@@ -57,13 +60,26 @@ export class Stats extends React.Component {
 
   componentDidMount() {
     this.refs.finnStats.onclick = () => {
-      userService.getStats(this.refs.startDate.value, this.refs.endDate.value, (result) => {
-        this.periodStats = result;
-        this.forceUpdate();
-      });
+      this.refs.alertDiv.textContent = '';
+
+      // VALIDERING
+      if (this.refs.startDate.value == '' || this.refs.endDate.value == '') {
+        this.refs.alertDiv.textContent = 'Du må velge en start- og sluttdato';
+      }
+
+      else if (this.refs.startDate.value >= this.refs.endDate.value) {
+        this.refs.alertDiv.textContent = 'Til-dato må være hørere enn fra-dato';
+      }
+
+      else {
+        userService.getStats(this.refs.startDate.value, this.refs.endDate.value, (result) => {  // Henter vakter for brukeren innenfor tidsperioden
+          this.periodStats = result;
+          this.forceUpdate();
+        });
+      }
     }
 
-    userService.getConfirmedUsers((result) => {
+    userService.getConfirmedUsers((result) => { // Henter aktiverte brukere
       this.users = result;
       for(let user of this.users) {
         let name = user.firstName + ' ' + user.lastName;

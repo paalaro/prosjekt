@@ -219,7 +219,7 @@ class EventService {
   }
 
   getUsersSkillsofRoles(rolleid, userid, date, callback) {
-    connection.query('SELECT COUNT(*) AS antall, userid FROM user_skills, roller_skills WHERE user_skills.skillid = roller_skills.skillid and rolleid = ? AND userid = ? AND validto > ?', [rolleid, userid, date], (error, result) => {
+    connection.query('SELECT COUNT(*) AS antall, userid FROM user_skills, roller_skills WHERE user_skills.skillid = roller_skills.skillid and rolleid = ? AND userid = ? AND (validto > ? OR validto IS NULL)', [rolleid, userid, date, null], (error, result) => {
       if (error) throw error;
 
       callback(result[0]);

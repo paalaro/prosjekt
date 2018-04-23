@@ -4,7 +4,7 @@ import { userService } from './services/userservice';
 import { eventService } from './services/eventservice';
 import { skillService } from './services/skillservice';
 
-export class Requests extends React.Component {
+export class Requests extends React.Component { // Forespørsler om vaktbytte og deaktiverte brukere
   constructor(props) {
     super(props);
 
@@ -12,7 +12,7 @@ export class Requests extends React.Component {
     this.vaktbytter = [];
   }
 
-  confirm(userId) {
+  confirm(userId) { // Funksjon for å aktivere bruker
     userService.confirm(userId, (result) => {
       userService.getUnconfirmedUsers((result) => {
         this.unconfirmedUsers = result;
@@ -21,21 +21,10 @@ export class Requests extends React.Component {
     });
   }
 
-  confirmAll() {
-    if (confirm('Er du sikkert på at du vil godkjenne alle brukere som venter på godkjenning?') == true) {
-      userService.confirmAll((result) => {
-        userService.getUnconfirmedUsers((result) => {
-          this.unconfirmedUsers = result;
-          this.forceUpdate();
-        });
-      });
-    }
-  }
-
-  confirmVaktbytte(vaktbytte) {
-    eventService.confirmVaktbytte(vaktbytte.newUserid, vaktbytte.eventrolleid, vaktbytte.start, vaktbytte.end, (result) => {
-      eventService.setVaktbytteConfirmed(vaktbytte.vaktbytteid, (result) => {
-        userService.deleteEventPassiv(vaktbytte.start, vaktbytte.end, vaktbytte.oldUserid, (result) => {
+  confirmVaktbytte(vaktbytte) { // Bekreft vaktbytte
+    eventService.confirmVaktbytte(vaktbytte.newUserid, vaktbytte.eventrolleid, vaktbytte.start, vaktbytte.end, (result) => {  // Setter ny bruker på vakten
+      eventService.setVaktbytteConfirmed(vaktbytte.vaktbytteid, (result) => { // Setter vaktbyttet som godkjent
+        userService.deleteEventPassiv(vaktbytte.start, vaktbytte.end, vaktbytte.oldUserid, (result) => {  // Fjerner gammel bruker sin passivperiode på eventperioden
           eventService.getAllVaktbytter((result) => {
             this.vaktbytter = result;
             this.forceUpdate();
@@ -45,7 +34,7 @@ export class Requests extends React.Component {
     });
   }
 
-  denyVaktbytte(vaktbytte) {
+  denyVaktbytte(vaktbytte) {  // Avvise vaktbytte
     eventService.deleteVaktbytte(vaktbytte.vaktbytteid, (result) => {
       eventService.getAllVaktbytter((result) => {
         this.vaktbytter = result;
@@ -71,7 +60,7 @@ export class Requests extends React.Component {
       let vaktbytteTbl = [];
 
 
-      for(let vaktbytte of this.vaktbytter) {
+      for(let vaktbytte of this.vaktbytter) { // Skriver ut vaktbytter
         vaktbytteTbl.push(<tr key={vaktbytte.eventrolleid}>
           <td><b>Arrangement:</b> {vaktbytte.title} </td>
           <td><b>Byttes fra:</b> {vaktbytte.oldfirstName} {vaktbytte.oldlastName}</td>
@@ -108,7 +97,7 @@ export class Requests extends React.Component {
     else {
       let unconfirmedList = [];
 
-      for(let unconfirmedUser of this.unconfirmedUsers) {
+      for(let unconfirmedUser of this.unconfirmedUsers) { // Skriver ut deaktiverte brukere
         unconfirmedList.push(<li key={unconfirmedUser.id} className=''>{unconfirmedUser.firstName + ' ' + unconfirmedUser.lastName}<button onClick={() => this.confirm(unconfirmedUser.id)}>Confirm</button></li>);
       }
 
@@ -116,7 +105,6 @@ export class Requests extends React.Component {
         <h3>Deaktiverte brukere</h3>
         <ul className='userUl'>{unconfirmedList}</ul>
         <br />
-        <button ref='confirmAll' onClick={() => this.confirmAll()}>Confirm all</button>
       </div>;
     }
 
@@ -140,7 +128,7 @@ export class Requests extends React.Component {
   }
 }
 
-export class UserListAdmin extends React.Component {
+export class UserListAdmin extends React.Component { // Admin sin brukerliste, men klikkbare brukere
   constructor(props) {
     super(props);
 
@@ -187,7 +175,7 @@ export class UserListAdmin extends React.Component {
       }
     }
 
-    if (deactivatedList.length == 0) {
+    if (deactivatedList.length == 0) {  // Forskjellige returns etter om det finnes brukere i de forskjellige kategoriene
       return(
         <div className='userList'>
           <input ref='search' type='text' placeholder='Søk etter bruker' />
@@ -281,7 +269,7 @@ export class UserListAdmin extends React.Component {
       this.forceUpdate();
     });
 
-    this.refs.search.oninput = () => {
+    this.refs.search.oninput = () => {  // Søkefunksjon
       this.resultList = [];
       userService.searchUser(this.refs.search.value, (result) => {
         this.userList = result;
@@ -291,7 +279,7 @@ export class UserListAdmin extends React.Component {
   }
 }
 
-export class UserList extends React.Component {
+export class UserList extends React.Component { // Vanlige brukere sin brukerkatalog
   constructor(props) {
     super(props);
 
@@ -301,7 +289,7 @@ export class UserList extends React.Component {
   render() {
     let userList = [];
     let adminList = [];
-    for (let user of this.usersList) {
+    for (let user of this.usersList) {  // Admins og vanligere brukere i forskjellige lister
       if (user.admin == true) {
         adminList.push(<tr key={user.id} className='tableRow'><td className='tableLines'>{user.firstName} {user.lastName}</td><td className='tableLines'>{user.phonenumber}</td><td className='tableLines'>{user.email}</td></tr>);
       }
@@ -408,56 +396,12 @@ export class UserList extends React.Component {
       this.forceUpdate();
     });
 
-    this.refs.search.oninput = () => {
+    this.refs.search.oninput = () => { // Søkefunksjon
       this.resultList = [];
       userService.searchUser(this.refs.search.value, (result) => {
         this.usersList = result;
         this.forceUpdate();
       });
     }
-  }
-}
-
-export class UserDetails extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.user = {};
-
-    this.id = props.match.params.userId;
-  }
-
-  render() {
-    return(
-      <div className='centeredDiv'>
-        <div>
-          <table>
-            <tbody>
-              <Link to='/userlist'>
-              <tr>
-                <td>Navn</td>
-                <td>{this.user.firstName} {this.user.lastName}</td>
-              </tr>
-              </Link>
-              <tr>
-                <td>Telefon</td>
-                <td>{this.user.phonenumber}</td>
-              </tr>
-              <tr>
-                <td>Epost</td>
-                <td>{this.user.email}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    );
-  }
-
-  componentDidMount() {
-    userService.getUser(this.id, (result) => {
-      this.user = result;
-      this.forceUpdate();
-    });
   }
 }

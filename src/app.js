@@ -9,23 +9,21 @@ import { Menu, LoggedinMenu, AdminLoggedinMenu } from './menues';
 import { Login, Registration, Registered, ForgotPassword, PasswordSent, loggedin, updateUserDetails, selectUser } from './outlogged';
 import { Profile, MyProfile, EditProfile, checkOldSkills, ChangePassword } from './profile';
 import { Requests, UserListAdmin, UserList, UserDetails } from './users';
-import { EventList, CreateEvent, EditEvent, Roles, ChangeRole } from './events';
+import { EventList, CreateEvent, EditEvent, Roles, ChangeRole, OldEventRoles } from './events';
 import { EventDetails } from './eventdetails';
 import { Stats } from './stats'
 import crypto from 'crypto';
-
-
 
 crypto.DEFAULT_ENCODING = 'hex';
 
 
 
-function checkPoints() {
+function checkPoints() { // Funksjon som kjører hver gang noen logger inn for å sjekke om det finnes vaktpoeng som ikke har blitt delt ut enda.
   eventService.getPoints((result) => {
-    let eventroller = result;
+    let eventroller = result; // Resultatet inneholder vakter der vaktpoeng ikke har blitt delt ut enda
     for (let eventrolle of eventroller) {
       let hours = Math.floor((eventrolle.end.getTime() - eventrolle.start.getTime()) / 3600000);
-      eventService.givePoints(eventrolle.userid, hours, eventrolle.event_rolle_id, (result) => {
+      eventService.givePoints(eventrolle.userid, hours, eventrolle.event_rolle_id, (result) => {  // Funksjon som gir et vaktpoeng for hver time vakten varer.
 
       });
     }
@@ -41,10 +39,10 @@ function checkPoints() {
 // with props.match.params.customerId set to 5.
 
 
-export function renderOutlogged() {
+export function renderOutlogged() { // Kjører når man logger inn
   checkOldSkills();
-  let loggedinUser = userService.getSignedInUser();
-  if (loggedinUser != undefined) {
+  let loggedinUser = userService.getSignedInUser(); // Sjekker om det ligger lagret en bruker i localStorage som ikke har logget ut
+  if (loggedinUser != undefined) {  // Dersom det ligger en bruker her blir brukeren sendt videre til ReactDOM render for admin eller vanlig bruker.
     if (loggedinUser.admin == true) {
       renderAdminLogin(loggedinUser.id);
       selectUser(loggedinUser);
@@ -54,7 +52,7 @@ export function renderOutlogged() {
       selectUser(loggedinUser);
     }
   }
-  else {
+  else {  // Dersom ingen bruker er logget inn fra før, kjører denne ReactDOM.render, der man først kommer inn på login-siden
     ReactDOM.render((
       <HashRouter>
         <div>
@@ -76,7 +74,7 @@ export function renderOutlogged() {
 renderOutlogged();
 checkPoints();
 
-export function renderLogin(user) {
+export function renderLogin(user) { //ReactDOM.render for standard brukere
   ReactDOM.render((
     <HashRouter>
       <div>
@@ -91,6 +89,7 @@ export function renderLogin(user) {
           <Route exact path='/eventlist' component={EventList} />
           <Route exact path='/eventdetails/:eventId' component={EventDetails} />
           <Route exact path='/changerole/:userId' component={ChangeRole} />
+          <Route exact path='/oldeventroles' component={OldEventRoles} />
           <EventList />
         </Switch>
       </div>
@@ -98,7 +97,7 @@ export function renderLogin(user) {
   ), document.getElementById('root'));
 }
 
-export function renderAdminLogin(user) {
+export function renderAdminLogin(user) { //ReactDOM.render for admins
   ReactDOM.render((
     <HashRouter>
       <div>
@@ -117,6 +116,7 @@ export function renderAdminLogin(user) {
           <Route exact path='/roles/:eventId' component={Roles} />
           <Route exact path='/stats' component={Stats} />
           <Route exact path='/changerole/:userId' component={ChangeRole} />
+          <Route exact path='/oldeventroles' component={OldEventRoles} />
           <Requests />
         </Switch>
       </div>

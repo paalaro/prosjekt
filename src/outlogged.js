@@ -33,6 +33,7 @@ export class Login extends React.Component {
             <h3>Login</h3> <br /> <br /> <br /> <br /> <br /> <br />
             <input ref='username' className='loginInput' type='text' placeholder='Brukernavn' /> <br />
             <input ref='password' className='loginInput' type='password' placeholder='Passord' /> <br />
+            <div style={{color: 'red'}} ref='alertDiv' />
             <button ref='login' className='submitBtn'>Logg inn</button>
             <div className='forgotPasswordLinkDiv'>
               <Link to='/forgotpassword' className='forgotPasswordLink'>Glemt passord?</Link>
@@ -44,36 +45,46 @@ export class Login extends React.Component {
 
   componentDidMount () {
     this.refs.login.onclick = () => {
-      crypto.pbkdf2(this.refs.password.value, 'RødeKors', 100, 64, 'sha512', (err, derivedKey) => {
-        if (err) throw err;
+      this.refs.alertDiv.textContent = '';
 
-        this.password = derivedKey;
+      // VALIDERING
+      if (this.refs.username.value == '' || this.refs.password.value == '') {
+        this.refs.alertDiv.textContent = 'Fyll inn brukernavn og passord';
+      }
+
+      else {
+        crypto.pbkdf2(this.refs.password.value, 'RødeKors', 100, 64, 'sha512', (err, derivedKey) => { // Krypterer valuen i passord-input slik at den kan sammenlignes med databasen
+          if (err) throw err;
+
+          this.password = derivedKey;
 
 
-        userService.login(this.refs.username.value, this.password, (result) => {
-          if (result == undefined) {
-            alert("Feil brukernavn eller passord");
-          }
-          else {
-            loggedin = result;
-            localStorage.setItem('loggedinUser', JSON.stringify(result));
-
-            if (result.admin == true) {
-              renderAdminLogin(result.id);
+          userService.login(this.refs.username.value, this.password, (result) => {
+            if (result == undefined) {
+              this.refs.alertDiv.textContent = "Feil brukernavn eller passord";
             }
-
             else {
-              if (result.aktivert == false) {
-                alert('Brukeren din er ikke godkjent av administrator enda.');
+              loggedin = result;
+              localStorage.setItem('loggedinUser', JSON.stringify(result));  // Lagrer brukeren som logger inn i localStorage
+              localStorage.setItem('edituser', JSON.stringify(result));
+
+              if (result.admin == true) { // Kjører de forskjellige ReactDOM.render ettersom om brukeren er admin eller ikke
+                renderAdminLogin(result.id);
               }
 
               else {
-                renderLogin(result.id);
+                if (result.aktivert == false) { // Feil dersom brukeren ikke er godkjent av admin enda
+                  this.refs.alertDiv.textContent = 'Brukeren din er ikke godkjent av administrator enda';
+                }
+
+                else {
+                  renderLogin(result.id);
+                }
               }
             }
-          }
+          });
         });
-      });
+      }
     }
   }
 }
@@ -133,6 +144,7 @@ export class Registration extends React.Component {
     this.refs.newUserButton.onclick = () => {
       this.refs.alertDiv.textContent = '';
 
+      // VALIDERING
       if (this.refs.fname.value == '' || this.refs.lname.value == '' || this.refs.adress.value == '' || this.refs.postalnumber.value == '' ||
       this.refs.email.value == '' || this.refs.username.value == '' || this.refs.password1.value == '' || this.refs.password2.value == '') {
         this.refs.alertDiv.textContent = 'Vennligst fyll ut alle feltene';
@@ -159,7 +171,7 @@ export class Registration extends React.Component {
               }
 
               else {
-                crypto.pbkdf2(this.refs.password1.value, 'RødeKors', 100, 64, 'sha512', (err, derivedKey) => {
+                crypto.pbkdf2(this.refs.password1.value, 'RødeKors', 100, 64, 'sha512', (err, derivedKey) => { // Krypterer passord, og registrerer deretter bruker
                   if (err) throw err;
 
                   this.password = derivedKey;

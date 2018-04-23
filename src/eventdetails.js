@@ -10,7 +10,7 @@ import moment from 'moment';
 import VirtualizedSelect from 'react-virtualized-select';
 
 
-export class EventDetails extends React.Component {
+export class EventDetails extends React.Component { //Side for å vise frem og endre detaljer og roller for arrangement
   constructor(props) {
     super(props);
 
@@ -19,7 +19,6 @@ export class EventDetails extends React.Component {
     this.rolle = {};
     this.eventRoller = [];
     this.eventRollernoUser = [];
-    this.roleCount = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     this.allUsers = [];
     this.interestedUsers = [];
     this.capableUsers = [];
@@ -42,9 +41,11 @@ export class EventDetails extends React.Component {
     let fordelRollerBtn;
     let emptyRolesBtn;
 
-    if (this.interest == undefined) {
+    let today = new Date();
+
+    if (this.interest == undefined && this.evnt.start > today) { // Knapp for å melde interesse dersom man ikke har gjort det fra før
       interestBtn = <button onClick={() =>
-        eventService.setInterest(this.evnt.eventid, this.user.id, (result) => {
+        eventService.setInterest(this.evnt.eventid, this.user.id, (result) => { // Oppdaterer brukeren sin interesse for arrangementet
           eventService.getInterest(this.evnt.eventid, this.user.id, (result) => {
             this.interest = result;
             this.forceUpdate();
@@ -52,7 +53,7 @@ export class EventDetails extends React.Component {
         })}>Meld interesse</button>;
     }
 
-    else {
+    else if (this.evnt.start > today) { // Knapp for å fjerne interesse
       interestBtn = <button onClick={() =>
         eventService.removeInterest(this.evnt.eventid, this.user.id, (result) => {
           eventService.getInterest(this.evnt.eventid, this.user.id, (result) => {
@@ -66,23 +67,23 @@ export class EventDetails extends React.Component {
       interessert = 'Du er interessert i dette arrangementet';
     }
 
-
     for (let rolle of this.eventRollernoUser) {
-      rolleList.push(<tr key={ rolle.event_rolle_id } ><td> { rolle.rollenavn } </td><td> LEDIG </td></tr>);
+      rolleList.push(<tr key={ rolle.event_rolle_id } ><td> { rolle.rollenavn } </td><td> LEDIG </td></tr>);  // Alle roller på arrangementet som ikke har blitt tildelt noen bruker enda
     }
 
-    if (this.user.admin == true) {
+    if (this.user.admin == true) { // Knapper som skal skrives til siden dersom innlogget bruker er administrator
       rolleBtn = <button onClick={() => this.props.history.push('/roles/' + this.evnt.eventid)}>Roller</button>;
       editBtn = <button onClick={() => this.props.history.push('/editevent')}>Endre detaljer</button>;
-      if (this.eventRollernoUser.length != 0) {
+
+      if (this.eventRollernoUser.length != 0) { // Knapp for å fordele roller vises dersom det fortsatt finnes roller som ikke har blitt tildelt en person
         fordelRollerBtn = <button onClick={() => this.giveRoles()}>Fordel roller</button>;
       }
 
       if (this.eventRoller[0] != undefined) {
-        emptyRolesBtn = <button onClick={() =>
+        emptyRolesBtn = <button onClick={() => // Mulighet for knapp til å fjerne personer fra rollene på dette arrangementet
           eventService.emptyEventRoles(this.evnt.eventid, (result) => {
             userService.deleteAllEventPassiv(this.evnt.start, this.evnt.end, (result) => {
-              eventService.getEventRoller(this.evnt.eventid, (result) => {
+              eventService.getEventRoller(this.evnt.eventid, (result) => {  // Oppdateres rollene for arrangementet
                 this.eventRoller = result;
                 eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
                   this.eventRollernoUser = result;
@@ -94,9 +95,9 @@ export class EventDetails extends React.Component {
       }
 
 
-      for (let rolle of this.eventRoller) {
-        if (rolle.confirmed == true) {
-          if (rolle.userid == this.user.id) {
+      for (let rolle of this.eventRoller) {   // Skriver ut rollene til liste ettersom om rollene er godkjent eller ikke
+        if (rolle.confirmed == true) { // Forskjell på om vakta er godtatt eller ikke
+          if (rolle.userid == this.user.id) {   // Dersom innlogget bruker er den samme som brukeren som skal listes ut, får man opp en knapp for vaktbytte
             rolleList.push(<tr key={ rolle.event_rolle_id} >
               <td> { rolle.rollenavn } </td>
               <td> { rolle.firstName } {rolle.lastName}</td>
@@ -138,7 +139,7 @@ export class EventDetails extends React.Component {
     }
 
     else {
-      for (let rolle of this.eventRoller) {
+      for (let rolle of this.eventRoller) { // Listen for vanlige brukere ser litt annerledes ut
         if (rolle.confirmed == true) {
           if (rolle.userid == this.user.id) {
             rolleList.push(<tr key={ rolle.event_rolle_id} >
@@ -152,7 +153,7 @@ export class EventDetails extends React.Component {
           else {
             rolleList.push(<tr key={ rolle.event_rolle_id} >
               <td> { rolle.rollenavn } </td>
-              <td> { rolle.firstName } {rolle.lastName}</td>
+              <td> { rolle.firstName } { rolle.lastName }</td>
               </tr>);
           }
         }
@@ -170,9 +171,9 @@ export class EventDetails extends React.Component {
           else {
             rolleList.push(<tr key={ rolle.event_rolle_id } >
               <td> { rolle.rollenavn } </td>
-              <td>
-              Venter på godkjenning
-              </td>
+              <td>Venter på godkjenning</td>
+              <td>  --  </td>
+              <td>  --  </td>
               </tr>);
           }
         }
@@ -181,7 +182,7 @@ export class EventDetails extends React.Component {
 
 
 
-    if (this.eventRoller.length > 0) {
+    if (this.eventRoller.length > 0) {  //Forskjellige headere på listen/tabellen for roller/brukere ettersom om det finnes tomme roller eller ikke
       rolleListHeader = <tr><th>Rolle</th><th>Status</th><th>Tildelt</th><th>Godkjent</th></tr>;
     }
 
@@ -189,14 +190,8 @@ export class EventDetails extends React.Component {
       rolleListHeader = <tr><th>Rolle</th><th>Status</th></tr>;
     }
 
-    if (this.evnt.start != undefined) {
-      if (this.evnt.oppmote == null) {
-        this.oppmote = this.evnt.start.toLocaleTimeString().slice(0, -3);
-      }
-
-      else {
-        this.oppmote = this.evnt.oppmote.slice(0, -3);
-      }
+    if (this.evnt.oppmote != undefined) { //Skriver ut oppmøtetidspunkt i riktig format
+      this.oppmote = this.evnt.oppmote.slice(0, -3);
     }
 
     let loggedinUser = userService.getSignedInUser();
@@ -236,13 +231,13 @@ export class EventDetails extends React.Component {
     );
   }
 
-  goToRoleChange(rolle) {
+  goToRoleChange(rolle) { //Funksjon for å lagre vakt i localStorage og sende brukeren videre til siden for rollebytte
     localStorage.setItem('rollebytte', JSON.stringify(rolle));
     this.props.history.push('/changerole/' + rolle.userid)
   }
 
-  giveRoles() {
-    this.refs.fordelRollerDiv.textContent = 'Roller fordeles';
+  giveRoles() { // Funksjon som deler ut roller til interesserte brukere med riktig kompetanse
+    this.refs.fordelRollerDiv.textContent = 'Roller fordeles';  //  Tekst som blir stående på siden mens roller fordeles
     let stop = false;
     let usedUserids = [];
     let usedEventRoleids = [];
@@ -252,61 +247,63 @@ export class EventDetails extends React.Component {
     this.emailRecievers = [];
     let roleRequirement;
 
-    eventService.getUsedUsers(this.evnt.eventid, (result) => {
+    eventService.getUsedUsers(this.evnt.eventid, (result) => {  // Brukere som allerede har en rolle på dette arrangementet hentes og pushes i en array
       for (let id of result) {
         usedUserids.push(id.userid);
       }
 
-      eventService.getUsedEventRoles(this.evnt.eventid, (result) => {
+      eventService.getUsedEventRoles(this.evnt.eventid, (result) => { // Roller som allerede er dekket på dette arrangementet hentes og pushes i en array
         for (let id of result) {
           usedEventRoleids.push(id.event_rolle_id);
         }
 
-        eventService.getInterestedUsers(this.evnt.eventid, (result) => {
+        eventService.getInterestedUsers(this.evnt.eventid, (result) => {  // Henter interesserte brukere for dette arrangementet sortert etter vaktpoeng
           this.interestedUsers = result;
-          for (let id of this.interestedUsers) {
+          for (let id of this.interestedUsers) {  // Sjekker om de interesserte brukerne allerede har en rolle på dette arrangementet
             let includes = usedUserids.includes(id.id);
 
             if (includes == false) {
-              interestedUsersNotUsed.push(id);
+              interestedUsersNotUsed.push(id);  // Interesserte brukere som ikke har en rolle enda
             }
           }
 
-          if (interestedUsersNotUsed.length != 0) {
-            eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
+          if (interestedUsersNotUsed.length != 0) { // Dersom det finnes interesserte brukere uten rolle på dette arrangementet
+            eventService.getEventRollernoUser(this.evnt.eventid, (result) => {  // Henter roller uten brukere for dette arrangementet
               this.eventRollernoUser = result;
-              skillService.countRoleReq((result) => {
+              skillService.countRoleReq((result) => { // Teller hvor mange kompetansekrav det er for hver rolle
                 this.roleReq = result;
                 if (this.interestedUsers != undefined) {
-                  for (let user of interestedUsersNotUsed) {
-                    userService.getPassiv(user.userid, (result) => {
+                  for (let user of interestedUsersNotUsed) {  // Kjører gjennom alle interesserte brukere som ikke har rolle på arrangementet
+                    userService.getPassiv(user.userid, (result) => {  // Henter alle passiv-perioder for denne brukeren
                       userPassiv = result;
                       let passiv = false;
                       let eventStart = this.evnt.start;
                       let eventEnd = this.evnt.end;
 
-                      for (let i = 0; i < userPassiv.length; i++) {
+                      for (let i = 0; i < userPassiv.length; i++) { // Sjekker alle passiv-perioder om de forstyrrer arrangementet
                         let startPassive = userPassiv[i].passivstart;
                         let endPassive = userPassiv[i].passivend;
 
-                        if (startPassive <= eventEnd && endPassive >= eventStart) {
+                        if (startPassive <= eventEnd && endPassive >= eventStart) { // Dersom de gjør det, blir brukeren satt som passiv
                           passiv = true;
                         }
                       }
 
-                      if (user == interestedUsersNotUsed[interestedUsersNotUsed.length - 1]) {
+
+                      if (user == interestedUsersNotUsed[interestedUsersNotUsed.length - 1]) {  //  Dersom brukeren er den siste i listen over intereserte brukere som ikke har rolle
                         for (let eventRolle of this.eventRollernoUser) {
-                          if (passiv == true) {
-                            eventService.getEventRoller(this.evnt.eventid, (result) => {
+                          if (passiv == true) {   // Sjekker om brukeren er passiv
+                            eventService.getEventRoller(this.evnt.eventid, (result) => {  // Oppdaterer rollelistene
                               this.eventRoller = result;
                               eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
                                 this.eventRollernoUser = result;
+                                // Dersom det fortsatt er igjen roller uten bruker, dette er den siste
                                 if (this.eventRollernoUser.length != 0 && eventRolle.event_rolle_id == this.eventRollernoUser[this.eventRollernoUser.length - 1].event_rolle_id) {
                                   stop = true;
-                                  this.giveRolesToNotInterested();
+                                  this.giveRolesToNotInterested();  // Kjører funksjon for å fordele roller til ikke interesserte brukere
                                 }
 
-                                else if (this.eventRollernoUser.length == 0) {
+                                else if (this.eventRollernoUser.length == 0) { // Dersom det ikke er igjen roller uten bruker, stopper funksjonen her
                                   this.refs.fordelRollerDiv.textContent = '';
                                   this.forceUpdate();
                                 }
@@ -315,7 +312,7 @@ export class EventDetails extends React.Component {
                           }
 
                           else {
-                          eventService.getUsersSkillsofRoles(eventRolle.rolleid, user.userid, this.evnt.end, (result) => {
+                          eventService.getUsersSkillsofRoles(eventRolle.rolleid, user.userid, this.evnt.end, (result) => {  // Teller hvor mange av kompetansekravene for denne rollen brukeren har
                             let numberOfSkills = result.antall;
                             if (this.roleReq[eventRolle.rolleid - 1] != undefined) {
                               roleRequirement = this.roleReq[eventRolle.rolleid - 1].antallskills;
@@ -325,37 +322,38 @@ export class EventDetails extends React.Component {
                               roleRequirement = 0;
                             }
 
-                            if (numberOfSkills != undefined && numberOfSkills == roleRequirement) {
+                            if (numberOfSkills != undefined && numberOfSkills == roleRequirement) { // Dersom brukeren har riktig antall av kompetansekravene for rollen
+                              // Pushes inn i array med brukere med riktig kopetanse
                               this.capableUsers.push({userid: user.userid, rolleid: eventRolle.rolleid, points: user.vaktpoeng, eventrolleid: eventRolle.event_rolle_id, passivStart: user.passivstart, passivEnd: user.passivEnd});
-                              for (let i = 0; i < this.capableUsers.length; i++) {
+                              for (let i = 0; i < this.capableUsers.length; i++) {  // Kjører gjennom utvalgte brukere og sjekker om de allerede er har en rolle på dette arrangementet
                                 let exists = usedUserids.includes(this.capableUsers[i].userid);
                                 let hasUser = usedEventRoleids.includes(this.capableUsers[i].eventrolleid);
 
-                                if (exists == false && hasUser == false) {
-                                  usedUserids.push(this.capableUsers[i].userid);
-                                  usedEventRoleids.push(this.capableUsers[i].eventrolleid);
-                                  this.emailRecievers.push(this.capableUsers[i].userid);
+                                if (exists == false && hasUser == false) { // Dersom de ikke har det
+                                  usedUserids.push(this.capableUsers[i].userid);  // Setter brukeren inn i arrayen over brukere med rolle på dette arrangementet
+                                  usedEventRoleids.push(this.capableUsers[i].eventrolleid);   // Setter rollen inn i arrayen over roller med bruker på arrangementet
+                                  this.emailRecievers.push(this.capableUsers[i].userid);  // Setter bruker-id'en in i array med brukere det skal sendes epost til
 
-                                  eventService.setRole(this.capableUsers[i].userid, this.capableUsers[i].eventrolleid, this.evnt.start, this.evnt.end, (result) => {
-                                      eventService.getEventRoller(this.evnt.eventid, (result) => {
-                                        this.eventRoller = result;
-                                        eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
-                                          this.eventRollernoUser = result;
-                                          if (this.eventRollernoUser.length != 0 && eventRolle.event_rolle_id == this.eventRollernoUser[this.eventRollernoUser.length - 1].event_rolle_id && stop == false) {
+                                  eventService.setRole(this.capableUsers[i].userid, this.capableUsers[i].eventrolleid, this.evnt.start, this.evnt.end, (result) => {  // Setter id'en til brukeren inn i rollen
+                                    eventService.getEventRoller(this.evnt.eventid, (result) => {  // Oppdaterer rollelistene
+                                      this.eventRoller = result;
+                                      eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
+                                        this.eventRollernoUser = result;
+                                        if (this.eventRollernoUser.length != 0 && eventRolle.event_rolle_id == this.eventRollernoUser[this.eventRollernoUser.length - 1].event_rolle_id && stop == false) {
+                                          stop = true;
+                                          this.giveRolesToNotInterested();
+                                        }
+
+                                        else if (this.eventRollernoUser.length == 0) {
+                                          this.forceUpdate();
+                                          this.refs.fordelRollerDiv.textContent = '';
+                                          if (stop == false) {  // Kjører mail-funkjonen dersom den ikke allerede er kjørt
+                                            this.sendMail(this.emailRecievers);
                                             stop = true;
-                                            this.giveRolesToNotInterested();
                                           }
-
-                                          else if (this.eventRollernoUser.length == 0) {
-                                            this.forceUpdate();
-                                            this.refs.fordelRollerDiv.textContent = '';
-                                            if (stop == false) {
-                                              this.sendMail(this.emailRecievers);
-                                              stop = true;
-                                            }
-                                          }
-                                        });
+                                        }
                                       });
+                                    });
                                   });
                                 }
 
@@ -410,7 +408,7 @@ export class EventDetails extends React.Component {
                       }
 
 
-                      else if (passiv == false && user != interestedUsersNotUsed[interestedUsersNotUsed.length - 1]) {
+                      else if (passiv == false && user != interestedUsersNotUsed[interestedUsersNotUsed.length - 1]) {  // Dersom brukeren ikke er den siste av de interesserte brukeren uten rolle
                         for (let eventRolle of this.eventRollernoUser) {
                           eventService.getUsersSkillsofRoles(eventRolle.rolleid, user.userid, this.evnt.end, (result) => {
                             let numberOfSkills = result.antall;
@@ -435,7 +433,19 @@ export class EventDetails extends React.Component {
                                   this.emailRecievers.push(this.capableUsers[i].userid);
 
                                   eventService.setRole(this.capableUsers[i].userid, this.capableUsers[i].eventrolleid, this.evnt.start, this.evnt.end, (result) => {
-
+                                    eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
+                                      this.eventRollernoUser = result;
+                                      if (this.eventRollernoUser.length == 0) {
+                                        eventService.getEventRoller(this.evnt.eventid, (result) => {
+                                          this.eventRoller = result;
+                                          if (stop == false) {
+                                            this.sendMail(this.emailRecievers);
+                                            stop = true;
+                                          }
+                                          this.forceUpdate();
+                                        });
+                                      }
+                                    });
                                   });
                                 }
                               }
@@ -458,7 +468,7 @@ export class EventDetails extends React.Component {
     });
   }
 
-  giveRolesToNotInterested() {
+  giveRolesToNotInterested() {  // Samme funksjon som over, bare for ikke-interesserte brukere
     this.refs.fordelRollerDiv.textContent = 'Roller fordeles, snart ferdig';
     let usedUserids = [];
     let usedEventRoleids = [];
@@ -478,7 +488,7 @@ export class EventDetails extends React.Component {
           usedEventRoleids.push(id.event_rolle_id);
         }
 
-        eventService.getAllUsersByVaktpoeng((result) => {
+        eventService.getAllUsersByVaktpoeng((result) => {   // Her hentes brukerne ut og sorteres etter vaktpoeng i stigende rekkefølge, altså de med minst vaktpoeng prioriteres
           this.sortedUsers = result;
           for (let id of this.sortedUsers) {
             let includes = usedUserids.includes(id.id);
@@ -611,7 +621,7 @@ export class EventDetails extends React.Component {
                                 this.emailRecievers.push(this.capableUsers[i].userid);
 
                                 eventService.setRole(this.capableUsers[i].userid, this.capableUsers[i].eventrolleid, this.evnt.start, this.evnt.end, (result) => {
-
+                                  console.log('Her');
                                 });
                               }
                             }
@@ -629,7 +639,7 @@ export class EventDetails extends React.Component {
     });
   }
 
-  sendMail(userList) {
+  sendMail(userList) {  // Funksjonen som sender ut mail til brukerne som har blitt tildelt en rolle på arrangementet
     for (let user of userList) {
       userService.getUserEventInfo(user, this.evnt.eventid, (result) => {
         this.userEvent = result;
@@ -638,6 +648,7 @@ export class EventDetails extends React.Component {
         let mailSubject = 'Utkalling til arrangement';
         let text = 'Hei ' + this.userEvent.firstName + '. Du har blitt kalt ut til arrangement ' + this.userEvent.title + ' som ' + this.userEvent.rollenavn + '. Logg inn på appen for mer info og for å godkjenne vakten.';
 
+        console.log(this.userEvent.firstName);
         // mailService.sendMail(recieverAdress, mailSubject, text);
       });
     }
@@ -646,8 +657,8 @@ export class EventDetails extends React.Component {
   componentDidMount() {
     eventService.getEvent(this.id, (result) => {
       this.evnt = result;
-      localStorage.setItem('selectedEvent', JSON.stringify(result));
-      this.start = this.evnt.start.toLocaleString().slice(0, -3);
+      localStorage.setItem('selectedEvent', JSON.stringify(result));  // Lagrer arrangementet i localStorage for raskere tilgang til info dersom man skal endre arrangementinfo.
+      this.start = this.evnt.start.toLocaleString().slice(0, -3); // Setter start og sluttdato til riktig format
       this.end = this.evnt.end.toLocaleString().slice(0, -3);
       userService.getCity(this.evnt.postalnumber, (result) => {
         this.city = result.poststed;
@@ -658,21 +669,8 @@ export class EventDetails extends React.Component {
             eventService.getEventRollernoUser(this.evnt.eventid, (result) => {
               this.eventRollernoUser = result;
               userService.getUsers((result) => {
-                this.allUsers = result
-                eventService.countRoller((result) => {
-                  let count = result + 1;
-                  for (var i = 0; i < count; i++) {
-                    eventService.testRolle(this.evnt.eventid, i, (result, idnr) => {
-                      if (result[0] != undefined) {
-                        this.roleCount[result[0].rolleid] = result.length;
-                      }
-
-                      if (idnr == count - 1) {
-                        this.forceUpdate();
-                      }
-                    });
-                  }
-                });
+                this.allUsers = result;
+                this.forceUpdate();
               });
             });
           });

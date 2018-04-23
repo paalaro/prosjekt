@@ -13,7 +13,7 @@ export function logout() {
   renderOutlogged();
 }
 
-export class Menu extends React.Component {
+export class Menu extends React.Component { // Meny som vises før man er logget inn
   render() {
     return (
       <ul className="olnavbar-ul">
@@ -24,7 +24,7 @@ export class Menu extends React.Component {
   }
 }
 
-export class AdminLoggedinMenu extends React.Component {
+export class AdminLoggedinMenu extends React.Component {  // Innlogget-meny for administratorer
   constructor(props) {
     super(props);
 
@@ -40,7 +40,8 @@ export class AdminLoggedinMenu extends React.Component {
         <li className="dropdown-li"><Link to="/eventlist" className="navbar-link">Arrangement</Link></li>
           <div className="dropdowncontent">
           <ul className="navbar-ul">
-            <li className="dropdown-li"><Link to='createevent' className="dropdown-link">Opprett arrangement</Link></li>
+            <li className="dropdown-li"><Link to='/createevent' className="dropdown-link">Opprett arrangement</Link></li>
+            <li className="dropdown-li"><Link to='/oldeventroles' className="dropdown-link">Tidligere vakter</Link></li>
           </ul>
           </div>
         </div>
@@ -74,7 +75,7 @@ export class AdminLoggedinMenu extends React.Component {
   }
 }
 
-export class LoggedinMenu extends React.Component {
+export class LoggedinMenu extends React.Component { // Innlogget-meny for vanlige brukere
   constructor(props) {
     super(props);
 

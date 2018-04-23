@@ -18,9 +18,9 @@ moment.locale('ko', {
     },
 });
 
-BigCalendar.setLocalizer(BigCalendar.momentLocalizer(moment))
+BigCalendar.setLocalizer(BigCalendar.momentLocalizer(moment));
 
-export class EventList extends React.Component {
+export class EventList extends React.Component { // Arrangementframside med kalender og arrangementliste
   constructor(props) {
     super(props);
 
@@ -42,12 +42,12 @@ export class EventList extends React.Component {
     let passivList = [];
     let passivHeader;
 
-    for (let evnt of this.evntList) {
+    for (let evnt of this.evntList) {   // Pusher kommende arrangementer inn i en liste/tabell
       evntsList.push(<tr key={evnt.eventid} className='tableRow' onClick={() => this.props.history.push('/eventdetails/' + evnt.eventid)}><td className='tableLines'>{evnt.title}</td><td className='tableLines'>{evnt.start.toLocaleString().slice(0, -3)}</td><td className='tableLines'>{evnt.end.toLocaleString().slice(0, -3)}</td></tr>)
     }
 
-    for (let rolle of this.userRoles) {
-      if (rolle.confirmed == false) {
+    for (let rolle of this.userRoles) {   // Pusher kommende roller for brukeren inn i en tabell
+      if (rolle.confirmed == false) { // Forskjell på om rollen er godkjent eller ikke
         userRoles.push(<tr className='tableRow' key={rolle.event_rolle_id}>
           <td onClick={() => this.props.history.push('/eventdetails/' + rolle.eventid)} className='tableLines'>{rolle.title}</td>
           <td className='tableLines' onClick={() => this.props.history.push('/eventdetails/' + rolle.eventid)}>{rolle.rollenavn}</td>
@@ -74,8 +74,8 @@ export class EventList extends React.Component {
 
     let today = new Date().toLocaleDateString();
 
-    for (let passiv of this.userPassiv) {
-      if (passiv.passivstart.toLocaleDateString() > today || passiv.passivend.toLocaleDateString() > today) {
+    for (let passiv of this.userPassiv) {   // Skriver ut brukerens passiv-perioder
+      if (passiv.passivstart.toLocaleDateString() > today) {
         passivList.push(<tr className='tableRow' key={passiv.passivid}><td className='tableLines'>{passiv.passivstart.toLocaleDateString()}</td><td>{passiv.passivend.toLocaleDateString()}</td>
         <td><button onClick={() => userService.deletePassiv(passiv.passivid, (result) => {
           userService.getPassivNoEvent(this.user.id, (result) => {
@@ -160,12 +160,12 @@ export class EventList extends React.Component {
     );
   }
 
-  goToRoleChange(rolle) {
+  goToRoleChange(rolle) { //Funksjon for å lagre vakt i localStorage og sende brukeren videre til siden for rollebytte
     localStorage.setItem('rollebytte', JSON.stringify(rolle));
     this.props.history.push('/changerole/' + rolle.userid);
   }
 
-  confirmRole(eventrolleid) {
+  confirmRole(eventrolleid) { // Funksjon for å godkjenne en rolle
     eventService.confirmRoleEvent(eventrolleid, (result) => {
       eventService.getUserEventRoller(this.user.id, (result) => {
         this.userRoles = result;
@@ -174,11 +174,11 @@ export class EventList extends React.Component {
     });
   }
 
-  regPassiv() {
+  regPassiv() { // Funksjon for å registrere en passiperiode
     this.refs.passivalertDiv.textContent = '';
 
     if (this.refs.startPassiv.value == '' || this.refs.endPassiv.value == '') {
-      this.refs.passivalertDiv.textContent = 'Du må velge en start- og sluttdato'
+      this.refs.passivalertDiv.textContent = 'Du må velge en start- og sluttdato';
     }
 
     else {
@@ -211,7 +211,7 @@ export class EventList extends React.Component {
   }
 }
 
-export class Roles extends React.Component {
+export class Roles extends React.Component {  // Side for å endre rolle for et arrangement
   constructor(props) {
     super(props);
 
@@ -227,10 +227,8 @@ export class Roles extends React.Component {
 
   render() {
     let rolleList = [];
-    // for (let rolle of this.allRoles) {
-    //   this.roleCountAfter[rolle.rolleid - 1] = this.roleCount[rolle.rolleid - 1];
-    // }
-    for (let rolle of this.allRoles) {
+
+    for (let rolle of this.allRoles) {  // Skriver ut alle roller med en pluss og en minus-knapp
       rolleList.push(
         <tr key={rolle.rolleid}>
         <td>{ rolle.rollenavn }</td>
@@ -258,7 +256,7 @@ export class Roles extends React.Component {
     );
   }
 
-  confirmRoles() {
+  confirmRoles() { // Funksjon for å sammenligne om det er gjort noen endringer i antall roller
     let equal = true;
     for (let rolle of this.allRoles) {
       if (this.roleCount[rolle.rolleid - 1] != this.roleCountAfter[rolle.rolleid - 1]) {
@@ -266,19 +264,19 @@ export class Roles extends React.Component {
       }
     }
 
-    if (equal == true) {
+    if (equal == true) {  // Dersom det ikke er gjort noen endringer
       this.props.history.push('/eventdetails/' + this.id);
     }
 
     else {
-      for (let rolle of this.allRoles) {
+      for (let rolle of this.allRoles) {  // Setter differansen for hver rolle
         if (this.roleCount[rolle.rolleid - 1] != this.roleCountAfter[rolle.rolleid - 1]) {
           this.difference[rolle.rolleid - 1] = this.roleCountAfter[rolle.rolleid - 1] - this.roleCount[rolle.rolleid - 1];
         }
       }
 
       for (let i = 0; i < this.totalRoles; i++) {
-        if (this.difference[i] > 0) {
+        if (this.difference[i] > 0) { // Legger til roller ved positiv differanse
           for (let j = 0; j < this.difference[i]; j++) {
             eventService.regRolle(this.evnt.eventid, i + 1, (result) => {
 
@@ -286,7 +284,7 @@ export class Roles extends React.Component {
           }
         }
 
-        else if (this.difference[i] < 0) {
+        else if (this.difference[i] < 0) {  // Sletter roller ved negativ differanse
           eventService.getEventRolle(this.evnt.eventid, i + 1, (result) => {
             this.allRolleEvent = result;
             for (var j = 0; j < -this.difference[i]; j++) {
@@ -313,8 +311,8 @@ export class Roles extends React.Component {
           this.totalRoles = result;
           for (let i = 0; i < this.totalRoles + 1; i++) {
             eventService.testRolle(this.evnt.eventid, i, (result, idnr) => {
-              if (result[0] != undefined) {
-                this.roleCount[idnr - 1] = result.length;
+              if (result[0] != undefined) { // Lager en plass i arrrayene for hver rolle
+                this.roleCount[idnr - 1] = result.length; // Gjør klart for sammenligning
                 this.roleCountAfter[idnr - 1] = result.length;
                 this.difference[idnr - 1] = 0;
               }
@@ -325,7 +323,7 @@ export class Roles extends React.Component {
                 this.difference[idnr - 1] = 0;
               }
 
-              if (idnr == this.totalRoles) {
+              if (idnr == this.totalRoles) {  // Updater etter alle roller er kjørt igjennom
                 this.forceUpdate();
               }
             });
@@ -336,7 +334,7 @@ export class Roles extends React.Component {
   }
 }
 
-export class CreateEvent extends React.Component {
+export class CreateEvent extends React.Component {  // Oppretting av arrangement
   constructor(props) {
     super(props);
 
@@ -350,7 +348,7 @@ export class CreateEvent extends React.Component {
     const { selectValue } = this.state;
     let vaktmalOptions = [];
 
-    for (let vaktmal of this.vaktmaler) {
+    for (let vaktmal of this.vaktmaler) {   // Henter ut alle vaktmaler med navn
       vaktmalOptions.push({label: vaktmal.vaktmaltittel, value: vaktmal.vaktmalid},);
     }
 
@@ -390,6 +388,8 @@ export class CreateEvent extends React.Component {
   registerEvent(selectValue) {
     this.refs.alertDiv.textContent = '';
 
+
+    // VALIDERING
     if (this.refs.equipment.value == '') {
       this.equipment = 'Ingenting';
     }
@@ -413,7 +413,7 @@ export class CreateEvent extends React.Component {
       this.refs.oppmote.value, this.refs.adresse.value, this.refs.postalnumber.value, this.equipment,
       this.refs.contactperson.value, this.refs.contactphone.value, (result) => {
         this.nextId = result.insertId;
-        if (selectValue != undefined) {
+        if (selectValue != undefined) { // Dersom vaktmal er valgt, legges det til roller som hører til denne vaktmalen
           eventService.getRoller(selectValue.value, (result) => {
             this.registerRoller(result, this.nextId);
             this.props.history.push('/roles/' + this.nextId);
@@ -427,7 +427,7 @@ export class CreateEvent extends React.Component {
     }
   }
 
-  registerRoller(roller, eventid) {
+  registerRoller(roller, eventid) {   // Funskjon for å registrere rollene fra vaktmal
     for (let rolle of roller) {
       eventService.regRolle(eventid, rolle.rolleid, (result) => {
 
@@ -441,7 +441,7 @@ export class CreateEvent extends React.Component {
       this.forceUpdate();
     });
 
-    this.refs.postalnumber.oninput = () => {
+    this.refs.postalnumber.oninput = () => {  // Oppdaterer poststed-feltet når postnr skrives inn
       if (this.refs.postalnumber.value.length < 4) {
         this.refs.city.value = "";
       }
@@ -461,18 +461,16 @@ export class CreateEvent extends React.Component {
   }
 }
 
-export class EditEvent extends React.Component {
+export class EditEvent extends React.Component {  // Endring av arrangementinfo
   constructor(props) {
     super(props);
 
     this.evnt = this.getSelectedEvent();
 
-    console.log(this.evnt);
-
     let startTime = this.evnt.start;
     let endTime = this.evnt.end;
     let oppmoteTime = this.evnt.oppmote;
-    this.startTime = this.evnt.start.slice(0, -1);
+    this.startTime = this.evnt.start.slice(0, -1);  // Setter datoer og tidspunkt til riktig format i forhold til input-bokser
     this.endTime = this.evnt.end.slice(0, -1);
     this.oppmote = this.evnt.oppmote.slice(0, -3);
 
@@ -490,13 +488,13 @@ export class EditEvent extends React.Component {
     };
   }
 
-  onFieldChange(fieldName) {
+  onFieldChange(fieldName) { // Funksjon for å oppdatere riktig felt i this.state ved tastetrykk
     return function (event) {
         this.setState({[fieldName]: event.target.value});
     }
   }
 
-  getSelectedEvent() {
+  getSelectedEvent() {  // Henter informasjon om eventet fra localStorage
     let item = localStorage.getItem('selectedEvent');
     if(!item) return null;
 
@@ -535,6 +533,7 @@ export class EditEvent extends React.Component {
     this.refs.editEventBtn.onclick = () => {
       this.refs.alertDiv.textContent = '';
 
+      // VALIDERING
       if (this.refs.equipment.value == '') {
         this.equipment = 'Ingenting';
       }
@@ -552,6 +551,7 @@ export class EditEvent extends React.Component {
       }
 
       else {
+        // Oppdaterer info og går deretter tilbake til arrangementinfo-side
         eventService.editEvent(this.evnt.eventid, this.refs.title.value, this.refs.text.value, this.refs.start.value, this.refs.end.value, this.refs.adress.value, this.refs.postalnumber.value, (result) => {
           this.props.history.push('/eventdetails/' + this.evnt.eventid);
         });
@@ -578,7 +578,7 @@ export class EditEvent extends React.Component {
   }
 }
 
-export class ChangeRole extends React.Component {
+export class ChangeRole extends React.Component { // Vaktbytte
   constructor(props) {
     super(props);
 
@@ -587,7 +587,7 @@ export class ChangeRole extends React.Component {
     this.loggedinUser = userService.getSignedInUser();
     this.toUser = {};
 
-    this.eventRolle = JSON.parse(localStorage.getItem('rollebytte'));
+    this.eventRolle = JSON.parse(localStorage.getItem('rollebytte')); // Henter vakten vaktbyttet gjelder fra localStorage
   }
 
   render() {
@@ -615,10 +615,10 @@ export class ChangeRole extends React.Component {
     });
 
     this.refs.vaktbytteBtn.onclick = () => {
-      userService.getUserbyMail(this.refs.vaktbyttemail.value, (result) => {
+      userService.getUserbyMail(this.refs.vaktbyttemail.value, (result) => { // Sjekker om det finnes en bruker med oppgitt epostadresse
         this.toUser = result;
         if (result != undefined) {
-          userService.getPassiv(this.toUser.id, (result) => {
+          userService.getPassiv(this.toUser.id, (result) => { // Sjekker om brukeren er passiv i perioden arrangementet pågår
             this.userPassiv = result;
             let passiv = false;
             let eventStart = this.evnt.start;
@@ -634,7 +634,7 @@ export class ChangeRole extends React.Component {
             }
 
             if (passiv == false) {
-              skillService.countRoleReq((result) => {
+              skillService.countRoleReq((result) => { // Sjekker om personen det ønskes å bytte til har kompetansen som kreves for denne rollen
                 this.roleReq = result;
                 eventService.getUsersSkillsofRoles(this.eventRolle.rolleid, this.toUser.id, (result) => {
                   let numberOfSkills = result.antall;
@@ -672,5 +672,64 @@ export class ChangeRole extends React.Component {
         }
       });
     }
+  }
+}
+
+export class OldEventRoles extends React.Component {  // Gamle vakter
+  constructor(props) {
+    super(props);
+
+    this.user = userService.getSignedInUser();
+
+    this.oldUserRoles = [];
+  }
+
+  render() {
+    let roleList = [];
+    let header;
+    let tableHeader;
+
+    if (this.oldUserRoles.length != 0) {  // Skriver ut gamle vakter dersom det finnes
+      header = <h3>Dine tidligere vakter</h3>;
+
+      for (let userRole of this.oldUserRoles) {
+        roleList.push(<tr key={userRole.event_rolle_id} onClick={() =>
+            this.props.history.push('/eventdetails/' + userRole.eventid)
+          }>
+          <td>{userRole.title}</td>
+          <td>{userRole.rollenavn}</td>
+          <td>{userRole.start.toLocaleString()}</td>
+          <td>{userRole.end.toLocaleString()}</td>
+          <td></td></tr>);
+      }
+    }
+
+    else {
+      header = <h3>Du har ikke deltatt på arrangement tidligere</h3>;
+    }
+
+    return(
+      <div>
+        {header}
+        <div>
+          <table>
+            <thead>
+              {tableHeader}
+            </thead>
+            <tbody>
+              {roleList}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  }
+
+  componentDidMount() {
+    eventService.getOldUserEventRoller(this.user.id, (result) => {
+      this.oldUserRoles = result;
+      console.log(result);
+      this.forceUpdate();
+    });
   }
 }

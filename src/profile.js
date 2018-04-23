@@ -25,7 +25,7 @@ export function checkOldSkills() {
   });
 }
 
-export class Profile extends React.Component {
+export class Profile extends React.Component {  // Brukes kun av admins, inne på andre sin profil
   constructor(props) {
     super(props);
 
@@ -63,7 +63,7 @@ export class Profile extends React.Component {
       status = "Deaktivert";
     }
 
-    for (let skill of this.allSkills) {
+    for (let skill of this.allSkills) { // Henter alle kompetanser man skal kunne velge fra nedtrekksmenyen
       skillService.checkUserSkill(this.user.id, skill.skillid, (result) => {
         if (result == undefined) {
           skillOptions.push({ label: skill.skilltitle, value: skill.skillid },);
@@ -71,7 +71,7 @@ export class Profile extends React.Component {
       });
     }
 
-    for (let skill of this.userSkills) {
+    for (let skill of this.userSkills) {  // Skriver ut alle kompetanser brukeren har + utløpsdato dersom det gjelder for denne kompetansen
       if (skill.validto === null) {
         userSkillList.push(<tr key={skill.skillid} ><td> { skill.skilltitle } </td><td>Varer evig</td>
           <td><button onClick={() => skillService.deleteSkill(this.id, skill.skillid, (result) => {
@@ -110,6 +110,7 @@ export class Profile extends React.Component {
           <button ref='newpassword'>Send nytt passord på mail</button>
           {activateBtn}
         </div>
+        <div style={{color: 'red'}} ref='alertDiv2' />
         <div>
           <h4>Dine kurs og ferdigheter</h4> <br />
           <table>
@@ -143,11 +144,12 @@ export class Profile extends React.Component {
           </table>
         </div>
         <button className='editBtn' onClick={() => this.registerSkills(selectValue)}>Registrer</button>
+        <div style={{color: 'red'}} ref='alertDiv' />
       </div>
     );
   }
 
-  fixDate(date) {
+  fixDate(date) { // Funksjon for å sette datoen til riktig format
     let day = date.getDate();
     let month = date.getMonth() + 1;
     let year = date.getFullYear();
@@ -157,24 +159,25 @@ export class Profile extends React.Component {
     return(dateTime);
   }
 
-  selectUser() {
+  selectUser() {  // Lagrer brukeren i localStorage, og sender brukeren til editprofile-siden
     localStorage.setItem('edituser', JSON.stringify(this.user));
     this.props.history.push('/editprofile');
   }
 
-  changeHandler(selectValue) {
+  changeHandler(selectValue) {  // Kjører ved forandringer i nedtrekksmenyen
     this.inputList = [];
     this.dateInputList = [];
+    this.refs.alertDiv.textContent = '';
     let ref = 0;
     for (let skill of selectValue) {
-      skillService.getSkillInfo(skill.value, (result) => {
+      skillService.getSkillInfo(skill.value, (result) => {  // Kjører gjennom alle kompetanser som er valgt i multiselect
         if (result.duration === 0) {
           this.inputList.push(<tr key={skill.value}><td> { skill.label } </td><td>Varer evig</td></tr>);
         }
 
         else if (result.duration != 0 && this.dateInputList.length > 0) {
           this.setState(selectValue.splice(-1, 1));
-          alert('Registrer ' + this.selectedSkillWithDate + ' før du legger til flere kurs med utløpsdato.');
+          this.refs.alertDiv.textContent = 'Registrer ' + this.selectedSkillWithDate + ' før du legger til flere kurs med utløpsdato.';
         }
 
         else {
@@ -187,6 +190,8 @@ export class Profile extends React.Component {
   }
 
   registerSkills(selectValue) {
+    this.refs.alertDiv.textContent = '';
+
     if (this.refNr == null) {
       this.skillDate = null;
     }
@@ -198,12 +203,14 @@ export class Profile extends React.Component {
     for (let skill of selectValue) {
       skillService.getSkillInfo(skill.value, (result) => {
         this.skill = result;
+
+        // VALIDERING
         if (this.skillDate == '') {
-          alert('Vennligst velg en dato');
+          this.refs.alertDiv.textContent = 'Vennligst velg en dato';
         }
 
         else if (this.skill.duration != 0 && this.skillDate != undefined) {
-          skillService.addSkills(this.user.id, skill.value, this.skillDate, (result) => {
+          skillService.addSkills(this.user.id, skill.value, this.skillDate, (result) => { // Registrerer kompetansen med utløpsdato på brukeren
             skillService.getUserSkills(this.user.id, (result) => {
               this.userSkills = result;
               this.setState({selectValue: []});
@@ -215,7 +222,7 @@ export class Profile extends React.Component {
         }
 
         else {
-          skillService.addSkills(this.user.id, skill.value, null, (result) => {
+          skillService.addSkills(this.user.id, skill.value, null, (result) => { // Registrerer kompetanse uten utløpsdato
             skillService.getUserSkills(this.user.id, (result) => {
               this.userSkills = result;
               this.setState({selectValue: []});
@@ -230,7 +237,7 @@ export class Profile extends React.Component {
   }
 
   componentDidMount() {
-    if (this.id == loggedin.id) {
+    if (this.id == loggedin.id) { // Sender brukeren til "Min profil" dersom han prøver å gå inn på sin egen profil
       this.nextPath('/myprofile/' + this.id);
     }
     userService.getUser(this.id, (result) => {
@@ -248,13 +255,16 @@ export class Profile extends React.Component {
       });
     });
 
-    this.refs.newpassword.onclick = () => {
+    this.refs.newpassword.onclick = () => { // Resetter passord for brukeren
       userService.resetPassword(selectedUser.email, selectedUser.username, (result) => {
-        alert('Passord sendt til ' + selectedUser.email);
+        this.refs.alertDiv2.textContent = 'Passord sendt til ' + selectedUser.email;
+        setTimeout(() => {
+          this.refs.alertDiv2.textContent = '';
+        }, 5000);
       });
     }
 
-    this.refs.activateBtn.onclick = () => {
+    this.refs.activateBtn.onclick = () => { // Aktiverer eller deaktiverer brukeren avhengig om den er aktiv fra før eller ikke
       if (this.user.aktivert == true) {
         userService.deactivate(this.user.id, (result) => {
           this.nextPath('/userlistadmin');
@@ -270,7 +280,7 @@ export class Profile extends React.Component {
   }
 }
 
-export class MyProfile extends React.Component {
+export class MyProfile extends React.Component {  // Samme som Profile, men dette brukes når brukeren er inne på sin egen profil
   constructor(props) {
     super(props);
 
@@ -396,6 +406,7 @@ export class MyProfile extends React.Component {
           </table>
         </div>
         <button className='editBtn' onClick={() => this.registerSkills(selectValue)}>Registrer</button>
+        <div style={{color: 'red'}} ref='alertDiv' />
       </div>
     );
   }
@@ -415,6 +426,7 @@ export class MyProfile extends React.Component {
   }
 
   changeHandler(selectValue) {
+    this.refs.alertDiv.textContent = '';
     this.inputList = [];
     this.dateInputList = [];
     let ref = 0;
@@ -426,7 +438,7 @@ export class MyProfile extends React.Component {
 
         else if (result.duration != 0 && this.dateInputList.length > 0) {
           this.setState(selectValue.splice(-1, 1));
-          alert('Registrer ' + this.selectedSkillWithDate + ' før du legger til flere kurs med utløpsdato.');
+          this.refs.alertDiv.textContent = 'Registrer ' + this.selectedSkillWithDate + ' før du legger til flere kurs med utløpsdato.';
         }
 
         else {
@@ -439,6 +451,8 @@ export class MyProfile extends React.Component {
   }
 
   registerSkills(selectValue) {
+    this.refs.alertDiv.textContent = '';
+
     if (this.refNr == null) {
       this.skillDate = null;
     }
@@ -451,7 +465,7 @@ export class MyProfile extends React.Component {
       skillService.getSkillInfo(skill.value, (result) => {
         this.skill = result;
         if (this.skillDate == '') {
-          alert('Vennligst velg en dato');
+          this.refs.alertDiv.textContent = 'Vennligst velg en dato';
 
         }
 
@@ -504,7 +518,7 @@ export class EditProfile extends React.Component {
   constructor(props) {
     super(props);
 
-    this.user = JSON.parse(localStorage.getItem('edituser'));
+    this.user = JSON.parse(localStorage.getItem('edituser')); // Henter brukerinfo fra localStorage
 
     this.state = {
       firstName: this.user.firstName,
@@ -520,10 +534,10 @@ export class EditProfile extends React.Component {
     this.props.history.push(path);
   }
 
-  changeHandler(fieldName) {
-        return function (event) {
-            this.setState({[fieldName]: event.target.value});
-        }
+  changeHandler(fieldName) { // Funksjon for å oppdatere riktig felt i this.state ved tastetrykk
+    return function (event) {
+        this.setState({[fieldName]: event.target.value});
+    }
   }
 
   render() {
@@ -558,6 +572,7 @@ export class EditProfile extends React.Component {
     });
 
     this.refs.postalnumber.oninput = () => {
+      // VALIDERING
       if (this.refs.postalnumber.value.length < 4) {
         this.refs.city.value = '';
       }
@@ -576,6 +591,7 @@ export class EditProfile extends React.Component {
     }
 
     this.refs.editUserBtn.onclick = () => {
+      // VALIDERING
       if (this.refs.fname.value == '' || this.refs.lname.value == '' || this.refs.adress.value == '' || this.refs.postalnumber.value == '' ||
       this.refs.email.value == '' || this.refs.phonenumber.value == '') {
         this.refs.alertDiv.textContent = 'Vennligst fyll ut alle feltene';
@@ -592,14 +608,14 @@ export class EditProfile extends React.Component {
       else {
         let user = JSON.parse(localStorage.getItem('edituser'));
 
-        userService.getOtherUserbyMail(this.refs.email.value, user.id, (result) => {
+        userService.getOtherUserbyMail(this.refs.email.value, user.id, (result) => {  // Sjekker om det finnes andre brukere med denne mailadressen
           if (result != undefined) {
             this.refs.alertDiv.textContent = 'Det finnes allerede en annen bruker med denne epostadressen';
           }
 
           else {
             userService.editProfile(user.id, this.refs.fname.value, this.refs.lname.value, Number(this.refs.phonenumber.value),
-                                    this.refs.email.value, this.refs.adress.value, Number(this.refs.postalnumber.value), (result) => {
+                                    this.refs.email.value, this.refs.adress.value, Number(this.refs.postalnumber.value), (result) => {  // Oppdaterer brukerinfo
               userService.getUser(user.id, (result) => {
                 updateUserDetails();
                 this.nextPath('/profile/' + user.id);
@@ -626,6 +642,7 @@ export class ChangePassword extends React.Component {
         <input ref='newpw' placeholder='New password' type='password'></input> <br/>
         <input ref='confirmnewpw' placeholder='Confirm new password' type='password'></input> <br/>
         <button ref='submitnewpw'>Change password</button>
+        <div style={{color: 'red'}} ref='alertDiv' />
       </div>
     )
   }
@@ -637,22 +654,23 @@ export class ChangePassword extends React.Component {
   componentDidMount() {
     this.refs.submitnewpw.onclick = () => {
 
-      crypto.pbkdf2(this.refs.oldpw.value, 'RødeKors', 100, 64, 'sha512', (err, derivedKey) => {
+      crypto.pbkdf2(this.refs.oldpw.value, 'RødeKors', 100, 64, 'sha512', (err, derivedKey) => {  // Krypterer inputen for gammel passord og sjekker mot databasen
         if (err) throw err;
 
         this.oldpw = derivedKey;
 
+        // VALIDERING
         if (this.user.passw != this.oldpw) {
-          console.log('Det gamle passordet stemmer ikke');
+          this.refs.alertDiv.textContent = 'Det gamle passordet stemmer ikke';
         }
 
         else {
           if(this.refs.newpw.value != this.refs.confirmnewpw.value) {
-            console.log('De nye passordene stemmer ikke');
+            this.refs.alertDiv.textContent = 'De nye passordene stemmer ikke';
           }
 
           else {
-            crypto.pbkdf2(this.refs.newpw.value, 'RødeKors', 100, 64, 'sha512', (err, derivedKey) => {
+            crypto.pbkdf2(this.refs.newpw.value, 'RødeKors', 100, 64, 'sha512', (err, derivedKey) => {  // Krypterer nytt passord, og oppdaterer databasen
               if (err) throw err;
 
               this.newpw = derivedKey;
