@@ -29,8 +29,8 @@ export class Login extends React.Component {
     return (
         <div className='centeredDiv'>
           <div className='loginDiv'>
-          <br/>
-          <img className='logo1' src="src/img/Rodekors.jpg"/><br/> <br/>
+
+            <h3>Login</h3> <br /> <br /> <br /> <br /> <br /> <br />
             <input ref='username' className='loginInput' type='text' placeholder='Brukernavn' /> <br />
             <input ref='password' className='loginInput' type='password' placeholder='Passord' /> <br />
             <div style={{color: 'red'}} ref='alertDiv' />
@@ -209,12 +209,11 @@ export class ForgotPassword extends React.Component {
       <div className='centeredDiv'>
         <div ref='newPassword' className='loginDiv'>
           <div className='loginLogo'>
-          <br/>
-          <img className='logo1' src="src/img/Rodekors.jpg"/><br/> <br/> <br/> <br/>
+          LOGO
           </div>
           <div ref='resetContent'>
             <input ref="fpemail" placeholder="Type your email"></input><br/>
-            <button className="requestNewPWBtn" ref="fpsubmit">Request</button> <br />
+            <button ref="fpsubmit">Request</button> <br />
             <Link to='/login'>Back to login</Link>
           </div>
         </div>

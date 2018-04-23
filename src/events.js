@@ -87,7 +87,7 @@ export class EventList extends React.Component { // Arrangementframside med kale
     for (let passiv of this.userPassiv) {   // Skriver ut brukerens passiv-perioder
       if (passiv.passivstart.toLocaleDateString() > today) {
         passivList.push(<tr className='tableRow' key={passiv.passivid}><td className='tableLines'>{passiv.passivstart.toLocaleDateString()}</td><td>{passiv.passivend.toLocaleDateString()}</td>
-        <td><button className='deleteSkillBtn' onClick={() => userService.deletePassiv(passiv.passivid, (result) => {
+        <td><button onClick={() => userService.deletePassiv(passiv.passivid, (result) => {
           userService.getPassivNoEvent(this.user.id, (result) => {
             this.userPassiv = result;
             this.forceUpdate();
@@ -101,7 +101,7 @@ export class EventList extends React.Component { // Arrangementframside med kale
     }
 
     return(
-      <div className='wrapper3'>
+      <div>
         <div className='columns'>
           <div className='calendar'>
              <BigCalendar
@@ -167,8 +167,11 @@ export class EventList extends React.Component { // Arrangementframside med kale
             </div>
           </div>
           <br />
-          <button className='regpassivBtn' onClick={() => this.regPassiv()}>Registrer</button>
-          <div style={{color: 'red'}} ref='passivalertDiv'></div>
+          <button onClick={() => this.regPassiv()}>Registrer</button>
+          </div>
+          <div className='row'>
+            <div style={{color: 'red', marginLeft: 5 + '%'}} ref='passivalertDiv'></div>
+          </div>
          </div>
        </div>
     );
@@ -369,18 +372,19 @@ export class CreateEvent extends React.Component {  // Oppretting av arrangement
     return(
       <div className='centeredDiv'>
         <div className='createEventDiv'>
-          <h4>Opprett arrangement</h4>
-          Tittel: <input className='createEventTitle' ref='title' type='text' /> <br />
-          Bekskrivelse: <input className='createEventDescription' ref='text' type='text' /> <br />
-          Arrangementstart: <input className='createEventStart' ref='start' type='datetime-local' placeholder='Startdato' /> <br />
-          Arrangementslutt: <input className='createEventEnd' ref='end' type='datetime-local' placeholder='Sluttdato' /> <br />
-          Oppmøtetidspunkt: <input className='createEventMeet' ref='oppmote' type='time' /> <br />  <br />
+          <h3>Opprett arrangement</h3>
+          Tittel: <input ref='title' type='text' /> <br />
+          Bekskrivelse: <input ref='text' type='text' /> <br />
+          Arrangementstart: <input ref='start' type='datetime-local' placeholder='Startdato' /> <br />
+          Arrangementslutt: <input ref='end' type='datetime-local' placeholder='Sluttdato' /> <br />
+          Oppmøtetidspunkt: <input ref='oppmote' type='time' /> <br />
           Adresse: <br />
-          <input className="createEventAdress" ref='adresse' type='text' placeholder='Gateadresse'/> <br />
+          <input ref='adresse' type='text' placeholder='Gateadresse'/> <br />
           <input ref='postalnumber' type='text' maxLength='4' className='regPostal' placeholder='Postnr'/>
-          <input ref='city' className='regCity1' placeholder='Poststed' value={this.state.city} type='text' readOnly /><br /> <br />
-          Utstyrsliste: <br /> <input className="createEventItemList" ref='equipment' type='text' /> <br />
+          <input ref='city' className='regCity' placeholder='Poststed' value={this.state.city} type='text' readOnly /><br />
+          Utstyrsliste: <input ref='equipment' type='text' /> <br />
           <VirtualizedSelect
+            autoFocus
             placeholder='Velg en vaktmal'
             clearable={true}
             removeSelected={true}
@@ -389,9 +393,9 @@ export class CreateEvent extends React.Component {  // Oppretting av arrangement
             value={selectValue}
             className='createEventSelect'
           />
-        <br />  Kontaktperson: <br />
-          <input className="createEventContactName"ref='contactperson' type='text' placeholder='Navn' /> <br /><input className="createEventContactPhone" ref='contactphone' type='number' placeholder='Telefonnummer' />
-          <button className='newEventBtn' onClick={() => this.registerEvent(selectValue)}>Registrer arrangement</button>
+          Kontaktperson: <br />
+          <input ref='contactperson' type='text' placeholder='Navn' /> <br /> <input ref='contactphone' type='number' placeholder='Tlf' />
+          <button className='submitBtn' onClick={() => this.registerEvent(selectValue)}>Registrer arrangement</button>
           <div ref='alertDiv'></div>
         </div>
       </div>
@@ -527,11 +531,11 @@ export class EditEvent extends React.Component {  // Endring av arrangementinfo
           Oppmøte: <input name='oppmote' ref='oppmote' type='time' value={this.oppmote} onChange={this.onFieldChange('oppmote').bind(this)} /> <br />
           Adresse: <input name='adress' ref='adress' value={this.state.adress} onChange={this.onFieldChange('adress').bind(this)} /> <br />
           Post: <input name='postalnumber' ref='postalnumber' className='regPostal' maxLength='4' value={this.state.postalnumber} onChange={this.onFieldChange('postalnumber').bind(this)} />
-          <input ref='city' className='regCity1'/> <br />
+          <input ref='city' className='regCity'/> <br />
           Utstyr: <input name='equipment' ref='equipment' value={this.state.equipment} onChange={this.onFieldChange('equipment').bind(this)} /> <br />
           Kontaktperson: <input name='contactperson' ref='contactperson' value={this.state.contactperson} onChange={this.onFieldChange('contactperson').bind(this)} /> <br />
           Telefon: <input name='contactphone' ref='contactphone' value={this.state.contactphone} onChange={this.onFieldChange('contactphone').bind(this)} />
-          <button className='submitBtn' ref='editEventBtn'>Godkjenn</button>
+          <button className='submitBtn' ref='editEventBtn'>Confirm</button>
           <div style={{color: 'red'}} ref='alertDiv'></div>
         </div>
       </div>

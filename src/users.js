@@ -98,7 +98,7 @@ export class Requests extends React.Component { // Forespørsler om vaktbytte og
       let unconfirmedList = [];
 
       for(let unconfirmedUser of this.unconfirmedUsers) { // Skriver ut deaktiverte brukere
-        unconfirmedList.push(<li key={unconfirmedUser.id} className=''>{unconfirmedUser.firstName + ' ' + unconfirmedUser.lastName}<button className='confirmSingleUserbtn'onClick={() => this.confirm(unconfirmedUser.id)}>Confirm</button></li>);
+        unconfirmedList.push(<li key={unconfirmedUser.id} className=''>{unconfirmedUser.firstName + ' ' + unconfirmedUser.lastName}<button onClick={() => this.confirm(unconfirmedUser.id)}>Confirm</button></li>);
       }
 
       users = <div className='centeredDiv'>
@@ -178,7 +178,7 @@ export class UserListAdmin extends React.Component { // Admin sin brukerliste, m
     if (deactivatedList.length == 0) {  // Forskjellige returns etter om det finnes brukere i de forskjellige kategoriene
       return(
         <div className='userList'>
-          <input ref='search' className='searchDiv' type='text' placeholder='Søk etter bruker...' />
+          <input ref='search' type='text' placeholder='Søk etter bruker' />
           <h3>Admins</h3>
           <table className='userTable'>
             <thead>
@@ -219,7 +219,7 @@ export class UserListAdmin extends React.Component { // Admin sin brukerliste, m
     else {
       return (
         <div className='userList'>
-          <input ref='search' className='searchDiv' type='text' placeholder='Søk etter bruker...' />
+          <input ref='search' type='text' placeholder='Søk etter bruker' />
           <h3>Admins</h3>
           <table className='userTable'>
             <thead>
@@ -302,7 +302,7 @@ export class UserList extends React.Component { // Vanlige brukere sin brukerkat
     if (userList.length == 0 && adminList.length == 0) {
       return(
         <div className='tableList'>
-          <input ref='search' className='searchDiv' type='text' placeholder='Søk etter bruker...' />
+          <input ref='search' type='text' placeholder='Søk etter bruker' />
           <div>
           <h4>Finner ingen brukere som oppfyller søkekravet</h4>
           </div>
@@ -313,7 +313,7 @@ export class UserList extends React.Component { // Vanlige brukere sin brukerkat
     else if (adminList.length == 0) {
       return(
         <div className='tableList'>
-          <input ref='search' className='searchDiv' type='text' placeholder='Søk etter bruker...' />
+          <input ref='search' type='text' placeholder='Søk etter bruker' />
           <h3>Andre brukere</h3>
           <table className='userTable'>
             <thead>
@@ -334,7 +334,7 @@ export class UserList extends React.Component { // Vanlige brukere sin brukerkat
     else if (userList.length == 0) {
       return(
         <div className='tableList'>
-          <input ref='search' className='searchDiv' type='text' placeholder='Søk etter bruker...' />
+          <input ref='search' type='text' placeholder='Søk etter bruker' />
           <h3>Admins</h3>
           <table className='userTable'>
             <thead>
@@ -355,7 +355,7 @@ export class UserList extends React.Component { // Vanlige brukere sin brukerkat
     else {
       return(
         <div className='tableList'>
-          <input ref='search' className='searchDiv' type='text' placeholder='Søk etter bruker...' />
+          <input ref='search' type='text' placeholder='Søk etter bruker' />
           <h3>Admins</h3>
           <table className='userTable'>
             <thead>

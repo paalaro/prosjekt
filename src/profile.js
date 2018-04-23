@@ -50,10 +50,10 @@ export class Profile extends React.Component {  // Brukes kun av admins, inne p√
     if (this.user.aktivert == true && this.user.admin == false) {
       adminMsg = 'Nei';
       status = "Aktiv";
-      activateBtn = <button className='activateBtn' onClick={() =>
+      activateBtn = <button onClick={() =>
         this.activate(this.user.id)
       }>Deaktiver</button>;
-      adminBtn = <button className='makeAdminBtn' onClick={() =>
+      adminBtn = <button onClick={() =>
         this.admin(this.user.id)
       }>Gj√∏r til admin</button>;
     }
@@ -61,7 +61,7 @@ export class Profile extends React.Component {  // Brukes kun av admins, inne p√
     else if (this.user.aktivert == true && this.user.admin == true) {
       adminMsg = 'Ja';
       status = "Aktiv";
-      adminBtn = <button className='removeAdminBtn' onClick={() =>
+      adminBtn = <button onClick={() =>
         this.admin(this.user.id)
       }>Fjern admin</button>;
     }
@@ -69,7 +69,7 @@ export class Profile extends React.Component {  // Brukes kun av admins, inne p√
     else if (this.user.aktivert == false) {
       adminMsg = 'Nei';
       status = "Deaktivert";
-      activateBtn = <button className='activateBtn' onClick={() =>
+      activateBtn = <button onClick={() =>
         this.activate(this.user.id)
       }>Aktiver</button>;
       status = "Deaktivert";
@@ -86,7 +86,7 @@ export class Profile extends React.Component {  // Brukes kun av admins, inne p√
     for (let skill of this.userSkills) {  // Skriver ut alle kompetanser brukeren har + utl√∏psdato dersom det gjelder for denne kompetansen
       if (skill.validto === null) {
         userSkillList.push(<tr key={skill.skillid} ><td> { skill.skilltitle } </td><td>Varer evig</td>
-          <td><button className='deleteSkillBtn' onClick={() => skillService.deleteSkill(this.id, skill.skillid, (result) => {
+          <td><button onClick={() => skillService.deleteSkill(this.id, skill.skillid, (result) => {
             skillService.getUserSkills(this.user.id, (result) => {
               this.userSkills = result;
               this.forceUpdate();
@@ -97,7 +97,7 @@ export class Profile extends React.Component {  // Brukes kun av admins, inne p√
       else {
         this.date = this.fixDate(skill.validto);
         userSkillList.push(<tr key={skill.skillid} ><td> { skill.skilltitle } </td><td>{this.date}</td>
-          <td><button className='deleteSkillBtn' onClick={() => skillService.deleteSkill(this.id, skill.skillid, (result) => {
+          <td><button onClick={() => skillService.deleteSkill(this.id, skill.skillid, (result) => {
             skillService.getUserSkills(this.user.id, (result) => {
               this.userSkills = result;
               this.forceUpdate();
@@ -107,20 +107,20 @@ export class Profile extends React.Component {  // Brukes kun av admins, inne p√
     }
 
     return(
-      <div className='wrapper3'>
+      <div>
         <div>
           <br />
-          Navn: {this.user.firstName + ' ' + this.user.lastName} <br />
-          Telefonnummer: {this.user.phonenumber} <br />
+          Name: {this.user.firstName + ' ' + this.user.lastName} <br />
+          Phone: {this.user.phonenumber} <br />
           Email: {this.user.email} <br />
           Adress: {this.user.adress + ', ' + this.user.postalnumber + ' ' + this.city} <br />
           <br />
           Status: {status} <br />
           Admin: {adminMsg} <br />
-          <button className='editDetailsBtn' onClick={() =>
+          <button onClick={() =>
             this.selectUser()
           }>Endre opplysninger</button>
-          <button className="newPWBtn" ref='newpassword'>Send nytt passord p√• mail</button>
+          <button ref='newpassword'>Send nytt passord p√• mail</button>
           {activateBtn}
           {adminBtn}
         </div>
@@ -367,7 +367,7 @@ export class MyProfile extends React.Component {  // Samme som Profile, men dett
           <tr key={skill.skillid} >
           <td> { skill.skilltitle } </td>
           <td>Varer evig</td>
-          <td><button className='deleteSkillBtn' onClick={() => skillService.deleteSkill(this.id, skill.skillid, (result) => {
+          <td><button onClick={() => skillService.deleteSkill(this.id, skill.skillid, (result) => {
             skillService.getUserSkills(this.user.id, (result) => {
               this.userSkills = result;
               this.forceUpdate();
@@ -381,7 +381,7 @@ export class MyProfile extends React.Component {  // Samme som Profile, men dett
           <tr key={skill.skillid} >
           <td> { skill.skilltitle } </td>
           <td>{this.date}</td>
-          <td><button className="deleteSkillBtn" onClick={() => skillService.deleteSkill(this.id, skill.skillid, (result) => {
+          <td><button onClick={() => skillService.deleteSkill(this.id, skill.skillid, (result) => {
             skillService.getUserSkills(this.user.id, (result) => {
               this.userSkills = result;
               this.forceUpdate();
@@ -391,7 +391,7 @@ export class MyProfile extends React.Component {  // Samme som Profile, men dett
     }
 
     return(
-      <div className="wrapper1">
+      <div>
         <div>
           <br />
           <table>
@@ -419,7 +419,7 @@ export class MyProfile extends React.Component {  // Samme som Profile, men dett
             </tbody>
           </table>
           <br />
-          <button className='editBtn' onClick={() =>
+          <button onClick={() =>
             this.selectUser()
           }>Endre detaljer</button>
           <Link to='/changepassword'><button ref='changePassword' className='editBtn'>Bytt passord</button></Link>
@@ -608,7 +608,7 @@ export class EditProfile extends React.Component {
           <input name='postalnumber' ref='postalnumber' className='regPostal' maxLength='4' value={this.state.postalnumber} onChange={this.changeHandler('postalnumber').bind(this)} />
           <input ref="city" className='regCity' readOnly></input>
           <br />
-          <button className='submitBtn' ref='editUserBtn'>Godkjenn</button>
+          <button className='submitBtn' ref='editUserBtn'>Confirm</button>
           <div style={{color: 'red'}} ref='alertDiv'></div>
         </div>
       </div>
@@ -689,12 +689,12 @@ export class ChangePassword extends React.Component {
   }
   render() {
     return(
-      <div className='wrapper3'>
-        Bytt passord: <br/>
+      <div>
+        Change password: <br/>
         <input ref='oldpw' placeholder='Current password' type='password'></input> <br/>
         <input ref='newpw' placeholder='New password' type='password'></input> <br/>
         <input ref='confirmnewpw' placeholder='Confirm new password' type='password'></input> <br/>
-        <button className='submitNewPwbtn' ref='submitnewpw'>Bytt passord</button>
+        <button ref='submitnewpw'>Change password</button>
         <div style={{color: 'red'}} ref='alertDiv' />
       </div>
     )
